@@ -1,0 +1,58 @@
+<FileChooser>:
+    id: "filechooser"
+    rv_scroll: rv_scroll
+    grid: grid
+    MDAnchorLayout:
+        padding: 50
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            MyTitleLabel:
+                anchor_x: "left"
+                text: "Choose a file"
+            MDRecycleView:
+                id: rv_scroll
+                viewclass: 'CustomListItem'
+                RecycleBoxLayout:
+                    id: grid
+                    orientation: "vertical"
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    default_size_hint: 1, None
+                    spacing: 10
+            MDBoxLayout:
+                adaptive_height: True
+                orientation: "horizontal"
+                MyTextButton:
+                    text: "Access"
+                    on_press: app._show_validation_dialog()
+                    style: "elevated"
+                Widget:
+                MDIconButton:
+                    icon: "reload"
+                    on_release: root.set_list_items(namelist=os.listdir(root.directory))
+
+<CustomListItem>:
+    theme_bg_color: "Custom"
+    md_bg_color: app.theme_cls.surfaceBrightColor
+    padding: 20,0,0,0
+    on_release: app.wm.current_screen.select(root.text)
+    MDLabel:
+        text: root.text
+        role: "small"
+    
+<MyAccessDialog>:
+    MDDialogHeadlineText:
+        text: "Grant access"
+    MDDialogSupportingText:
+        text: root.error_msg
+    MDDialogButtonContainer:
+        Widget:
+        MyTextButton:
+            on_release: app.permissions_external_storage()
+            text: "Yes"
+        Widget:
+        MyTextButton:
+            on_release: app.show_permission_popup.dismiss()
+            text: "Go Back"
+        Widget:
