@@ -9,7 +9,6 @@ class character():
         self.printer=plecoprinter(self.entry)   
         self.uniq=(self.entry.simple,self.entry.traditional,self.entry.pronounciation)
         self.__categories=None
-        # self.__dictionary=
         
     def __repr__(self):
         u=['{0:<10}'.format(e) for e in self.uniq]
@@ -25,24 +24,47 @@ class character():
     def to_dict(self):
         return self.entry.to_dict()
     
-    def info(self):
+    def info(self, complete=True):
         string=''
-        for k in self.entry.categories:
-            v=self.entry.__dict__[k]
-            head='{0:<20}'.format(k)
-            if isinstance(v,list): 
-                # lists=f"\n{'':<20}- ".join(v)
-                lists="".join(["\n"+f"{'':<20}".format(e) for e in v])
-                string+=f'{head}- {lists}\n'
-            elif isinstance(v,str): string+=f'{head}{v}\n'
-            elif v==None: string+=f'{head}\n'
-        # print(string)
+        existing_categories=self.get_existing_categories()
+        for cat,values in self.entry.to_dict().items():
+            if complete or cat in existing_categories:
+                head='{0:17}'.format(cat)
+                if isinstance(values,list): 
+                    line=f'{head}'
+                    tab=f"{'':<17}".format("")
+                    for e in values[:-1]:
+                        line+=f'- {e}\n{tab}'
+                    try:   
+                        line+=f'- {values[-1]}\n'
+                    except: 
+                        pass
+                elif isinstance(values,str): line=f'{head}{values}\n'
+                elif values==None: line=f'{head}\n'
+                else: line=""
+                string+=line
         return string
     
     @property
     def categories(self):
         return self.entry.categories
     
+    def get_existing_categories(self):
+        return [cat for cat,values in self.entry.to_dict().items() if values != None]
+    
+    def is_radical(self):
+        valid_category_names = ['radical']
+        return bool(set(self.get_existing_categories()) & set(valid_category_names))
+    def is_measure_word(self):
+        valid_category_names = ['measure_word']
+        return bool(set(self.get_existing_categories()) & set(valid_category_names))
+    def is_grammatical(self):
+        valid_category_names = ['dict_entries']
+        return bool(set(self.get_existing_categories()) & set(valid_category_names))
+    def has_translation(self):
+        valid_category_names = ['english','german']
+        return bool(set(self.get_existing_categories()) & set(valid_category_names))
+   
     def choose_entry(self,category):
         return self.entry.__dict__[category]
     

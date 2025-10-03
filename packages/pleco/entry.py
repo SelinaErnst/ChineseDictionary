@@ -16,13 +16,18 @@ class entry():
         return {k:v for k,v in self.__dict__.items() if not k.startswith('_')}
     
     def to_dict(self):
-        return self.everything()
-    
-    def __repr__(self):
-        return {k:v for k,v in self.__dict__.items() if not k.startswith('_')}
-    
+        return self.everything
+
     def update(self,**kwargs):
         for key,value in kwargs.items():
             self.__dict__[key]=value
+    
+    def __repr__(self):
+        return str({k:v for k,v in self.__dict__.items() if not k.startswith('_')})
+    
+    def __str__(self):
+        return str({k:v for k,v in self.__dict__.items() if not k.startswith('_')})
+    
+
             
     

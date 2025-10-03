@@ -36,8 +36,8 @@ if platform == 'android':
 
 # = –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– = #
 
-from screens.select_dict_file import SelectFile, FileChooser, MyAccessDialog
-from screens.templates import MyScreen
+from screens import SelectFile, FileChooser, MyAccessDialog
+from templates import MyScreen, RectangularIconButtton
 
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -58,67 +58,110 @@ from kivymd.theming import ThemeManager
 from kivymd.uix.filemanager import MDFileManager
 from kivymd.uix.dialog.dialog import MDDialog
 from kivymd.uix.button import MDButton, MDButtonIcon
-from kivymd.uix.snackbar import MDSnackbar
+from kivymd.uix.snackbar import MDSnackbar, MDSnackbarText
 from kivymd.uix.textfield import MDTextFieldTrailingIcon
 from kivymd.uix.behaviors import RectangularRippleBehavior
+from kivymd.uix.card import MDCard
+from kivymd.uix.navigationdrawer import MDNavigationDrawerItem
 
-# print([d for d in dir(MDLabel) if "" in d and "__" not in d])
+# print([d for d in dir(MDButton) if "" in d and "__" not in d])
 
 KV="""
-<ChLabel@MDLabel>
+<ChLabel>:
     theme_font_name: "Custom"
     font_name:"CH"
 
-
 """
 
-class ErrorMsg(MDSnackbar):
-    msg=StringProperty()
-    error=StringProperty("ERROR")
 
-class MyTitleLabel(MDAnchorLayout):
-    text=StringProperty()
-    
-class MyIconTextButton(MDButton):
-    text=StringProperty()
-    icon=StringProperty()
-    padding=NumericProperty(30)
-    _text_left_pad = 0
-    _text_right_pad = 0
-    _icon_left_pad = 0
-    
-class MyTextButton(MDButton):
-    text=StringProperty()
-    padding=NumericProperty(30)
-    
-class MyRigidTextButton(MDButton):
-    text=StringProperty()
-
-class EntryField(MDBoxLayout):
-    text=StringProperty()
-    hint=StringProperty()
-    role=StringProperty("medium")
+class Interface(MDBoxLayout):
+    pass
     
 class WindowManager(ScreenManager):
-    pass
+    previous_screen_names=ListProperty()
 
 
 class Home(MyScreen):
     pass
-
-class ReloadButton(MDIconButton):
-    pass
-
-class DialogLines(MDBoxLayout):
-    head=StringProperty()
-
-class CustomListItem(RectangularRippleBehavior, ButtonBehavior, MDBoxLayout):
-    text = StringProperty()
   
-class NewDict(MyScreen):
+class ViewDict(MyScreen):
     dict_file=StringProperty()
     dict_name=StringProperty()
+    dictionary=ObjectProperty()
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if platform=="linux":
+            dict_dir="/media/selina/SHARE/MyProjects/Pleco/"
+            self.dict_file=dict_dir+"plecoformat.txt"
+            self.dict_name="test"
+            self.read_dict_file()
+                
+    def read_dict_file(self):
+        self.empty_dict()
+        can_read = self.dictionary.read(self.dict_file,add=False)
+        if can_read:
+            self.set_list_items(namelist=self.dictionary.get_simple_list())
+        return can_read
+    
+    def empty_dict(self):
+        # self.dictionary=None
+        self.dictionary=dictionary(self.dict_name)
 
+    def create_dataitem(self,character):
+        char_simp, char_trad, char_pron = character.uniq
+        dataitem={
+            'character': character,
+            'char_simp': char_simp,
+            'char_trad': char_trad,
+            'char_pron': char_pron,
+            'is_radical': character.is_radical(),
+            'is_measure_word': character.is_measure_word(),
+            'is_grammatical': character.is_grammatical(),
+            'has_translation': character.has_translation(),
+            'callback':lambda x:x}
+        return dataitem 
+    
+    def add_list_item(self,dataitem,text="",search=False):
+        if search:
+            pass
+            # if text.lower() in name.lower() or text=="":
+                # self.rv_scroll.data.append(dataitem)
+        else: self.rv_scroll.data.append(dataitem)
+    
+    def set_list_items(self,text="",namelist=None, search=False):
+        self.rv_scroll.data = []
+        if namelist != None and isinstance(namelist,list): 
+            self.namelist=namelist
+        # for name in self.namelist:
+        for character in self.dictionary:
+            dataitem=self.create_dataitem(character)
+            self.add_list_item(dataitem,text=text,search=search)
+
+class DictionaryEntry(MDCard):
+    text = StringProperty()
+    char_simp = StringProperty()
+    char_trad = StringProperty()
+    char_pron = StringProperty()
+    character = ObjectProperty()
+    is_radical = BooleanProperty()
+    is_measure_word = BooleanProperty()
+    is_grammatical = BooleanProperty()
+    has_translation = BooleanProperty()
+    
+    def get_categories(self):
+        print(self.character.info(complete=False))
+        
+class EntryType(RectangularIconButtton):
+    the_size=NumericProperty()
+    
+    def choose_icon(self, is_type,icons=['alpha-a-box-outline','alpha-a-box']):
+        return icons[int(is_type)]
+    
+    def get_size(self,is_type,sizes=[0,40]):
+        # return sizes[int(is_type)]
+        return sizes[1]
+        
 class ChD(MDApp):
     platform=platform
     metrics=Metrics
@@ -141,24 +184,35 @@ class ChD(MDApp):
         LabelBase.register(name="CH", fn_regular='DroidSansFallback.ttf')
 
     def build(self):
-        self.wm = WindowManager()
         screens = [
-            # Home(name="home"),
+            Home(name="home"),
             SelectFile(name="selectfile"),
-            NewDict(name="newdict"),
-            FileChooser(name="filechooser")
+            FileChooser(name="filechooser"),
+            ViewDict(name="newdict"),
         ]
+        interface = Interface()
+        self.wm = interface.wm
+        # print(dir(self.wm))
         for screen in screens:
             self.wm.add_widget(screen)
-        return self.wm
+        return interface
     
-    def switch_screen(self,screen_name,direction="right"):
+    def switch_screen(self,screen_name,direction="right",remember=True):
         if screen_name != self.wm.current \
             and screen_name in self.wm.screen_names:
+                if remember: self.wm.previous_screen_names.append(self.wm.current)
+                if screen_name=='home': self.wm.previous_screen_names=[]
                 self.wm.current = screen_name
                 self.wm.transition.direction = direction
                 return self.wm.current_screen
     
+    def previous_screen(self,direction='left'):
+        if self.wm.previous_screen_names != []:
+            previous_screen_name=self.wm.previous_screen_names[-1]
+            self.wm.previous_screen_names=self.wm.previous_screen_names[:-1]
+            self.switch_screen(previous_screen_name,direction,remember=False)
+            print(self.wm.previous_screen_names)
+            
     def get_theme_colors(self,style=None,palette=None):
         if style==None: style = self.theme_cls.theme_style
         if palette==None: palette = self.theme_cls.primary_palette

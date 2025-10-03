@@ -4,7 +4,8 @@ from kivy.utils import platform
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, NumericProperty, BooleanProperty
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.dialog.dialog import MDDialog
-from screens.templates import MyScreen
+from templates import MyScreen, ErrorMsg
+
 
 class MyAccessDialog(MDDialog):
     error_msg=StringProperty('text')
@@ -34,7 +35,7 @@ class FileOpener(MDBoxLayout):
         if platform in ["linux","android"]: 
             defaultp = ChD.get_running_app().wm.current_screen.dict_dir
             sc = ChD.get_running_app().switch_screen('filechooser')
-            print(defaultp,'\n\n',os.listdir(defaultp))
+            # print(defaultp,'\n\n',os.listdir(defaultp))
             sc.namelist = os.listdir(defaultp)
             sc.directory = defaultp
             sc.set_list_items()
@@ -50,20 +51,20 @@ class FileOpener(MDBoxLayout):
         self.text = str(self.selection[0])
         
 class SelectFile(MyScreen):
-    dict_file=StringProperty("")
-    dict_dir=StringProperty("")
-    dict_name=StringProperty("")
+    dict_dir=StringProperty()
+    dict_file=StringProperty()
+    dict_name=StringProperty()
     default=True
     file_name=""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if platform=="linux" and self.default:
+        if platform=="linux":
             self.dict_dir="/media/selina/SHARE/MyProjects/Pleco/"
-            self.dict_file=self.dict_dir+"test.txt"
-            self.dict_name="test"
-        if platform=="android" and self.default:
+        elif platform=="android":
             self.dict_dir="/storage/emulated/0/Documents/Dictionaries/"
+            
+        if self.default:
             self.dict_file=self.dict_dir+"test.txt"
             self.dict_name="test"
             
@@ -105,9 +106,7 @@ class SelectFile(MyScreen):
             msg=f"Check if this looks like a proper choice. Especially whether this fits the wanted format."
             try:
                 count,first_line=self.count_and_first_line()
-                # print(self.dict_file)
-                # basename=os.path.basename(self.dict_file)
-                print(self.dict_name,self.file_name,title,msg,str(count),first_line)
+                print('First Line:\n',first_line)
                 ConfirmChoice(
                         dict_name=self.dict_name,
                         file_name=self.file_name,
@@ -117,8 +116,8 @@ class SelectFile(MyScreen):
                         first_line=first_line
                 ).open()
             except Exception as err:
-                error=f"{type(err).__name__}: {str(err)}"
-                ErrorMsg(error=error,msg="try something else").open()
+                error=f"{type(err).__name__}"
+                ErrorMsg(error=error,msg=str(err)).open()
                 
         else: 
             if not is_file and not is_name: msg="change the filepath and the name"
@@ -131,8 +130,10 @@ class SelectFile(MyScreen):
         next_screen=ChD.get_running_app().switch_screen("newdict","left")
         next_screen.dict_file=self.dict_file
         next_screen.dict_name=self.dict_name
-
-
+        can_read = next_screen.read_dict_file()
+        if not can_read:
+            ChD.get_running_app().switch_screen('selectfile','right')
+            ErrorMsg(error='ERROR: incompatible file',msg='cannot read file as dictionary').open()
 
 class FileChooser(MyScreen):
     namelist=ListProperty()
@@ -150,14 +151,14 @@ class FileChooser(MyScreen):
         self.rv_scroll.data = []
         if namelist != None and isinstance(namelist,list): 
             self.namelist=namelist
-            print(namelist)
+            # print(namelist)
         for name in self.namelist:
             dataitem=self.create_dataitem(name)
             self.add_list_item(name, dataitem,text=text,search=search)
     def select(self,file):
         path_file=self.directory+file
-        print(path_file)
+        # print(path_file)
         if os.path.isfile(path_file):
             from main import ChD
-            next_screen=ChD.get_running_app().switch_screen("selectfile","right")
+            next_screen=ChD.get_running_app().switch_screen("selectfile","right",remember=False)
             next_screen.dict_file=path_file

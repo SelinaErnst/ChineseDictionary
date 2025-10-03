@@ -1,0 +1,105 @@
+<ViewDict>:
+    rv_scroll: rv_scroll
+    grid: grid
+    MDAnchorLayout:
+        padding: 50
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            MyTitleLabel:
+                anchor_x: "left"
+                text: root.dict_name
+            MDRecycleView:
+                id: rv_scroll
+                viewclass: 'DictionaryEntry'
+                RecycleBoxLayout:
+                    id: grid
+                    orientation: "vertical"
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    default_size_hint: 1, None
+                    default_height: 220
+                    spacing: 10
+
+# <DictionaryEntry>: #MDBoxLayout
+#     theme_bg_color: "Custom"
+#     md_bg_color: app.theme_cls.surfaceBrightColor
+#     padding: 20,0,0,0
+#     ChLabel:
+#         text: root.text
+
+<DictionaryEntry>: #MDCard
+    theme_bg_color: "Custom"
+    md_bg_color: app.theme_cls.surfaceBrightColor
+    padding: 20,20,20,20
+    on_release: root.get_categories()
+    # allow_hover: False
+    MDRelativeLayout:
+        # MDIconButton:
+        #     icon: "circle"
+        #     pos_hint: {"y": 0, "right": 1}
+        #     theme_font_size: "Custom"
+        #     font_size: 20
+        #     size_hint: None, None
+        #     size: 70,70
+        MDBoxLayout:
+            orientation: 'vertical'
+            padding: 20,0,0,0
+            spacing: 0
+            MDBoxLayout:
+                orientation: 'horizontal'
+                spacing: 40
+                size_hint: 0.9, None
+                height: 50
+                ChLabel:
+                    text: root.char_simp
+                    role: 'small'
+                    max_lines: 1
+                    adaptive_width: True
+                    # adaptive_height: True
+                ChLabel:
+                    text: root.char_trad
+                    role: 'small'
+                    max_lines: 1
+                    adaptive_width: True
+                    # adaptive_height: True
+            ChLabel:
+                adaptive_height: True
+                adaptive_height: True
+                text: root.char_pron
+                role: 'small'
+            MDBoxLayout:
+                size_hint_y: None
+                height: 20
+            MDAnchorLayout:
+                md_bg_color: app.theme_cls.primaryColor
+                radius: 20
+                size_hint_y: 1
+                size_hint_x: None
+                width: 3*(1.5*40)+20
+                pos_hint: {'right': 1}
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    adaptive_height: True
+                    padding: 10
+                    EntryType:
+                        icon: self.choose_icon(root.has_translation,['','translate'])
+                        the_size: self.get_size(root.has_translation)
+                    EntryType:
+                        icon: self.choose_icon(root.is_radical,['alpha-r-box-outline','alpha-r-box'])
+                        the_size: self.get_size(root.is_radical)
+                    EntryType:
+                        icon: self.choose_icon(root.is_measure_word,['','scale-unbalanced'])
+                        the_size: self.get_size(root.is_measure_word)
+                    EntryType:
+                        icon: self.choose_icon(root.is_grammatical,['','bookshelf'])
+                        the_size: self.get_size(root.is_grammatical)
+
+<EntryType>:
+    size_hint: None, None
+    font_size: self.the_size
+    theme_font_size: 'Custom'
+    size: self.font_size*1.5, self.font_size
+    theme_icon_color: 'Custom'
+    icon_color: app.theme_cls.onPrimaryColor
+    allow_hover: False
