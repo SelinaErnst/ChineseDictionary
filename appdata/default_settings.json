@@ -1,0 +1,14 @@
+{
+  "application": "ChD",
+  "theme_style": "Dark",
+  "palette": "Aliceblue",
+  "chinese_font_file": "DroidSansFallback.ttf",
+  "app_directory": {
+    "linux": "/home/selina/Applications/MyApps/",
+    "android": "/storage/emulated/0/ChD/"
+  },
+  "import_directory": {
+    "linux": "/media/selina/SHARE/MyProjects/Pleco/",
+    "android": "/storage/emulated/0/ChD/dictionary_files/"
+  }
+}

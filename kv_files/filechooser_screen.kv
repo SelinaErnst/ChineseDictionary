@@ -12,7 +12,7 @@
                 text: "Choose a file"
             MDRecycleView:
                 id: rv_scroll
-                viewclass: 'CustomListItem'
+                viewclass: 'CustomListFile'
                 RecycleBoxLayout:
                     id: grid
                     orientation: "vertical"
@@ -30,9 +30,9 @@
                 Widget:
                 MDIconButton:
                     icon: "reload"
-                    on_release: root.set_list_items(namelist=os.listdir(root.directory))
+                    on_release: root.set_files(app.dict_dir)
 
-<CustomListItem>:
+<CustomListFile@CustomListItem>:
     theme_bg_color: "Custom"
     md_bg_color: app.theme_cls.surfaceBrightColor
     padding: 20,0,0,0

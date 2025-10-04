@@ -77,7 +77,9 @@ header_dict={
 def map_head(search:str,n=0):
     
     result=[short for short,terms in header_dict.items() if search in terms['opt']]
-    if len(result)==0: print(search,result,n)
+    if len(result)==0: 
+        print('SOMETHING IS WRONG with the entry')
+        print(search,result,n)
     else: return result[0]
 
 def get_symbols(char):
@@ -139,12 +141,15 @@ def read_plecotxt(file:str) -> list:
                             char_entry+=[text]
                 # the assumption: we have exactly one header 
                 # and one info entry (from one line in file) -> len(l)=2
-                new_entry=[char,{text[0]: text[1] for text in char_entry if len(text)==2}] 
+                new_entry=[char,{text[0]: text[1].strip(' ') for text in char_entry if len(text)==2}] 
                 # create list of new_entry: [(charsym,pron),{head:info,...}]
                 pleco_entries.append(new_entry)
+                # print(new_entry)
 
         dict_entry_list=[]
+        number = 0
         for entry in pleco_entries:
+            number+=1
             # each entry looks like: [(char,pron),{head:info,...}]
             meaning=entry[1]
             char,pron=entry[0]
@@ -153,7 +158,9 @@ def read_plecotxt(file:str) -> list:
             clean_entry['CHAR_SIMPL']=simpl
             clean_entry['CHAR_TRADI']=trad
             clean_entry['CHAR_PRON']=pron
-            
+            if all([test == "" for test in [simpl,trad,pron]]):
+                print(f'WARNING: entry number ({number}) does not have proper headers.')
+                continue
             for head,info in meaning.items():
                 if head in header_dict['ANC']['opt']:
                     # for line with head ANC split at 'http' (keep http!)
@@ -184,8 +191,9 @@ def read_plecotxt(file:str) -> list:
                     if clean_elements==[] or clean_elements==['']: clean_elements=None
                     # create dict with all relevant infos 
                     # see header_dict of varients of each head (accounts for writing mistakes)
+                    if map_head(head,info) == 'ORG': clean_elements = clean_elements[0]
                     clean_entry[map_head(head,info)]=clean_elements
-            # create list of all info entries
+            # # create list of all info entries
             dict_entry_list+=[clean_entry]
         return dict_entry_list
             

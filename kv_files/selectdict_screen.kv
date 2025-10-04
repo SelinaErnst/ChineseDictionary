@@ -1,19 +1,26 @@
 <SelectFile>: #MDScreen
     id: "selectfile"
     MDAnchorLayout: 
+        anchor_y: 'top'
+        padding: 50,50,50,0
         MDBoxLayout:
+            radius: 20
             md_bg_color: app.theme_cls.surfaceBrightColor
             orientation: 'vertical'
-            size_hint: None,None
+            size_hint_x: 1
             adaptive_height: True
-            size: 900,500
-            padding: 20
-            spacing: 20
+            # size: 900,500
+            padding: 20,50,20,20
+            spacing: 50
             MyTitleLabel:
                 text: f"Add a new dictionary"
             FileOpener:
                 id: file_entry
+                hint: "Choose a file"
+                role: "small"
                 text: root.dict_file
+                press_button: self.choose # function
+                icon: "folder-open"
             EntryField:
                 id: name_entry
                 hint: "Choose a name"
@@ -27,49 +34,9 @@
                     icon: "plus"    
                     on_press: root.confirm()
                     style: "elevated"
+                    radius: 20
 
-<FileOpener>:
-    hint: "Choose a file"
-    role: "small"
-    adaptive_height: True
-    padding: 0,0,0,0
-
-    MDTextField:
-        id: label
-        text: root.text
-        font_style: "Label"
-        role: root.role
-        mode: "filled"
-        MDTextFieldHintText:
-            text: root.hint
-        # MDTextFieldTrailingIcon:
-            # id: reload
-            # icon: "reload"c
-            # theme_font_size: "Custom"
-            # font_size: sp(15)
-
-    MDIconButton:
-        id: fileopener
-        size_hint_y: 1
-        size_hint_x: None
-        width: self.height
-        radius: 0
-        allow_hover: False
-        ripple_effect: False
-        icon: "folder-open"
-        on_release: root.choose()
-
-<ReloadButton@MDIconButton>:
-    icon: "reload"
-    theme_font_size: "Custom"
-    font_size: sp(10)
-    allow_hover: False
-    ripple_effect: False
-    size_hint_y: 1
-    width: self.height*0.4
-    on_release: self.parent.update()
-
-<ConfirmChoice>:
+<ConfirmChoice>: #MDDialog
     MDDialogHeadlineText:
         text: root.title
     MDDialogSupportingText:
@@ -79,38 +46,36 @@
         orientation: "vertical"
         MDDivider:
         DialogLines:
-            head: "dictionary file:"
+            head: "File"
             MDLabel:
                 adaptive_width: True
                 text: root.file_name
                 role: "small"
                 pos_hint: {"x":0}
         DialogLines:
-            head: "dictionary name:"
+            head: "Name"
             MDLabel:
                 adaptive_width: True
                 text: root.dict_name
                 role: "small"
                 pos_hint: {"x":0}
         DialogLines:
-            head: "number of entries:"
+            head: "Entries"
             MDLabel:
                 adaptive_width: True
                 text: root.count
                 role: "small"
                 pos_hint: {"x":0}
-        # DialogLines:
-        #     head: "first line:"
-        #     MDScrollView:
-        #         do_scroll_x: False
-        #         ChLabel:
-        #             text: root.first_line
-        #             size_hint_y: None
-        #             height: self.texture_size[1]
-        #             text_size: self.width, None
-        #             theme_font_size: "Custom"
-        #             font_size: sp(7)
         MDDivider:
+        ChLabel:
+            text: root.first_line
+            theme_font_size: 'Custom'
+            font_size: sp(9)
+            shorten: True
+            valign: 'center'
+            adaptive_height: True
+            padding: 20,20,0,0
+
     MDDialogButtonContainer:
         Widget:
         MyIconTextButton:
@@ -135,7 +100,11 @@
     spacing: 30
     MDLabel:
         name: "head"
-        adaptive_width: True
+        # adaptive_width: True
+        size_hint_x: None
+        width: 200
         text: root.head
         role: "small"
+
+
     

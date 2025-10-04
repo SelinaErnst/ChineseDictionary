@@ -8,23 +8,25 @@
         theme_bg_color: "Custom"
         md_bg_color: app.theme_cls.surfaceBrightColor
         size_hint_y: None
-        height: 100
+        height: 150
         MDTopAppBarLeadingButtonContainer:
             MDActionTopAppBarButton:
                 icon: "menu"
                 size_hint: None, None
-                size: 80, 80
+                size: 120, 120
                 on_release: nav_drawer.set_state("toggle")
                 
         MDTopAppBarTitle:
             text: "Chinese Dictionary"
             halign: "center"
             role: 'medium'
+            
         MDTopAppBarTrailingButtonContainer:
             MDActionTopAppBarButton:
                 icon: "dots-vertical"
                 size_hint: None, None
-                size: 80, 80
+                size: 120, 120
+
     MDNavigationLayout:
         WindowManager:
             id: wm
@@ -45,15 +47,17 @@
                     text: "Go Back"
                 NavigationButton:
                     on_release: 
-                        app.switch_screen('home')
+                        app.switch_screen('home','down')
                         nav_drawer.set_state("toggle")
                     icon: "home"
                     text: "Home"
                 NavigationButton:
                     on_release: 
-                        app.switch_screen('home')
+                        app.switch_screen('settings','down')
                         nav_drawer.set_state("toggle")
                     icon: "cog-outline"
                     text: "Settings"
                 MDNavigationDrawerDivider:
             
+                # MDNavigationDrawerLabel:
+                    # text: app.get_metrics()

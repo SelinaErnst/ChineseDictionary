@@ -49,10 +49,16 @@ class dictionary():
         elif isinstance(index,tuple) and index in self.__uniqs:
             return [c for c in self.characters if c.uniq == index][0]  
         elif isinstance(index,str):
+            print(index,len([c for c in self.characters if index in c.uniq]))
             # will give a list of possibly matching characters
-            return dictionary([c for c in self.characters if index in c.uniq])
+            characters = [c for c in self.characters if index in c.uniq]
+            return dictionary(name=self.name,characters=characters)
+        elif isinstance(index,slice):
+            characters = [c for c in self.characters[index.start:index.stop]]
+            return dictionary(name=self.name,characters=characters)
         else:
-            print('dictionary cannot work with index')
+            print('WARNING: dictionary cannot work with index')
+        
     def __contains__(self, character):
         if character in self.characters or character in self.__uniqs:
             return True
@@ -85,7 +91,7 @@ class dictionary():
                     components=char['COMP'],
                     mneomics=char['MNE'],
                     usage=char['USE'],
-                    origin=char['ORG'][0],
+                    origin=char['ORG'],
                     ancient=char['ANC'],
                     link=char['LIN']
                     )

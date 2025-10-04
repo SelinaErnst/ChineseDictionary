@@ -3,7 +3,7 @@
     radius: 40
     theme_width: "Custom"
     height: self.ids.label.texture_size[1]
-    width: self.ids.icon.texture_size[0]+self.ids.label.texture_size[0]
+    width: (self.ids.icon.texture_size[0]+self.ids.label.texture_size[0])
     MDButtonIcon: 
         pos_hint: {'x': 0,'center_y': 0.5}
         id: icon
@@ -23,6 +23,8 @@
         icon: root.icon
     MDButtonText: 
         text: root.text
+        role: 'large'
+        padding: 50
 
 <MyTextButton>: #MDButton
     radius: 40
@@ -32,34 +34,53 @@
         pos_hint: {'center_x': 0.5,'center_y': 0.5}
         adaptive_width: True
         padding: root.padding
+        
 
 <MyFlexTextButton@MyTextButton>:
     theme_width: "Custom"
     height: self.ids.label.texture_size[1]
     width: self.ids.label.texture_size[0]
 
-
 <RectangularIconButtton>: #MDIconButton
     ripple_effect: False
 
+
 <EntryField>: #MDBoxLayout
+    id: label
+    font_style: "Label"
+    mode: "filled"
+    theme_bg_color: 'Custom'
+    fill_color_normal: app.theme_cls.surfaceBrightColor
+    fill_color_focus: app.theme_cls.surfaceVariantColor
+    height: 200
+    MDTextFieldHintText:
+        text: root.hint
+
+<EntryFieldWithIcon>: #MDBoxLayout
     adaptive_height: True
     padding: 0,0,0,0
-    MDTextField:
+
+    EntryField:
         id: label
         text: root.text
-        font_style: "Label"
         role: root.role
-        mode: "filled"
-        MDTextFieldHintText:
-            text: root.hint
+        hint: root.hint
+        is_correct: root.is_correct
+
+    MDIconButton:
+        size_hint_y: 1
+        size_hint_x: None
+        width: self.height
+        radius: 0
+        allow_hover: False
+        ripple_effect: False
+        icon: root.icon
+        on_release: root.press_button()
 
 <MyLabel@MDLabel>: #MDAnchorLayout
     font_style: "Label"
     role: "medium"
     adaptive_size: True
-    # md_bg_color: app.theme_cls.onErrorColor
-
 
 <MyTitleLabel>: #MDAnchorLayout
     size_hint_y: None
@@ -75,6 +96,12 @@
     theme_bg_color: "Custom"
     md_bg_color: app.theme_cls.surfaceDimColor
         
+<BottomField@MDAnchorLayout>:
+    size_hint: 1, None
+    height: 250
+    anchor_y: 'center'
+    theme_bg_color: 'Custom'
+
 <ErrorMsg>:
     md_bg_color: root.theme_cls.onErrorContainerColor
     orientation: "horizontal"
@@ -94,4 +121,19 @@
         pos_hint: {"center_x": 0.5}
         icon: "close"
         text_color: root.theme_cls.onErrorColor
+        on_release: root.dismiss()
+
+
+<AttentionMsg>:
+    orientation: "horizontal"
+    MDSnackbarText:
+        text: root.attention
+        max_lines: 3
+    MDSnackbarSupportingText: 
+        text: root.msg 
+        style: "Label"
+        role: "small"
+    MDSnackbarCloseButton:
+        pos_hint: {"center_x": 0.5}
+        icon: "close"
         on_release: root.dismiss()
