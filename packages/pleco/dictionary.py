@@ -1,4 +1,6 @@
 # import pandas as pd
+import json
+import os
 from .loader import read_plecotxt
 from .character import character
 
@@ -49,7 +51,6 @@ class dictionary():
         elif isinstance(index,tuple) and index in self.__uniqs:
             return [c for c in self.characters if c.uniq == index][0]  
         elif isinstance(index,str):
-            print(index,len([c for c in self.characters if index in c.uniq]))
             # will give a list of possibly matching characters
             characters = [c for c in self.characters if index in c.uniq]
             return dictionary(name=self.name,characters=characters)
@@ -64,8 +65,33 @@ class dictionary():
             return True
         else:
             return False
-        
-    def read(self,filename, add=True):
+    
+    def read(self,filename,file_format,add=True):
+        if file_format == 'pleco':
+            return self.read_pleco(filename,add)
+        elif file_format == 'jsonl':
+            if filename.endswith('.jsonl'):
+                return self.read_jsonl(filename,add)
+            else: return False
+            
+    def read_jsonl(self,filename,add=True):
+        try:
+            with open(filename,'r') as file:
+                json_list = list(file)
+            if not add:
+                self.characters=[]
+                self.__uniqs=[]
+            for json_str in json_list:
+                entry=json.loads(json_str)
+                c = character(**entry)
+                if c.uniq not in self.__uniqs:
+                    self.characters.append(c)
+                    self.__uniqs.append(c.uniq)
+            return True
+        except:
+            return False
+                    
+    def read_pleco(self,filename, add=True):
         entrylist=read_plecotxt(filename)
         if entrylist != None:
             if not add: 
@@ -103,19 +129,37 @@ class dictionary():
             return False
     
     
-    def write(self,filename,indices=None,fileformat='pleco'):
-        if fileformat=='pleco':
-            with open(filename,'w') as file:
-                if indices==None:
-                    entrystrings=[c.plecostring() for c in self.characters]
-                else:
-                    if type(indices)==int:
-                        entrystrings=[c.plecostring() for c in self.characters[indices:indices+1]]
-                    elif type(indices)==list:
-                        entrystrings=[c.plecostring() for i,c in enumerate(self.characters) if i in indices]
-                        
+    def write(self,directory,filename=None,indices=None,file_format='pleco',**kwargs):
+        filename = self.name if filename == None else filename
+        entries=self.characters
+        if os.path.isdir(directory):
+            os.makedirs(directory+'dictionaries', exist_ok=True) 
+            directory=directory+'dictionaries/'
+        if indices!=None:
+            if type(indices)==int:
+                entries=[e for e in entries[indices:indices+1]]
+            elif type(indices)==list:
+                entries=[e for i,e in enumerate(entries) if i in indices]
+                
+        if file_format in ['pleco','txt']:
+            components = {k:v for k,v in kwargs if k in ['translation','information','meaning','ancientform','links']}
+            filename = filename+'.txt' if filename == self.name else filename
+            with open(directory+filename,'w') as file:
+                entrystrings=[
+                    e.plecostring(**components)
+                    for e in entries]
                 file.write('\n'.join(entrystrings))
-        # elif fileformat=='csv':
+                
+        elif file_format=='jsonl':
+            filename = filename+'.jsonl' if filename == self.name else filename
+            if filename.endswith('.jsonl'):
+                print(f'SAVE file: {directory+filename}')
+                with open(directory+filename,'w') as outfile:
+                    for e in entries:
+                        json.dump(e.to_dict(), outfile)
+                        outfile.write('\n')
+                        
+            # elif file_format=='csv':
         #     df=pd.DataFrame([c.d.everything for c in self.characters])
         #     df.to_csv(filename)
         else:

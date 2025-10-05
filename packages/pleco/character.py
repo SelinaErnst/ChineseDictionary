@@ -73,7 +73,8 @@ class character():
         information=True,
         meaning=True,
         ancientform=True,
-        links=True):
+        links=True
+        ):
         string=''
         if translation: string+=self.printer.translation()
         if information: string+=self.printer.information()

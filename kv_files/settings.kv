@@ -52,34 +52,6 @@
                 style: 'filled'
                 on_release: root.save_settings()
             
-<ShowOptions>:
-    rv_scroll: rv_scroll
-    MDDialogHeadlineText:
-        text: root.title 
-    MDDialogSupportingText:
-        text: root.support_text
-        halign: 'left'
-    MDDialogContentContainer:
-        # orientation: 'vertical'
-        # MDDivider:
-        MDBoxLayout:
-            size_hint: 1, None
-            height: root.list_height
-            MDRecycleView:
-                id: rv_scroll
-                viewclass: root.itemclass
-                RecycleBoxLayout:
-                    orientation: "vertical"
-                    size_hint: 1, None
-                    height: self.minimum_height
-                    default_size_hint: 1, None
-                    spacing: 10
-    MDDialogButtonContainer:
-        Widget:
-        MDIconButton:
-            icon: "close"
-            on_release: root.dismiss()
-
                     
 <PaletteItem>:
     theme_bg_color: "Custom"
@@ -136,6 +108,3 @@
 
 <ThemeItem@MyIconTextButton>: 
     on_release: app.apply_styles(self.text)
-    style: 'text'
-    theme_bg_color: "Custom"
-    md_bg_color: app.theme_cls.surfaceBrightColor

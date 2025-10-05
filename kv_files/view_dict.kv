@@ -21,6 +21,13 @@
                     default_size_hint: 1, None
                     default_height: 2*(1.75*60+10)+2*20
                     spacing: 10
+    BottomField:
+        # theme_bg_color: 'Custom'
+        # md_bg_color: 'red'
+        MyTextButton:   
+            text: 'Save Dictionary'
+            style: 'filled'
+            on_release: root.save_dictionary()
 
 <DictionaryEntry>: #CustomListItem
     orientation: 'horizontal'
@@ -29,8 +36,7 @@
     radius: 20
     spacing: 10
     padding: 20,20,20,20
-    # on_release: self.get_categories()
-    on_release: app.test(len(root.char_simp))
+    on_release: self.get_categories()
     MDStackLayout:
         spacing: 10
         MDBoxLayout:
@@ -61,7 +67,7 @@
             font_size: sp(9)
             theme_line_height: 'Custom'
             line_height: 0.8
-
+    
     MDBoxLayout:
         md_bg_color: app.theme_cls.surfaceDimColor
         radius: 20

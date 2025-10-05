@@ -13,21 +13,32 @@
             padding: 20,50,20,20
             spacing: 50
             MyTitleLabel:
-                text: f"Add a new dictionary"
+                text: f"Open a dictionary"
+            EntryField:
+                id: name_entry
+                hint: "Choose a name"
+                role: "medium"
+                text: root.dict_name
+                is_correct: root.check_name
             FileOpener:
                 id: file_entry
                 hint: "Choose a file"
                 role: "small"
                 text: root.dict_file
+                file_format: root.file_format
                 press_button: self.choose # function
                 icon: "folder-open"
-            EntryField:
-                id: name_entry
-                hint: "Choose a name"
-                role: "large"
-                text: root.dict_name
+            EntryFieldWithIcon:
+                id: file_format
+                hint: "File format"
+                role: "medium"
+                text: root.file_format
+                press_button: root.show_file_formats
+                is_correct: root.check_file_format
+                icon: 'information'
             MDBoxLayout:
                 adaptive_height: True
+                spacing: 20
                 Widget:
                 MyIconTextButton:
                     text: "Add"
@@ -50,6 +61,13 @@
             MDLabel:
                 adaptive_width: True
                 text: root.file_name
+                role: "small"
+                pos_hint: {"x":0}
+        DialogLines:
+            head: "Format"
+            MDLabel:
+                adaptive_width: True
+                text: root.file_format
                 role: "small"
                 pos_hint: {"x":0}
         DialogLines:
@@ -93,7 +111,6 @@
                 root.dismiss()
         Widget:
 
-
 <DialogLines>:
     orientation: "horizontal"
     adaptive_height: True
@@ -106,5 +123,6 @@
         text: root.head
         role: "small"
 
-
-    
+<FileFormatItem@MyFlexTextButton>:
+    on_release: app.wm.current_screen.select_file_format(self.text)
+        

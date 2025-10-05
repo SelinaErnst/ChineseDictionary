@@ -1,7 +1,7 @@
 from kivy.utils import platform
 from packages.pleco import dictionary
 
-from templates import MyScreen, RectangularIconButtton, CustomListItem
+from templates import MyScreen, RectangularIconButtton, CustomListItem, AttentionMsg
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, NumericProperty, BooleanProperty
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.anchorlayout import MDAnchorLayout
@@ -18,11 +18,11 @@ class ViewDict(MyScreen):
             dict_dir="/media/selina/SHARE/MyProjects/Pleco/"
             self.dict_file=dict_dir+"plecoformat.txt"
             self.dict_name="Test"
-            self.read_dict_file()
+            self.read_dict_file('pleco')
                 
-    def read_dict_file(self):
+    def read_dict_file(self,file_format):
         self.empty_dict()
-        can_read = self.dictionary.read(self.dict_file,add=False)
+        can_read = self.dictionary.read(self.dict_file,file_format=file_format,add=False)
         if can_read:
             self.set_list_items(namelist=self.dictionary.get_simple_list())
         return can_read
@@ -64,6 +64,13 @@ class ViewDict(MyScreen):
             dataitem=self.create_dataitem(character)
             self.add_list_item(dataitem,text=text,search=search)
 
+    def save_dictionary(self):
+        from main import ChD
+        app = ChD.get_running_app()
+        app_directory = app.get_setting('app_directory')
+        self.dictionary.write(directory=app_directory,file_format='jsonl')
+        file_path=app_directory+'dictionaries/'+self.dict_name
+        AttentionMsg(attention='File was created',msg=f'The dictionary {self.dict_name} was stored as {file_path}.jsonl').open()
 
 class DictionaryEntry(CustomListItem):
     text = StringProperty()
@@ -78,7 +85,7 @@ class DictionaryEntry(CustomListItem):
     translation = StringProperty()
     
     def get_categories(self):
-        print(self.character.info(complete=False))
+        print(self.character,self.character.info(complete=False))
         
 class EntryType(MDIconButton):
     the_size=NumericProperty()

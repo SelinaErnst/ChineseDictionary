@@ -147,7 +147,7 @@ class ChD(MDApp):
             
     def build(self):
         default=False
-        default=True
+        # default=True
         screens = [
             Home(name="home"),
             SelectFile(name="selectfile", default=default),
@@ -175,7 +175,7 @@ class ChD(MDApp):
     
     def load_settings(self):
         default_settings_file = "appdata/default_settings.json" 
-        user_settings_file = self.get_setting('app_directory',default=True)+'.config'
+        user_settings_file = self.get_setting('app_directory',default=True)+'.config/settings.json'
         settings_file = user_settings_file if os.path.isfile(user_settings_file) else default_settings_file
         self.settings = load_json(settings_file)
     
