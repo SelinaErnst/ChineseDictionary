@@ -1,0 +1,39 @@
+<ChLabel>:
+    theme_font_name: "Custom"
+    font_name:"CH"
+
+<AnchoredLabel>: #MDAnchorLayout
+    label:label
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceBrightColor
+    radius: 20
+    padding: 20
+    MDLabel:
+        id:label
+        text: root.text
+        font_style: root.font_style
+        role: root.role
+        # md_bg_color: 'red'
+
+<TitleLabel>: #AnchoredLabel
+    size_hint_y: None
+    font_style: "Title"
+    role: "medium"
+    height: 100
+    md_bg_color: app.theme_cls.transparentColor
+
+<MultiLineLabel>: #MDAnchorLayout
+    label:label
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceBrightColor
+    radius: 20
+    padding: 20
+    size_hint_y: None
+    height: label.height+2*20
+
+    MDLabel:
+        id:label
+        text: root.text
+        font_style: root.font_style
+        role: root.role
+        adaptive_height: True

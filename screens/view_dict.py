@@ -1,7 +1,8 @@
 from kivy.utils import platform
 from packages.pleco import dictionary
+from packages.kivymd_templates.screens import MyScreen
+from packages.kivymd_templates.snackbars import AttentionMsg
 
-from templates import MyScreen, RectangularIconButtton, CustomListItem, AttentionMsg
 from kivy.properties import ObjectProperty, StringProperty, ListProperty, NumericProperty, BooleanProperty
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.anchorlayout import MDAnchorLayout
@@ -59,7 +60,6 @@ class ViewDict(MyScreen):
         self.rv_scroll.data = []
         if namelist != None and isinstance(namelist,list): 
             self.namelist=namelist
-        # for name in self.namelist:
         for character in self.dictionary:
             dataitem=self.create_dataitem(character)
             self.add_list_item(dataitem,text=text,search=search)
@@ -72,31 +72,5 @@ class ViewDict(MyScreen):
         file_path=app_directory+'dictionaries/'+self.dict_name
         AttentionMsg(attention='File was created',msg=f'The dictionary {self.dict_name} was stored as {file_path}.jsonl').open()
 
-class DictionaryEntry(CustomListItem):
-    text = StringProperty()
-    char_simp = StringProperty()
-    char_trad = StringProperty()
-    char_pron = StringProperty()
-    character = ObjectProperty()
-    is_radical = BooleanProperty()
-    is_measure_word = BooleanProperty()
-    is_grammatical = BooleanProperty()
-    has_translation = BooleanProperty()
-    translation = StringProperty()
-    
-    def get_categories(self):
-        print(self.character,self.character.info(complete=False))
-        
-class EntryType(MDIconButton):
-    the_size=NumericProperty()
-    
-    def choose_icon(self, is_type,icons=['alpha-a-box-outline','alpha-a-box']):
-        return icons[int(is_type)]
-    
-    def get_size(self,is_type,sizes=[0,40]):
-        return sizes[int(is_type)]
-        # return sizes[1]
-    
-class EntryInfo(MDAnchorLayout):
-    the_size=NumericProperty()
+
     

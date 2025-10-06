@@ -1,0 +1,25 @@
+
+<MyScreen>: #Screen
+    theme_bg_color: "Custom"
+    md_bg_color: app.theme_cls.surfaceDimColor
+
+<Home>: #MyScreen
+    id: "home"
+    MDAnchorLayout:  
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 50
+            adaptive_height: True
+            adaptive_width: True
+            RigidIconTextButton: 
+                text: "New Dictionary"
+                icon: 'plus'
+                style: 'filled'
+                padding: 50
+                width: 600
+                on_release: app.switch_screen("selectfile","left")
+            RigidTextButton: 
+                text: "Favorites"
+                style: 'filled'
+                padding: 50
+                width: 600

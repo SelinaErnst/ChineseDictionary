@@ -1,0 +1,17 @@
+<BottomField>: #MDAnchorLayout
+    size_hint: 1, None
+    anchor_y: 'center'
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.transparentColor
+
+<BottomFieldButton>: #BottomField
+    height: 250
+    MDBoxLayout:
+        adaptive_height: True
+        adaptive_width: True
+        RigidTextButton:
+            text: root.text
+            style: root.style
+            on_release: root.press_button()
+            padding: 50
+            width: 500

@@ -1,8 +1,9 @@
 {
   "application": "ChD",
   "theme_style": "Dark",
-  "palette": "Aqua",
+  "palette": "Lavender",
   "chinese_font_file": "DroidSansFallback.ttf",
+  "access_granted": true,
   "app_directory": "/home/selina/Applications/MyApps/ChineseDictionary/",
   "import_directory": "/media/selina/SHARE/MyProjects/Pleco/"
 }

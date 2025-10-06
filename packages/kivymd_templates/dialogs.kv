@@ -1,0 +1,92 @@
+<MyDialog>: #MDDialog
+    radius: 20,20,20,20
+    MDDialogHeadlineText:
+        text: root.title 
+    MDDialogSupportingText:
+        text: root.support_text
+        halign: 'left'
+        role: 'small'
+
+<ConfirmChoice>: #MyDialog
+    MDDialogContentContainer:
+        orientation: "vertical"
+        MDDivider:
+        TableRow:
+            head: "File"
+            content: root.file_name
+        TableRow:
+            head: "Format"
+            content: root.file_format
+        TableRow:
+            head: "Name"
+            content: root.dict_name
+        TableRow:
+            head: "Entries"
+            content: root.count
+        MDDivider:
+        ChLabel:
+            text: root.first_line
+            theme_font_size: 'Custom'
+            font_size: sp(9)
+            shorten: True
+            valign: 'center'
+            adaptive_height: True
+            padding: 20,20,0,0
+
+    MakeDecision:
+        dismiss_func:  root.dismiss
+        accept_func: app.wm.current_screen.continue_on
+    
+<MakeDecision>: #MDDialogButtonContainer
+    Widget:
+    RigidIconTextButton:
+        width: 350
+        icon: root.deny_icon
+        text: root.deny_text
+        style: "text"
+        on_release: root.dismiss_func()
+    Widget:
+    RigidIconTextButton:
+        width: 350
+        icon: root.confirm_icon
+        text: root.confirm_text
+        style: "text"
+        on_release: 
+            root.accept_func()
+            root.dismiss_func()
+    Widget:
+
+<GrantAccess@MyDialog>:
+    title: 'Grant access to storage'
+
+    MakeDecision:
+        deny_text: root.deny_text
+        confirm_text: 'Yes'
+        dismiss_func: root.permission_denied
+        accept_func: root.permissions_external_storage
+
+
+<ShowOptions>: #MyDialog
+    rv_scroll: rv_scroll
+    MDDialogContentContainer:
+        MDBoxLayout:
+            size_hint: 1, None
+            height: root.list_height
+            MDRecycleView:
+                id: rv_scroll
+                viewclass: root.itemclass
+                RecycleBoxLayout:
+                    orientation: "vertical"
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    default_size_hint: 1, None
+                    spacing: 10
+    MDDialogButtonContainer:
+        Widget:
+        MDIconButton:
+            icon: "close"
+            on_release: root.dismiss()
+
+<ShowPaletteOptions>: #ShowOptions
+
+

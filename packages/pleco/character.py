@@ -8,7 +8,7 @@ class character():
         self.entry=entry(**kwargs)
         self.printer=plecoprinter(self.entry)   
         self.uniq=(self.entry.simple,self.entry.traditional,self.entry.pronounciation)
-        self.__categories=None
+        # self.__categories=None
         
     def __repr__(self):
         u=['{0:<10}'.format(e) for e in self.uniq]
@@ -65,9 +65,10 @@ class character():
         valid_category_names = ['english','german']
         return bool(set(self.get_existing_categories()) & set(valid_category_names))
    
-    def choose_entry(self,category):
-        return self.entry.__dict__[category]
-    
+    def get_property(self,category):
+        if category in self.entry.categories:
+            return self.entry.__dict__[category]
+        
     def plecostring(self,
         translation=True,
         information=True,

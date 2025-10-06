@@ -1,0 +1,15 @@
+{
+  "application": "ChD",
+  "theme_style": "Dark",
+  "palette": "Aliceblue",
+  "chinese_font_file": "DroidSansFallback.ttf",
+  "access_granted": false,
+  "app_directory": {
+    "linux": "./",
+    "android": "/storage/emulated/0/ChD/"
+  },
+  "import_directory": {
+    "linux": "./appdata/examples/",
+    "android": "./appdata/examples/"
+  }
+}

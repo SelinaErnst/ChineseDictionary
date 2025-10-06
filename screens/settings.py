@@ -1,59 +1,7 @@
-from kivy.properties import (
-    ObjectProperty, 
-    StringProperty, 
-    ListProperty, 
-    NumericProperty, 
-    BooleanProperty, 
-    DictProperty,
-    ColorProperty,
-    BooleanProperty
-    )
-from kivymd.uix.dialog.dialog import MDDialog
-from templates import (
-    MyScreen, 
-    EntryFieldWithIcon, 
-    ErrorMsg, 
-    CustomListItem,
-    AttentionMsg,
-    ShowOptions,
-    )
-from kivy.utils import hex_colormap
+from packages.kivymd_templates.snackbars import ErrorMsg, AttentionMsg
+from packages.kivymd_templates.screens import MyScreen
 
 import os
-import json
-
-
-class Setting(EntryFieldWithIcon):
-    icon = StringProperty()
-    options = ListProperty()
-    icons = ListProperty()
-    itemclass = StringProperty()
-    list_height = NumericProperty()
-    support_text = StringProperty()
-    
-    def show_options(self):
-        # update if any changes were made outside of app
-        self.children[1]._check_text()
-        # information for valid entries
-        ShowOptions(
-            title=self.hint,
-            support_text=self.support_text,
-            options=self.options,
-            icons=self.icons,
-            itemclass=self.itemclass,
-            list_height=self.list_height
-            ).open()
-    
-    def get_palettes(self):
-        return [palette.capitalize() for palette in hex_colormap.keys()]
-
-    # overwriting (dont change name!)
-    def is_correct(self):
-        if 'directory' in self.hint.lower():
-            correct_syntax = self.ids.label.text.endswith('/')
-            return os.path.isdir(self.ids.label.text) and correct_syntax
-        else:
-            return self.ids.label.text in self.options
 
 class Settings(MyScreen):
     
@@ -61,6 +9,40 @@ class Settings(MyScreen):
         super().__init__(*args, **kwargs)
         self.settings = settings
         
+    
+        
+    def update_settings(self):
+        updater = {
+            'theme_style': self.get_theme_style,
+            'palette': self.get_palette,
+            'app_directory': self.get_app_directory,
+            'import_directory': self.get_import_directory,
+        }
+        for setting in self.ids.keys():
+            # do the updating
+            key = updater[setting]()
+            self.ids[setting].ids.label.text = key
+            self.settings[setting] = key
+
+    def get_theme_style(self):
+        return self.theme_cls.theme_style
+    
+    def get_palette(self):
+        return self.theme_cls.primary_palette
+    
+    def get_app_directory(self):
+        from main import ChD
+        return ChD.get_running_app().get_setting('app_directory',default=True)
+    
+    def set_directory(self,setting,directory):
+        if os.path.isdir(directory):
+            self.ids[setting].ids.label.text = directory
+            
+    
+    def get_import_directory(self):
+        from main import ChD
+        return ChD.get_running_app().get_setting('import_directory')
+    
     def save_settings(self):
         from main import ChD, dump_json
         new_settings=self.settings
@@ -81,39 +63,26 @@ class Settings(MyScreen):
             os.makedirs(config_directory, exist_ok=True)
             # save user settings (without app_directory)
             app = ChD.get_running_app()
-            dump_json(self.settings,config_directory+"settings.json")
-            default_settings = app.load_default_settings()
-            if app_directory != app.get_setting('app_directory',settings=default_settings):
-                default_settings['app_directory'][app.platform] = app_directory
-                dump_json(default_settings,"appdata/default_settings.json")
-                
-            # change variable 
-            app.dict_dir =  app.get_setting('import_directory')
-            AttentionMsg(attention='File was created',msg=f'User settings were stored in {config_directory}settings.json').open()
+            app.theme_cls.theme_style = new_settings['theme_style']
+            app.theme_cls.primary_palette = new_settings['palette']
+            
+            try:
+                dump_json(self.settings,config_directory+"settings.json")
+                default_settings = app.load_default_settings()
+                default_settings['app_directory'] = app_directory
+                app.save_default_settings(default_settings=default_settings,update=False)
+                app.dict_dir =  app.get_setting('import_directory')
+                AttentionMsg(
+                    attention='File was created',
+                    msg=f'User settings were stored in {config_directory}settings.json'
+                    ).open()
+            except Exception as err:
+                error=f"{type(err).__name__}"
+                ErrorMsg(error=error,msg=str(err)).open()
         else:
             incorrect=[k for k,v in correctness.items() if not v]
             incorrect_entries=', '.join(incorrect)
-            ErrorMsg(msg=f'Cannot save, check settings: {incorrect_entries}').open()
-
-class PaletteItem(CustomListItem):
-    text = StringProperty()
-    color = ColorProperty()
-    color_onea = ColorProperty()
-    color_oneb = ColorProperty()
-    color_onec = ColorProperty()
-    color_oned = ColorProperty()
-    color_onee = ColorProperty()
-    color_onef = ColorProperty()
-    color_oneg = ColorProperty()
-    color_twoa = ColorProperty()
-    color_twob = ColorProperty()
-    color_twoc = ColorProperty()
-    color_twod = ColorProperty()
-    color_twoe = ColorProperty()
-    color_twof = ColorProperty()
-    color_trea = ColorProperty()
-    color_treb = ColorProperty()
-    color_trec = ColorProperty()
-    color_tred = ColorProperty()
-    color_tree = ColorProperty()
-    color_tref = ColorProperty()
+            ErrorMsg(
+                error="Invalid settings",
+                msg=f'Cannot save, check settings: {incorrect_entries}'
+                ).open()

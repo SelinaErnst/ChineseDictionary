@@ -19,7 +19,7 @@ source.include_exts = py,png,jpg,kv,atlas,json,ttf,otf,txt,db,jpeg,ico,mp4,mp3,s
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
-source.include_patterns = assets/*,images/*.png,fonts/*,kv_files/*,colors/*,packages/*,screens/*, appdata/*
+source.include_patterns = assets/*,packages/*,screens/*, appdata/*
 
 # (list) Source files to exclude (let empty to not exclude anything)
 source.exclude_exts = spec
@@ -96,8 +96,8 @@ fullscreen = 0
 #android.presplash_lottie = "path/to/lottie/file.json"
 
 # (str) Adaptive icon of the application (used if Android API level is 26+ at runtime)
-icon.adaptive_foreground.filename = %(source.dir)s/images/app_icon_fg.png
-icon.adaptive_background.filename = %(source.dir)s/images/app_icon_bg.png
+icon.adaptive_foreground.filename = %(source.dir)s/appdata/images/app_icon_fg.png
+icon.adaptive_background.filename = %(source.dir)s/appdata/images/app_icon_bg.png
 
 # (list) Permissions
 # (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
