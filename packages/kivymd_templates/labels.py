@@ -1,8 +1,12 @@
 from kivymd.uix.label import MDLabel
 from kivymd.uix.anchorlayout import MDAnchorLayout
+from kivymd.uix.boxlayout import MDBoxLayout
 
 from kivy.properties import (
     StringProperty, 
+    NumericProperty,
+    ObjectProperty,
+    ListProperty,
     )
 
 from kivy.lang import Builder
@@ -17,14 +21,26 @@ class AnchoredLabel(MDAnchorLayout):
     text=StringProperty()
     font_style=StringProperty('Label')
     role=StringProperty('medium')
+    halign=StringProperty('left')
     # height=NumericProperty(100)
-    anchor_x=StringProperty('center')
     
 class MultiLineLabel(MDAnchorLayout):
     text=StringProperty()
     font_style=StringProperty('Label')
+    theme_font_size=StringProperty('Primary')
+    font_size=NumericProperty()
+    font_name=StringProperty('CH')
+    text_color=ObjectProperty(None)
     role=StringProperty('medium')
-    anchor_x=StringProperty('left')
-
+    label_width=ObjectProperty(None)
+    label_padding=ListProperty([20,0,20,0])
+    label_bg_color=ObjectProperty(None)
+    halign=StringProperty('left')
 class TitleLabel(AnchoredLabel):
     pass
+
+class TitleLabels(MDBoxLayout):
+    left_text=StringProperty()
+    right_text=StringProperty()
+    font_style=StringProperty('Title')
+    role=StringProperty('medium')

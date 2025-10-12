@@ -1,0 +1,32 @@
+
+<ViewDict>:
+    rv_scroll: rv_scroll
+    grid: grid
+    MDAnchorLayout:
+        padding: 25,50,25,50
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            TitleLabels:
+                anchor_x: "left"
+                left_text: root.dict_name
+                right_text: str(root.entry_count)
+                role: 'large'
+            MDRecycleView:
+                id: rv_scroll
+                viewclass: 'DictionaryItem'
+                RecycleBoxLayout:
+                    id: grid
+                    orientation: "vertical"
+                    spacing: 10
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    default_size_hint: 1, None
+                    default_height: 2*(1.75*60+10)+2*20
+
+    BottomFieldButton:
+        id: save_button
+        text: 'Save'
+        style: 'filled'
+        press_button: root.save_dictionary
+    

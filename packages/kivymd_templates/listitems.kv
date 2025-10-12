@@ -38,33 +38,29 @@
     theme_bg_color: "Custom"
     md_bg_color: app.theme_cls.surfaceBrightColor
 
+<MultiLineItem>:
+    md_bg_color: app.theme_cls.surfaceBrightColor
+    radius: 20
+    padding: 20,20,20,20
+    role: 'small'
+    adaptive_height: True
+
 # MultiLineItem
-# CustomListItem
-<DirectoryItem>: #MultiLineItem
+# CustomListItem        
+<DirectoryItem>: #MultiLineItem 
+    theme_font_size: 'Custom'
+    font_size: sp(9)
     on_release: 
         app.wm.current_screen.set_directory(root.setting,root.text)
         app.dismiss_dialog()
-
-    # adaptive_height: True
-    # MDLabel:
-    #     id: label
-    #     text: root.text
-    #     # role: "small"
-    #     # adaptive_height: True
-    #     shorten: True
-    #     theme_font_size: 'Custom'
-    #     font_size: sp(9)
 
 <FileItem@MultiLineItem>: #CustomListItem
     on_release: 
         app.wm.current_screen.select(root.text)
         app.dismiss_dialog()
 
-    # MDLabel:
-        # text: root.text
-        # role: "small"
-
 <PaletteItem>: #CustomListItem
+    padding: 20,0,20,0
     on_release: 
         app.apply_palette(self.text)
         # app.dismiss_dialog()
@@ -74,6 +70,7 @@
         text: root.text
         role: 'small'
     MDGridLayout:
+        radius: 20
         cols: 19
         PaletteColor:
             md_bg_color: root.color_onea

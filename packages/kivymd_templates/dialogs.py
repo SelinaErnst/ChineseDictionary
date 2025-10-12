@@ -26,7 +26,6 @@ from kivy.properties import (
     DictProperty,
     ColorProperty,
     )
-
     
 from kivy.lang import Builder
 import os

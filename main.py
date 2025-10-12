@@ -3,7 +3,6 @@ from pathlib import Path
 import os
 from plyer import filechooser
 from packages.pleco import dictionary
-
 from kivy.utils import platform
 
 # = ––––––––––––– do not put this below kivy packages –––––––––––– = #
@@ -26,86 +25,217 @@ if platform in ["linux","win"]:
     # Window.size = (1700, 1500) 
     # Window.maximize()
     # Window.size = (2560, 1411) # Tab S6
-    # Window.size = (1411, 2560) # Tab S6
-    Window.size = (1080, 2114) # Galaxy S24
-if platform == "android":
-    from jnius import cast
-    from jnius import autoclass
-    from android import mActivity, api_version
-    from kivymd.toast import toast
-    
-from kivy.metrics import Metrics, NUMERIC_FORMATS, dp, sp, inch, dpi2px
-xpix = Window.size[0]
-ypix = Window.size[1]
-xinch = xpix/dpi2px(1,'in')
-yinch = ypix/dpi2px(1,'in')
-diag_inch = (xinch*xinch+yinch*yinch)**.5
-    
-
+    # Window.size = (2114, 1080) # Galaxy S24
+    Window.size = (1411, 2560) # Tab S6
+    # Window.size = (1080, 2114) # Galaxy S24
 # = –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– = #
 
-from screens import (
+from packages.screens import (
     SelectFile, 
-    FileChooser, 
+    DictFileChooser, 
+    DictDirChooser,
     ViewDict, 
     Settings,
     )
 
-from packages.kivymd_templates.screens import MyScreen
-from packages.kivymd_templates.labels import ChLabel
-from packages.kivymd_templates.snackbars import ErrorMsg
-from packages.kivymd_templates.dialogs import GrantAccess, grant_permissions_external_storage
-from packages.kivymd_templates.buttons import FlexTextButton
-from packages.kivymd_templates.layouts import BottomField
-from packages.kivymd_templates.textfield import EntryField, EntryFieldWithIcon
+from packages.kivymd_templates import (
+    MyApp,
+    MyScreen,
+    ObjectProperty,
+    ListProperty,
+    StringProperty,
+    MDBoxLayout,
+    ScreenManager,
+    MDSnackbar,
+    MultiLineLabel
+)
 
-from kivymd.app import MDApp
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivymd.uix.screen import MDScreen, Screen
 from kivy.lang import Builder
 from kivy.resources import resource_add_path
 from kivy.core.text import LabelBase
-from kivy.properties import (
-    ObjectProperty, 
-    StringProperty, 
-    ListProperty, 
-    NumericProperty, 
-    BooleanProperty, 
-    DictProperty,
-    ColorProperty,
-    BooleanProperty
-    )
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.button import Button
-from kivymd.uix.anchorlayout import MDAnchorLayout
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDButton, MDIconButton
-from kivymd.uix.label import MDLabel
-from kivymd.theming import ThemeManager
-from kivymd.uix.filemanager import MDFileManager
-from kivymd.uix.dialog.dialog import MDDialog
-from kivymd.uix.button import MDButton, MDButtonIcon
-from kivymd.uix.snackbar import MDSnackbar, MDSnackbarText
-from kivymd.uix.textfield import MDTextFieldTrailingIcon, MDTextField
-from kivymd.uix.behaviors import RectangularRippleBehavior
-from kivy.uix.behaviors import ButtonBehavior
-from kivymd.uix.card import MDCard, MDCardSwipe
-from kivymd.uix.navigationdrawer import MDNavigationDrawerItem, MDNavigationDrawer
-from kivymd.uix.relativelayout import MDRelativeLayout
-from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.textfield import MDTextField
-from kivymd.uix.recycleview import MDRecycleView
-
-# print([d for d in dir(MDScreen) if "on_" in d and "__" not in d])
-print('CHD')
+from packages.kivymd_templates import print_class
+print_class('MDLabel',search='theme')
 
 KV="""
-
-    
 <ShowCharacter>:
+    MDStackLayout:
+        
+        MDStackLayout:
+            padding: 20,20,20,0
+            spacing: 20
+            adaptive_height: True
+            md_bg_color: app.theme_cls.surfaceBrightColor
+            MDBoxLayout:
+                orientation: 'horizontal'
+                adaptive_height: True
+                spacing: 20
+                MultiLineLabel:
+                    id: simple
+                    padding: 20,0,20,0
+                    text: root.get_property('simple')
+                    label_bg_color: app.theme_cls.onPrimaryContainerColor
+                    text_color: app.theme_cls.onPrimaryColor
+                    role: 'medium'
+                MultiLineLabel:
+                    id: traditional
+                    padding: 20,0,20,0
+                    text: root.get_property('traditional')
+                    label_bg_color: app.theme_cls.onPrimaryContainerColor
+                    text_color: app.theme_cls.onPrimaryColor
+                    role: 'medium'
+            MultiLineLabel:
+                id: pronounciation
+                padding: 20,0,20,0
+                text: root.get_property('pronounciation')
+                theme_font_size: 'Custom'
+                font_size: 7
+        ScrollView:
+            MDStackLayout:
+                id: scroll
+                size_hint: 1, None
+                height: self.minimum_height*1.2
+                padding: 20
+                spacing: 20
+                    
+<ListElement>:
+    label_padding: 20,0,20,0
+    role: 'small'
+    label_width: self.width-50
+    anchor_x: 'right'
+    anchor_y: 'top'
+    label_bg_color: app.theme_cls.surfaceDimColor
+    MDAnchorLayout:
+        md_bg_color:[0,0,0,0]
+        padding: 0,20,0,0
+        anchor_x: 'left'
+        anchor_y: 'top'
+        MDRelativeLayout:
+            md_bg_color: app.theme_cls.onPrimaryContainerColor
+            size_hint: None,None
+            size: 20,20
+            
+<MyList>:
+    head: head
+    bullets: bullets
+    cols: 2
+    size_hint_y: None
+    MDAnchorLayout:
+        anchor_x: 'left'
+        anchor_y: 'top'
+        size_hint_x: None
+        width: 350
+        size_hint_y: None
+        height: bullets.height
+        Head:
+            id: head
+            
+    Bullets:
+        id: bullets
+
+<Head>:
+    label_bg_color: app.theme_cls.onPrimaryContainerColor
+    text_color: app.theme_cls.onPrimaryColor
+    role: 'small'
+    height: 71
+    label_width: self.width-20
+    anchor_x: 'left'
+
+<Bullets>:
+
 
 """
 
+from kivymd.uix.stacklayout import MDStackLayout
+from kivymd.uix.relativelayout import MDRelativeLayout
+from kivymd.uix.anchorlayout import MDAnchorLayout
+from kivymd.uix.gridlayout import MDGridLayout
+
+class Head(MultiLineLabel):
+    pass
+
+class Bullets(MDStackLayout):
+    # results=ListProperty()
+    font_name=StringProperty()
+
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+    
+    def create_bullets(self, results,font_name):
+        for r in results:
+            label=ListElement(text=str(r), font_name=font_name, size_hint=[1,None])
+            self.add_widget(label)
+            
+class MyList(MDGridLayout):
+    def __init__(self,prop,results,*args,**kwargs):
+        self.results=results
+        super().__init__(*args,**kwargs)
+        self.head.text=prop.replace('_',' ').capitalize()
+        
+        # self.ids.scroll.add_widget(head)
+        # self.ids.scroll.add_widget(stack)
+class ShowCharacter(MyScreen):
+    character=ObjectProperty()
+    
+    def __init__(self,*args,**kwargs):
+        from main import ChD
+        self.window_w=ChD.get_running_app().get_window_size()[0]
+        super().__init__(*args,**kwargs)
+        self.build_scroll()
+    
+    def build_scroll(self):
+        self.resize_head()
+        # self.clean_scroll()
+        self.list_translations('english')
+        self.list_translations('german')
+        self.list_translations('measure_word')
+        self.list_translations('radical')
+        self.list_translations('opposite')
+        self.list_translations('strokes_count')
+        self.list_translations('classifier')
+        self.list_translations('variants')
+        self.list_translations('relatives')
+        self.list_translations('words')
+        self.list_translations('others')
+        self.list_translations('dict_entries')
+        self.list_translations('components')
+        self.list_translations('mneomics')
+        self.list_translations('usage')
+        self.list_translations('ancient')
+        self.list_translations('link')
+        self.list_translations('origin')
+        
+        
+    def clean_scroll(self):
+        for c in [c for c in self.ids.scroll.children]:
+            c.clear_widgets()
+            
+    def get_property(self,prop):
+        if self.character != None:
+            existing = self.character.get_existing_categories()
+            if prop in existing:
+                return self.character.get_property(prop)
+    
+    def list_translations(self,prop):
+        if self.character.get_property(prop) != None:
+            results=self.character.get_property(prop)
+            results=results if isinstance(results,list) else [results]
+            font_name = 'CH' if prop!='german' else 'Roboto'
+            t=int(self.window_w/57)
+            heights=[66 if len(str(r)) <= t else int((len(str(r))//t)*66) for r in results ]
+            l=MyList(prop=prop,results=results, height=sum(heights))
+            l.bullets.create_bullets(results=results, font_name=font_name)
+            self.ids.scroll.add_widget(l)
+        else:
+            pass
+            
+    def resize_head(self):
+        for key in ['simple','traditional']:
+            if self.character.get_property(key) == "":
+                self.ids[key].ids.label.height=71
+                
+class ListElement(MultiLineLabel):
+    pass
+                
 def load_json(path):
     with open(path, "r") as f:
         settings = json.load(f)
@@ -131,23 +261,12 @@ class Home(MyScreen):
     
         def __init__(self, *args,**kwargs):
             super().__init__(*args,**kwargs)
-                    
-class ShowCharacter(MyScreen):
-    character=ObjectProperty()
-    
-    def get_property(self,prop):
-        if self.character != None:
-            existing = self.character.get_existing_categories()
-            if prop in existing:
-                return self.character.get_property(prop)
+
         
-class ChD(MDApp):
-    platform=platform
-    metrics=Metrics
+class ChD(MyApp):
     window_size_myphone= (1080, 2114)
-    has_access=False
-    settings=None
-    root_folder='./'
+    # has_access=False
+    # settings=None
     import_dir_example=my_examples['import_directory'][platform]
     app_dir_example=my_examples['app_directory'][platform]
     
@@ -163,15 +282,24 @@ class ChD(MDApp):
     
     def build(self):
         default=False
+        # n=10
+        # d=dictionary('MCD')
+        # d.read_jsonl('/media/selina/SHARE/MyProjects/Pleco/dictionaries/MCD/MCD.jsonl',False)
+        # char_simp, char_trad, char_pron = d[n].uniq
+        # char_string = f'C_{char_simp}_{char_trad}_{char_pron}'
+        # char_screen = ShowCharacter(name=char_string, character = d.characters[n])
         screens = [
+            # char_screen
             Home(name="home"),
             Settings(name='settings',settings=self.settings),
             SelectFile(name="selectfile", default=default),
-            FileChooser(name="filechooser"),
-            ViewDict(name="newdict", default=default),
+            DictFileChooser(name="filechooser"),
+            DictDirChooser(name='selectdict'),
+            ViewDict(name="viewdict", default=default),
         ]
         interface = Interface()
-        self.wm = interface.wm
+        self.add_window_manager(interface.wm)
+        # print(self.wm)    
         for screen in screens:
             self.wm.add_widget(screen)
         if not os.path.isdir(self.get_setting('app_directory')):
@@ -189,12 +317,6 @@ class ChD(MDApp):
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
         
-    def hook_keyboard(self,window,key,*largs):
-        if key == 27:
-            if self.dismiss_dialog():
-                return True
-            return self.previous_screen()
-        return False
     
     def get_setting(self,kind,default=False,settings=None):
         if self.settings != None or settings != None:
@@ -206,6 +328,11 @@ class ChD(MDApp):
                         return settings[kind][platform]
                 else:
                     return settings[kind]
+            elif kind == 'dict_directory':
+                try:
+                    return settings['app_directory']+'dictionaries/'
+                except:
+                    return settings['app_directory'][platform]+'dictionaries/'
         else:
             return ""
     
@@ -241,94 +368,12 @@ class ChD(MDApp):
         self.dict_dir=self.get_setting('import_directory')
         LabelBase.register(name="CH", fn_regular=self.get_setting('chinese_font_file'))
         
-    def switch_screen(self,screen_name,direction,remember=True):
-        current_screen_name = self.wm.current
-        current_direction = self.wm.transition.direction
-        current_screen = self.wm.current_screen
-        if screen_name != current_screen_name \
-            and screen_name in self.wm.screen_names:
-                if self.wm.previous_screen_names != []\
-                    and self.wm.previous_screen_names[-1] == screen_name:
-                    self.wm.previous_screen_names = self.wm.previous_screen_names[:-1]
-                    self.wm.previous_transition_directions = self.wm.previous_transition_directions[:-1]
-                if remember: 
-                    self.wm.previous_screen_names.append(current_screen_name)
-                    self.wm.previous_transition_directions.append(direction)
-                if screen_name=='home': 
-                    self.wm.previous_screen_names=[]
-                    self.wm.previous_transition_directions=[]
-                self.wm.current = screen_name
-                self.wm.transition.direction = direction
-                if current_screen_name.startswith('C'):
-                    self.wm.remove_widget(current_screen)
-                return self.wm.current_screen
-    
-    def previous_screen(self):
-        if self.wm.previous_screen_names != []:
-            previous_screen_name=self.wm.previous_screen_names[-1]
-            previous_direction=self.wm.previous_transition_directions[-1]
-            self.wm.previous_screen_names=self.wm.previous_screen_names[:-1]
-            self.wm.previous_transition_directions=self.wm.previous_transition_directions[:-1]
-            if previous_direction in ['right','left']:
-                direction = 'right' if previous_direction == 'left' else 'left'
-            elif previous_direction in ['up','down']:
-                direction = 'up' if previous_direction == 'down' else 'up'
-            self.switch_screen(previous_screen_name,direction,remember=False)
-            return True
-        else:
-            return False
-        
-    def dismiss_dialog(self):
-        if hasattr(self.wm.current_screen,'dialog') \
-            and self.wm.current_screen.dialog._is_open:
-                self.wm.current_screen.dialog.dismiss()
-                return True
-        else: return False
-        
     def get_theme_colors(self,style=None,palette=None):
         if style==None: style = self.theme_cls.theme_style
         if palette==None: palette = self.theme_cls.primary_palette
         palette_colors = load_json(self.directory+'/appdata/colors/palette_colors.json')
         return palette_colors[style][palette]
-    
-    def get_metrics(self):
-        window_metrics = f"\nwindow size = {Window.size}\ndiagonal = {diag_inch}"
-        metrics = f"\ndensity = {self.metrics.density} \ndpi = {self.metrics.dpi} \nfontscale = {self.metrics.fontscale}"
-        more_metrics = f"\ndp(1) = {dp(1)} \nsp(1) = {sp(1)} \ninch(1) = {inch(1)}"
-        return f"{self.platform}: {window_metrics} {metrics}"
-
-    def get_window_size(self):
-        return Window.size
-    
-    def test(self,msg="TEST"):
-        print(msg)
-
-    def _show_validation_dialog(self):
-        if platform == "android":
-            done=False
-            Environment = autoclass("android.os.Environment")
-            if not Environment.isExternalStorageManager():
-                support_text="To access files on the phone it is required to grant the app access to the storage."
-                deny_text='No'
-            else:
-                done=True
-                support_text="Storage access was already granted."
-                deny_text='Return'
-        elif platform == "linux":
-            done=True
-            support_text=f"For {platform} no further storage access needs to be granted."
-            deny_text='Return'
-
-        self.show_permission_popup = GrantAccess(
-            support_text=support_text, deny_text=deny_text, done=done)
-        self.show_permission_popup.open()
-        
-    def apply_palette(self,palette):
-        self.theme_cls.primary_palette = palette
-        
-    def apply_styles(self,style:str=None):
-        self.theme_cls.theme_style = style
-        
+       
 if __name__=="__main__":
     ChD().run()
 

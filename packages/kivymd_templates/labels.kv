@@ -14,26 +14,78 @@
         font_style: root.font_style
         role: root.role
         # md_bg_color: 'red'
+        halign: root.halign
 
 <TitleLabel>: #AnchoredLabel
     size_hint_y: None
     font_style: "Title"
     role: "medium"
     height: 100
-    md_bg_color: app.theme_cls.transparentColor
+    # md_bg_color: app.theme_cls.transparentColor
+    md_bg_color: app.theme_cls.surfaceDimColor
+
+<TitleLabels>: #MDBoxLayout
+    label:label
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceDimColor
+    radius: 20
+    padding: 20
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: 100
+    MDLabel:
+        id: label
+        text: root.left_text
+        halign: 'left'
+    MDLabel:
+        text: root.right_text
+        halign: 'right'
+        adaptive_width: True
+
+# <MultiLineLabel>: #MDAnchorLayout
+#     label:label
+#     theme_bg_color: 'Custom'
+#     md_bg_color: app.theme_cls.surfaceBrightColor
+#     radius: 20
+#     padding: 20
+#     size_hint_y: None
+#     height: label.height+2*20
+
+#     MDLabel:
+#         id:label
+#         text: root.text
+#         font_style: root.font_style
+#         role: root.role
+#         adaptive_height: True
 
 <MultiLineLabel>: #MDAnchorLayout
     label:label
-    theme_bg_color: 'Custom'
-    md_bg_color: app.theme_cls.surfaceBrightColor
-    radius: 20
-    padding: 20
-    size_hint_y: None
-    height: label.height+2*20
+    padding: 0,0,0,0
+    size_hint: 1, None
+    height: label.height
 
     MDLabel:
         id:label
         text: root.text
+
         font_style: root.font_style
         role: root.role
+        theme_font_size: root.theme_font_size
+        font_size: sp(root.font_size)
+        theme_font_name: "Custom"
+        font_name: root.font_name
+        text_color: self.text_color if root.text_color == None else root.text_color
+        
+        halign: root.halign
+
+        md_bg_color: app.theme_cls.surfaceBrightColor if root.label_bg_color == None else root.label_bg_color
         adaptive_height: True
+        size_hint_x: 1 if root.label_width == None else None
+        width: self.width if root.label_width == None else root.label_width
+
+        padding: root.label_padding
+
+        radius: 20
+
+        allow_copy: True
+        on_copy: app.test((root.height))

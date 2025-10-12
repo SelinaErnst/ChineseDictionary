@@ -81,9 +81,14 @@ class plecoprinter():
         ) 
 
     def ancient_form(self):
-        ancientform=''.join(self.__entry.ancient)
+        ancientform = ''.join(self.__entry.ancient) if isinstance(self.__entry.ancient,list) else self.__entry.ancient
+        ancientform = ancientform if ancientform != None else ""
         return plecoformat('grey',plecoformat('bold','ANCIENT FORM:'))+plecoformat('textbig',f'{ancientform}')
 
     def links(self):
-        zitoolslinks=[plecoformat('link',link) +plecoformat('newline') for link in self.__entry.link]
-        return plecoformat('right',plecoformat('textsmall',''.join(zitoolslinks)))
+        links= self.__entry.link if self.__entry.link != None else []
+        if len(links) > 0:
+            zitoolslinks=[plecoformat('link',link) +plecoformat('newline') for link in links]
+            return plecoformat('right',plecoformat('textsmall',''.join(zitoolslinks)))
+        else:
+            return ""

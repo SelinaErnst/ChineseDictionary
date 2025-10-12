@@ -189,9 +189,8 @@ def read_plecotxt(file:str) -> list:
                     # remove empty list elements (e), remove space from start and end of info entries
                     clean_elements=[e.strip(' ') for e in elements if e!='']
                     if clean_elements==[] or clean_elements==['']: clean_elements=None
+                    if map_head(head,info) in ['ORG','STR']: clean_elements = clean_elements[0]
                     # create dict with all relevant infos 
-                    # see header_dict of varients of each head (accounts for writing mistakes)
-                    if map_head(head,info) == 'ORG': clean_elements = clean_elements[0]
                     clean_entry[map_head(head,info)]=clean_elements
             # # create list of all info entries
             dict_entry_list+=[clean_entry]

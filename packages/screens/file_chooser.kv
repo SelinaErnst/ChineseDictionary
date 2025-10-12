@@ -1,0 +1,64 @@
+<DictDirChooser>:
+    id: 'selectdict'
+    rv_scroll: rv_scroll
+    grid: grid
+    directory: app.get_setting('dict_directory')
+    MDAnchorLayout:
+        padding: 50
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            TitleLabel:
+                # anchor_x: "right"
+                text: "Select a Dictionary"
+            MDRecycleView:
+                id: rv_scroll
+                viewclass: 'FileItem'
+                RecycleBoxLayout:
+                    id: grid
+                    orientation: "vertical"
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    default_size_hint: 1, None
+                    spacing: 10
+
+<DictFileChooser>:
+    id: "filechooser"
+    rv_scroll: rv_scroll
+    grid: grid
+    MDAnchorLayout:
+        padding: 50
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            TitleLabel:
+                anchor_x: "left"
+                text: "Select a file"
+            MultiLineLabel:
+                anchor_x: "left"
+                text: "format:     "+root.file_format
+                label_bg_color: app.theme_cls.primaryContainerColor
+            MultiLineLabel:
+                anchor_x: "left"
+                text: "directory:  "+root.directory
+                label_bg_color: app.theme_cls.primaryContainerColor
+                role: 'small'
+            MDRecycleView:
+                id: rv_scroll
+                viewclass: 'FileItem'
+                RecycleBoxLayout:
+                    id: grid
+                    orientation: "vertical"
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    default_size_hint: 1, None
+                    spacing: 10
+            MDBoxLayout:
+                adaptive_height: True
+                orientation: "horizontal"
+                Widget:
+                MDIconButton:
+                    icon: "reload"
+                    on_release: root.update()
+                    allow_hover: False
+                    ripple_effect: False

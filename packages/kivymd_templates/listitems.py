@@ -1,9 +1,10 @@
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivymd.uix.behaviors import RectangularRippleBehavior
+from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.behaviors import ButtonBehavior
 from kivymd.uix.button import MDIconButton
-from .labels import MultiLineLabel
+from .labels import MultiLineLabel, MDLabel
 
 from kivy.properties import (
     StringProperty, 
@@ -29,7 +30,10 @@ class TableRow(MDBoxLayout):
 class CustomListItem(RectangularRippleBehavior, ButtonBehavior, MDBoxLayout):
     text = StringProperty()
     
-class MultiLineItem(RectangularRippleBehavior,ButtonBehavior,MultiLineLabel):
+class MultiLineItem(RectangularRippleBehavior,ButtonBehavior,MDLabel):
+    # text=StringProperty()
+    # font_style=StringProperty('Label')
+    # role=StringProperty('medium')
     pass
     
 class PaletteItem(CustomListItem):
@@ -70,7 +74,8 @@ class DictionaryItem(CustomListItem):
     is_grammatical = BooleanProperty()
     has_translation = BooleanProperty()
     translation = StringProperty()
-    
+    # callback = ObjectProperty(lambda x: x)
+            
     def see_properties(self):
         from main import ChD, ShowCharacter
         app = ChD.get_running_app()
@@ -79,9 +84,8 @@ class DictionaryItem(CustomListItem):
         app.wm.add_widget(screen)
         app.switch_screen(char_string,'left')
         print(self.character.info())
-        for i,l in screen.ids.items():
-            l.item_list.set_list()
-            
+        # for i,l in screen.ids.items():
+        #     l.item_list.set_list()
         
 class EntryType(MDIconButton):
     the_size=NumericProperty()

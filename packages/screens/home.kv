@@ -1,0 +1,25 @@
+<Home>: #MyScreen
+    id: "home"
+    MDAnchorLayout:  
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 50
+            adaptive_height: True
+            adaptive_width: True
+            RigidIconTextButton: 
+                text: "Select Dictionary"
+                icon: 'bookshelf'
+                style: 'filled'
+                padding: 50
+                width: 650
+                on_release: 
+                    app.switch_screen("selectdict","left")
+                    app.wm.current_screen.directory = app.get_setting('dict_directory')
+                    app.wm.current_screen.set_files()
+            RigidIconTextButton: 
+                text: "New Dictionary"
+                icon: 'plus'
+                style: 'filled'
+                padding: 50
+                width: 650
+                on_release: app.switch_screen("selectfile","left")

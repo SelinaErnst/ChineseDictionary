@@ -3,6 +3,7 @@ import json
 import os
 from .loader import read_plecotxt
 from .character import character
+import re
 
 class dictionary():
     def __init__(self,name,characters:list=[]):
@@ -98,6 +99,7 @@ class dictionary():
                 self.characters = []
                 self.__uniqs = []
             for char in entrylist:
+                counts = sum([int(count) for count in re.findall(r'\((\d*)\)',char['STR'])]) if char['STR']!=None else None
                 c=character(
                     simple=char['CHAR_SIMPL'],
                     traditional=char['CHAR_TRADI'],
@@ -108,6 +110,7 @@ class dictionary():
                     radical=char['RAD'],
                     opposite=char['OPP'],
                     strokes=char['STR'],
+                    strokes_count=counts,
                     classifier=char['CL'],
                     variants=char['VAR'],
                     relatives=char['REL'],
@@ -129,12 +132,10 @@ class dictionary():
             return False
     
     
-    def write(self,directory,filename=None,indices=None,file_format='pleco',**kwargs):
+    def write(self,directory='./',filename=None,indices=None,file_format='pleco',**kwargs):
         filename = self.name if filename == None else filename
         entries=self.characters
-        if os.path.isdir(directory):
-            os.makedirs(directory+'dictionaries', exist_ok=True) 
-            directory=directory+'dictionaries/'
+
         if indices!=None:
             if type(indices)==int:
                 entries=[e for e in entries[indices:indices+1]]
