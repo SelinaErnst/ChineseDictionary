@@ -74,6 +74,7 @@ class DictionaryItem(CustomListItem):
     is_grammatical = BooleanProperty()
     has_translation = BooleanProperty()
     translation = StringProperty()
+    img_source = StringProperty()
     # callback = ObjectProperty(lambda x: x)
             
     def see_properties(self):
@@ -99,3 +100,5 @@ class EntryType(MDIconButton):
 
 class EntryInfo(MDAnchorLayout):
     the_size=NumericProperty()
+    
+            

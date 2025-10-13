@@ -1,4 +1,5 @@
 import os
+import cairosvg
 from kivy.utils import platform
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from packages.pleco import dictionary
@@ -40,11 +41,33 @@ class ViewDict(MyScreen):
     def empty_dict(self):
         # self.dictionary=None
         self.dictionary=dictionary(self.dict_name)
+    
+    def convert_image(self, url, file_name):
+        directory='appdata/images/characters/'
+        if url.endswith('svg'):
+            cairosvg.svg2png(url=url, write_to=directory+f'{file_name}.png', dpi=200, scale=2)
+        else:
+            ''
+            
+    def get_image(self, character):
+        # source="https://cdn2.iconfinder.com/data/icons/flat-ui-icons-24-px/24/eye-24-256.png"
+        source=""
+        if character.get_property('simple') == '八':
+            url='https://ziphoenicia-1300189285.cos.ap-shanghai.myqcloud.com/swjz/786.svg'
+            file_name='_'.join(character.uniq)
+            directory='appdata/images/characters/'
+            if not os.path.isfile(directory+f'{file_name}.png'):
+                source=self.convert_image(url=url,file_name=file_name)   
+            else:
+                source=directory+f'{file_name}.png'
+        kwargs={'image':source}
+        character.entry.update(**kwargs)
+        # print(character.categories)
 
     def create_dataitem(self,character):
         char_simp, char_trad, char_pron = character.uniq
         translation = character.entry.english[0] if character.has_translation() else ""
-        
+        self.get_image(character=character)
         dataitem={
             'character': character,
             'char_simp': char_simp,
@@ -55,6 +78,7 @@ class ViewDict(MyScreen):
             'is_grammatical': character.is_grammatical(),
             'has_translation': character.has_translation(),
             'translation': translation,
+            'img_source': character.get_property('image')
             }
         return dataitem 
     

@@ -25,9 +25,8 @@ if platform in ["linux","win"]:
     # Window.size = (1700, 1500) 
     # Window.maximize()
     # Window.size = (2560, 1411) # Tab S6
-    # Window.size = (2114, 1080) # Galaxy S24
-    Window.size = (1411, 2560) # Tab S6
-    # Window.size = (1080, 2114) # Galaxy S24
+    # Window.size = (1411, 2560) # Tab S6
+    Window.size = (1080, 2114) # Galaxy S24
 # = –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– = #
 
 from packages.screens import (
@@ -45,6 +44,7 @@ from packages.kivymd_templates import (
     ListProperty,
     StringProperty,
     MDBoxLayout,
+    MDStackLayout,
     ScreenManager,
     MDSnackbar,
     MultiLineLabel
@@ -91,94 +91,74 @@ KV="""
                 font_size: 7
         ScrollView:
             MDStackLayout:
+                # cols: 2
                 id: scroll
                 size_hint: 1, None
-                height: self.minimum_height*1.2
+                height: self.minimum_height+(66+2*10)*2
                 padding: 20
-                spacing: 20
-                    
-<ListElement>:
-    label_padding: 20,0,20,0
+
+<MyList>:
+    orientation: 'lr-tb'
+    adaptive_height: True
+<Head>:
     role: 'small'
-    label_width: self.width-50
+    label_bg_color: self.theme_cls.onPrimaryContainerColor
+    text_color: self.theme_cls.onPrimaryColor
+    size_hint_x: None
+    width: 370
+<Bullets>:
+    adaptive_height: True          
+<ListElement>:
+    label_padding: 20,10,20,10
+    label_width: self.width-200
     anchor_x: 'right'
     anchor_y: 'top'
+    # md_bg_color: 'red'
+    role: 'small'
     label_bg_color: app.theme_cls.surfaceDimColor
     MDAnchorLayout:
         md_bg_color:[0,0,0,0]
-        padding: 0,20,0,0
+        padding: 150,30,0,0
         anchor_x: 'left'
         anchor_y: 'top'
         MDRelativeLayout:
             md_bg_color: app.theme_cls.onPrimaryContainerColor
             size_hint: None,None
             size: 20,20
-            
-<MyList>:
-    head: head
-    bullets: bullets
-    cols: 2
-    size_hint_y: None
-    MDAnchorLayout:
-        anchor_x: 'left'
-        anchor_y: 'top'
-        size_hint_x: None
-        width: 350
-        size_hint_y: None
-        height: bullets.height
-        Head:
-            id: head
-            
-    Bullets:
-        id: bullets
-
-<Head>:
-    label_bg_color: app.theme_cls.onPrimaryContainerColor
-    text_color: app.theme_cls.onPrimaryColor
-    role: 'small'
-    height: 71
-    label_width: self.width-20
-    anchor_x: 'left'
-
-<Bullets>:
 
 
 """
 
-from kivymd.uix.stacklayout import MDStackLayout
-from kivymd.uix.relativelayout import MDRelativeLayout
-from kivymd.uix.anchorlayout import MDAnchorLayout
-from kivymd.uix.gridlayout import MDGridLayout
 
+
+class ListElement(MultiLineLabel):
+    pass
 class Head(MultiLineLabel):
     pass
 
 class Bullets(MDStackLayout):
-    # results=ListProperty()
-    font_name=StringProperty()
 
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-    
-    def create_bullets(self, results,font_name):
+    def create_bullets(self,results,font_name):
         for r in results:
             label=ListElement(text=str(r), font_name=font_name, size_hint=[1,None])
             self.add_widget(label)
-            
-class MyList(MDGridLayout):
-    def __init__(self,prop,results,*args,**kwargs):
-        self.results=results
+
+class MyList(MDStackLayout):
+    prop=StringProperty()
+    translations=ListProperty()
+    def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
-        self.head.text=prop.replace('_',' ').capitalize()
-        
-        # self.ids.scroll.add_widget(head)
-        # self.ids.scroll.add_widget(stack)
+        head_text=self.prop.replace('_',' ').upper()
+        head=Head(text=head_text)
+        font_name = 'CH' if self.prop.lower()!='german' else 'Roboto'
+        bullets=Bullets()
+        bullets.create_bullets(results=self.translations,font_name=font_name)
+        self.add_widget(head)
+        self.add_widget(bullets)
 class ShowCharacter(MyScreen):
     character=ObjectProperty()
     
     def __init__(self,*args,**kwargs):
-        from main import ChD
-        self.window_w=ChD.get_running_app().get_window_size()[0]
         super().__init__(*args,**kwargs)
         self.build_scroll()
     
@@ -204,7 +184,6 @@ class ShowCharacter(MyScreen):
         self.list_translations('link')
         self.list_translations('origin')
         
-        
     def clean_scroll(self):
         for c in [c for c in self.ids.scroll.children]:
             c.clear_widgets()
@@ -217,13 +196,9 @@ class ShowCharacter(MyScreen):
     
     def list_translations(self,prop):
         if self.character.get_property(prop) != None:
-            results=self.character.get_property(prop)
-            results=results if isinstance(results,list) else [results]
-            font_name = 'CH' if prop!='german' else 'Roboto'
-            t=int(self.window_w/57)
-            heights=[66 if len(str(r)) <= t else int((len(str(r))//t)*66) for r in results ]
-            l=MyList(prop=prop,results=results, height=sum(heights))
-            l.bullets.create_bullets(results=results, font_name=font_name)
+            translations=self.character.get_property(prop)
+            translations=translations if isinstance(translations,list) else [translations]
+            l=MyList(prop=prop,translations=translations)
             self.ids.scroll.add_widget(l)
         else:
             pass
@@ -233,8 +208,7 @@ class ShowCharacter(MyScreen):
             if self.character.get_property(key) == "":
                 self.ids[key].ids.label.height=71
                 
-class ListElement(MultiLineLabel):
-    pass
+
                 
 def load_json(path):
     with open(path, "r") as f:
@@ -261,17 +235,16 @@ class Home(MyScreen):
     
         def __init__(self, *args,**kwargs):
             super().__init__(*args,**kwargs)
+    
 
-        
 class ChD(MyApp):
     window_size_myphone= (1080, 2114)
-    # has_access=False
-    # settings=None
     import_dir_example=my_examples['import_directory'][platform]
     app_dir_example=my_examples['app_directory'][platform]
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         root_folder = Path(self.directory)
         self.root_folder = str(root_folder.resolve())+'/'
         resource_add_path(root_folder/"appdata"/"fonts")
@@ -281,15 +254,8 @@ class ChD(MyApp):
         Builder.load_string(KV)
     
     def build(self):
-        default=False
-        # n=10
-        # d=dictionary('MCD')
-        # d.read_jsonl('/media/selina/SHARE/MyProjects/Pleco/dictionaries/MCD/MCD.jsonl',False)
-        # char_simp, char_trad, char_pron = d[n].uniq
-        # char_string = f'C_{char_simp}_{char_trad}_{char_pron}'
-        # char_screen = ShowCharacter(name=char_string, character = d.characters[n])
+        default=True
         screens = [
-            # char_screen
             Home(name="home"),
             Settings(name='settings',settings=self.settings),
             SelectFile(name="selectfile", default=default),

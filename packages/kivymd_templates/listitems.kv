@@ -151,10 +151,14 @@
             line_height: 0.8
     
     MDBoxLayout:
-        md_bg_color: app.theme_cls.surfaceDimColor
+        # md_bg_color: app.theme_cls.surfaceDimColor
+        md_bg_color: app.theme_cls.primaryFixedColor
         radius: 20
         size_hint: None, None
         size: 2*[2*(1.75*60+10)] if len(root.char_simp) == 1 else 2*[0]
+        AsyncImage:
+            source: "appdata/images/empty.png" if root.img_source=='' else root.img_source
+            # source: "dictionaries/八_da1.png"
 
     EntryInfo: #MDAnchorLayout
         the_size: 60
@@ -176,6 +180,7 @@
                 the_size: self.get_size(root.is_grammatical,[0,60])
 
 <EntryType>: #MDIconButton
+
     size_hint: None, None
     size: self.the_size*1.75, self.the_size*1.75
     font_size: self.the_size

@@ -5,5 +5,9 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 Builder.load_file(current_dir+'/screens.kv')
 
+from kivy.graphics.svg import Svg
+
+        
 class MyScreen(MDScreen):
-    pass
+    def __init__(self,**kwargs):
+        super(MyScreen,self).__init__(**kwargs)
