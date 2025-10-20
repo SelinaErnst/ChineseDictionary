@@ -1,4 +1,3 @@
-
 <Interface>:
     wm: wm.__self__
     orientation: 'vertical'
@@ -26,6 +25,7 @@
                 icon: "dots-vertical"
                 size_hint: None, None
                 size: 120, 120
+                on_release: app.wm.current_screen.bottom_nav.set_state("toggle") if hasattr(app.wm.current_screen,'bottom_nav') else None
 
     MDNavigationLayout:
         WindowManager:

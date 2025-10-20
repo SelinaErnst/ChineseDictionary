@@ -59,3 +59,18 @@
 
 # <RectangularIconButtton>: #MDIconButton
 #     ripple_effect: False
+
+# = ============================================================== = #
+# =                              ICON                              = #
+# = ============================================================== = #
+
+<MyIconButton>:
+    theme_width: "Custom"
+    size: self.size
+    radius: 20
+    # on_release:  root.edit_character()
+    MDButtonIcon:
+        icon: root.icon
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        theme_font_size: 'Custom'
+        font_size: root.get_font_size()

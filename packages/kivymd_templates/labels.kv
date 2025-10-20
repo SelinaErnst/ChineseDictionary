@@ -70,6 +70,7 @@
 
         font_style: root.font_style
         role: root.role
+        bold: root.bold
         theme_font_size: root.theme_font_size
         font_size: sp(root.font_size)
         theme_font_name: "Custom"
@@ -88,4 +89,4 @@
         radius: 20
 
         allow_copy: True
-        on_copy: app.test((root.height))
+        on_copy: app.test((root.text,self.height))

@@ -1,5 +1,7 @@
 from kivymd.uix.dialog.dialog import MDDialog, MDDialogButtonContainer
 from kivy.utils import platform
+from packages.pleco import character as pleco_character
+from packages.pleco import detect_type, decode_pinyin
 
 if platform == 'android':
     from jnius import cast
@@ -32,12 +34,6 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 Builder.load_file(current_dir+'/dialogs.kv')
 
-
-with open("appdata/colors/palette_colors.json", "r") as f:
-    import json
-    palette_colors = json.load(f)
-
-
 def grant_permissions_external_storage():  
     if platform == "android":
         PythonActivity = autoclass("org.kivy.android.PythonActivity")
@@ -65,7 +61,7 @@ def grant_permissions_external_storage():
                     "android.app.Activity", PythonActivity.mActivity
                     )
                     currentActivity.startActivityForResult(intent, 101)
-                    msg="I don't know what happend."
+                    msg="I don't know what happened."
         else:
             msg=f'This action is only for android api versions greater than 29. This device is at {api_version}.'
     else:
@@ -79,13 +75,35 @@ class MyDialog(MDDialog):
     title = StringProperty()
     support_text = StringProperty()
 
+class ConfirmDelete(MyDialog):
+    file=StringProperty()
+    accept_func=ObjectProperty(None)
+    
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        if self.accept_func==None: self.accept_func=self.do_nothing
+        
+    def do_nothing(self):
+        pass
+    
+    def do_something(self):
+        print(self.file)
+        
+    def delete_dictionary(self):
+        from main import ChD
+        app=ChD.get_running_app()
+        app.delete_dictionary(name=self.file)
+        app.previous_screen()
+        app.wm.current_screen.set_files()
+        
+    
+                
 class ConfirmChoice(MyDialog):
     count=StringProperty()
     first_line=StringProperty()
     file_name=StringProperty()
     dict_name=StringProperty()
     file_format=StringProperty()
-
 
 class GrantAccess(MyDialog):
     deny_text=StringProperty('No')
@@ -111,10 +129,65 @@ class GrantAccess(MyDialog):
         app.wm.get_screen('filechooser').update()
         self.dismiss()
             
+class AddElement(MyDialog):
+    allow_multiple=BooleanProperty(False)    
+    # confirm_edit=ObjectProperty()
+    
+    def confirm_edit(self):
+        from main import ChD, ShowCharacter
+        app=ChD.get_running_app()
+        current_screen=app.wm.current_screen
+        character=current_screen.character if hasattr(current_screen,'character') else pleco_character()
+        prop=self.title.lower().replace(' ','_')
+
+        if self.title != 'Character' and prop in character.categories:
+            if self.allow_multiple:
+                new_entry = [e.replace('\n',' ').strip(' ') for e in self.ids.input.text.lstrip('-').split('\n-') if e != '']
+            else:
+                new_entry = self.ids.input.text.lstrip('-').strip(' ').replace('\n',' ')
+                new_entry=detect_type(new_entry)
+
+            if new_entry not in ["",[""],[]]:
+                character.update({prop:new_entry})
+                if prop not in current_screen.categories:
+                    current_screen.list_translations(prop)
+                new_entry=new_entry if isinstance(new_entry,list) else [new_entry]
+                current_screen.ids.scroll.ids[prop].bullets.remove_bullets()
+                current_screen.ids.scroll.ids[prop].bullets.create_bullets(results=new_entry)
+            else:
+                character.remove_property(prop)
+                current_screen.remove_translations(prop)
+
+        elif self.title == 'Character':
+            categories=['simple','traditional','pronunciation']
+            new_entries = [e.strip(' ') for e in self.ids.input.text.replace('\n',' ').lstrip('-').split('-') if e != '']
+            if len(new_entries) == 3:
+                kwargs={k:v for k,v in zip(categories,new_entries)}
+                # kwargs.update({'pronunciation':encode_pinyin(kwargs['pronunciation'])})
+                character.update(kwargs)
+                if current_screen.name == 'viewdict':
+                    char_string = f'C_{character.entry.simple}_{character.entry.traditional}_{character.entry.pronunciation}'
+                    current_screen.dictionary = current_screen.dictionary + character
+                    current_screen.set_list_items()
+                    current_screen.entry_count += 1
+                    parent_dictionary = app.wm.current_screen.dictionary
+                    screen = ShowCharacter(name=char_string, character=character, dict_screen=current_screen, parent_dictionary=parent_dictionary)
+                    app.wm.add_widget(screen)
+                    current_screen = app.switch_screen(char_string,'left')
+                    self.dismiss()
+                else:
+                    current_screen.update_character()
+                    current_screen.resize_head()
+
+        elif prop not in character.categories:
+            new_entry = self.ids.input.text.lstrip('-').strip(' ').replace('\n',' ')
+            new_entry=detect_type(new_entry)
+            if prop == 'new_name': current_screen.rename_dict(new_entry)
+                            
 class ShowOptions(MyDialog):
     list_height = NumericProperty()
     
-    def __init__(self, title, setting, options, itemclass, list_height, icons, *args, **kwargs):
+    def __init__(self, title, options, itemclass, list_height, setting="", icons=[], *args, **kwargs):
         self.itemclass = itemclass
         self.list_height = list_height
         super().__init__(*args, **kwargs)
@@ -153,6 +226,13 @@ class ShowOptions(MyDialog):
 
 class ShowPaletteOptions(ShowOptions):
     
+    def __init__(self,*args,**kwargs):
+        from main import load_json
+        self.palette_colors = load_json('appdata/colors/palette_colors.json')
+        super().__init__(*args,**kwargs)
+        
+
+    
     def create_dataitem(self,text):
         kwargs=self.add_palette_colors(text)
         dataitem = super().create_dataitem(text,**kwargs)
@@ -187,7 +267,7 @@ class ShowPaletteOptions(ShowOptions):
         return updatedict
         
     def get_color(self,name,color_name):
-        return palette_colors[self.theme_cls.theme_style][name.capitalize()][color_name]
+        return self.palette_colors[self.theme_cls.theme_style][name.capitalize()][color_name]
 
 # = ============================================================== = #
 # =                            CONTAINER                           = #
@@ -200,4 +280,11 @@ class MakeDecision(MDDialogButtonContainer):
     deny_icon=StringProperty('close')
     dismiss_func=ObjectProperty()
     accept_func=ObjectProperty()
+    button_width=NumericProperty(350)
     
+class MakeSimpleDecision(MDDialogButtonContainer):
+    confirm_icon=StringProperty('check')
+    deny_icon=StringProperty('close')
+    dismiss_func=ObjectProperty()
+    accept_func=ObjectProperty()
+    button_width=NumericProperty(150)

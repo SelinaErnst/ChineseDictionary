@@ -5,6 +5,7 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from kivy.uix.behaviors import ButtonBehavior
 from kivymd.uix.button import MDIconButton
 from .labels import MultiLineLabel, MDLabel
+from .snackbars import AttentionMsg
 
 from kivy.properties import (
     StringProperty, 
@@ -74,19 +75,25 @@ class DictionaryItem(CustomListItem):
     is_grammatical = BooleanProperty()
     has_translation = BooleanProperty()
     translation = StringProperty()
-    img_source = StringProperty()
+    ancient_img = StringProperty()
+    character_img = StringProperty()
     # callback = ObjectProperty(lambda x: x)
+    
             
     def see_properties(self):
         from main import ChD, ShowCharacter
         app = ChD.get_running_app()
+        parent_dictionary=app.wm.current_screen.dictionary
         char_string = f'C_{self.char_simp}_{self.char_trad}_{self.char_pron}'
-        screen = ShowCharacter(name=char_string, character = self.character)
+        screen = ShowCharacter(name=char_string, character=self.character, dict_screen=app.wm.current_screen, parent_dictionary=parent_dictionary)
         app.wm.add_widget(screen)
         app.switch_screen(char_string,'left')
-        print(self.character.info())
+        # print(self.character.info())
         # for i,l in screen.ids.items():
         #     l.item_list.set_list()
+        
+    def display_source(self,msg):
+        AttentionMsg(attention="Image file", msg=str(msg)).open()
         
 class EntryType(MDIconButton):
     the_size=NumericProperty()
@@ -100,5 +107,3 @@ class EntryType(MDIconButton):
 
 class EntryInfo(MDAnchorLayout):
     the_size=NumericProperty()
-    
-            

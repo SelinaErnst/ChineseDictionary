@@ -21,7 +21,23 @@ class entry():
     def update(self,**kwargs):
         for key,value in kwargs.items():
             self.__dict__[key]=value
+            
+    def add_to(self,key,element):
+        if key in self.__dict__.keys():
+            before=self.__dict__[key] if self.__dict__[key] != None else []
+            if isinstance(before,str): before=[before]
+            if not isinstance(element,list):
+                if element not in before:
+                    self.__dict__[key]=before+[element]
+            else:
+                self.__dict__[key]=list(set(before)|set(element))
+        else:
+            self.__dict__[key]=element
     
+    def remove_category(self, key):
+        if key in self.__dict__.keys():
+            self.__dict__[key]=None
+             
     def __repr__(self):
         return str({k:v for k,v in self.__dict__.items() if not k.startswith('_')})
     

@@ -114,7 +114,7 @@ class SelectFile(MyScreen):
         from main import ChD
         app=ChD.get_running_app()
         next_screen=app.switch_screen("viewdict",'left')
-        app.hide_widget(next_screen.ids.save_button,do_hide=False)
+        # app.hide_widget(next_screen.ids.save_button,do_hide=False)
         next_screen.dict_file=self.dict_file
         next_screen.dict_name=self.dict_name
         can_read = next_screen.read_dict_file(self.file_format)
@@ -125,64 +125,28 @@ class SelectFile(MyScreen):
                 msg='Cannot read file as dictionary.'
                 ).open()
 
-# class FileChooser(MyScreen):
-#     filelist=ListProperty()
-#     directory=StringProperty()
-#     file_format=StringProperty('all')
-        
-#     def create_dataitem(self,name,other=None):
-#         dataitem={'text':name,'callback':lambda x:x}
-#         return dataitem 
+class NameDict(MyScreen):
+    # dict_file=StringProperty()
+    dict_name=StringProperty('')
+    # entry_count=NumericProperty()
+    # dictionary=ObjectProperty()
+    def check_name(self):
+        entry=(self.ids.name_entry.text)
+        non_valid_names=set(["",None," "])
+        if entry not in non_valid_names:
+            self.dict_name=entry
+            return True
+        else:
+            return False
+    def confirm(self):
+        is_name=self.check_name()
+        if is_name: self.continue_on()
     
-#     def add_list_item(self,name,dataitem,text="",search=False):
-#         if search:
-#             if text.lower() in name.lower() or text=="":
-#                 self.rv_scroll.data.append(dataitem)
-                
-#         else: self.rv_scroll.data.append(dataitem)
-        
-#     def set_files(self,directory=None,text="",search=False):
-#         self.directory = self.directory if directory == None else directory
-#         self.rv_scroll.data = []
-#         valid_exec={
-#             'pleco':'.txt',
-#             'jsonl':'.jsonl',
-#             'all':''
-#         }
-#         filelist=[f for f in os.listdir(self.directory) if os.path.isfile(self.directory+f)]
-#         self.filelist=[f for f in filelist if f.endswith(valid_exec[self.file_format])]
-#         for name in self.filelist:
-#             dataitem=self.create_dataitem(name)
-#             self.add_list_item(name, dataitem,text=text,search=search)
-            
-#     def update(self):
-#         from main import ChD
-#         self.directory = ChD.get_running_app().get_setting('import_directory')
-#         self.set_files()
-                    
-#     def select(self,file):
-#         path_file=self.directory+file
-#         if os.path.isfile(path_file):
-#             from main import ChD
-#             next_screen=ChD.get_running_app().switch_screen("selectfile","left",remember=False)
-#             next_screen.dict_file=path_file
-#             next_screen.dict_name=os.path.basename(path_file).split('.')[0]
-
-            
-#     def _show_validation_dialog(self):   
-#         if platform == "android":
-#             from jnius import autoclass
-#             Environment = autoclass("android.os.Environment")
-#             if not Environment.isExternalStorageManager():
-#                 support_text="To access files on the phone it is required to grant the app access to the storage."
-#                 deny_text='No'
-#             else:
-#                 support_text="Storage access was already granted."
-#                 deny_text='Return'
-#         elif platform == "linux":
-#                 support_text=f"For {platform} no further storage access needs to be granted."
-#                 deny_text='Return'
-
-#         self.show_permission_popup = GrantAccess(
-#             support_text=support_text, deny_text=deny_text)
-#         self.show_permission_popup.open()
+    def continue_on(self):
+        from main import ChD
+        app=ChD.get_running_app()
+        next_screen=app.switch_screen("viewdict",'left')
+        next_screen.dict_name=self.dict_name
+        next_screen.dict_file=""
+        next_screen.empty_dict()
+        next_screen.set_list_items()

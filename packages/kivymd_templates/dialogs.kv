@@ -7,6 +7,12 @@
         halign: 'left'
         role: 'small'
 
+<ConfirmDelete>:
+    title: 'Delete '+root.file+'?'
+    MakeDecision:
+        accept_func: 
+            root.accept_func
+
 <ConfirmChoice>: #MyDialog
     MDDialogContentContainer:
         orientation: "vertical"
@@ -34,27 +40,9 @@
             padding: 20,20,0,0
 
     MakeDecision:
-        dismiss_func:  root.dismiss
         accept_func: app.wm.current_screen.continue_on
     
-<MakeDecision>: #MDDialogButtonContainer
-    Widget:
-    RigidIconTextButton:
-        width: 350
-        icon: root.deny_icon
-        text: root.deny_text
-        style: "text"
-        on_release: root.dismiss_func()
-    Widget:
-    RigidIconTextButton:
-        width: 350
-        icon: root.confirm_icon
-        text: root.confirm_text
-        style: "text"
-        on_release: 
-            root.accept_func()
-            root.dismiss_func()
-    Widget:
+
 
 <GrantAccess@MyDialog>:
     title: 'Grant access to storage'
@@ -90,3 +78,54 @@
 <ShowPaletteOptions>: #ShowOptions
 
 
+<AddElement>:
+    pos_hint: {'center_x': .5,'center_y': 0.6}
+    MakeSimpleDecision: 
+        accept_func: root.confirm_edit
+    MDDialogContentContainer:
+        TextInput:
+            id: input
+            font_name: 'CH'
+            size_hint_y: None
+            height: 400
+
+<MakeSimpleDecision>: #MDDialogButtonContainer
+    Widget:
+    MDIconButton:
+        radius: 20
+        size_hint: None, None
+        size: root.button_width, root.button_width
+        icon: root.deny_icon
+        on_release: 
+            app.dismiss_dialog()
+    Widget:
+    MDIconButton:
+        radius: 0
+        size_hint: None, None
+        size: root.button_width, root.button_width
+        icon: root.confirm_icon
+        on_release: 
+            app.dismiss_dialog()
+            root.accept_func()
+    Widget:
+
+<MakeDecision>: #MDDialogButtonContainer
+    Widget:
+    RigidIconTextButton:
+        width: root.button_width
+        icon: root.deny_icon
+        text: root.deny_text
+        style: "text"
+        on_release: 
+            app.dismiss_dialog()
+            root.dismiss_func()
+    Widget:
+    RigidIconTextButton:
+        width: root.button_width
+        icon: root.confirm_icon
+        text: root.confirm_text
+        style: "text"
+        on_release: 
+            app.dismiss_dialog()
+            root.accept_func()
+    Widget:

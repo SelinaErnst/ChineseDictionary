@@ -7,6 +7,7 @@ from kivy.properties import (
     NumericProperty,
     ObjectProperty,
     ListProperty,
+    BooleanProperty,
     )
 
 from kivy.lang import Builder
@@ -27,6 +28,7 @@ class AnchoredLabel(MDAnchorLayout):
 class MultiLineLabel(MDAnchorLayout):
     text=StringProperty()
     font_style=StringProperty('Label')
+    bold=BooleanProperty(False)
     theme_font_size=StringProperty('Primary')
     font_size=NumericProperty()
     font_name=StringProperty('CH')

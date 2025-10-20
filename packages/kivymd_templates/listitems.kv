@@ -25,6 +25,14 @@
         app.wm.current_screen.select_file_format(self.text)
         app.dismiss_dialog()
 
+<CategoryItem@FlexTextButton>:
+    on_release: app.wm.current_screen.edit_property(self.text)
+
+<SortingKeyItem@FlexTextButton>:
+    on_release: 
+        app.wm.current_screen.sort_dictionary(self.text)
+        app.dismiss_dialog()
+
 
 <ThemeItem@FlexTextButton>: 
     on_release: 
@@ -150,15 +158,21 @@
             theme_line_height: 'Custom'
             line_height: 0.8
     
+    
     MDBoxLayout:
-        # md_bg_color: app.theme_cls.surfaceDimColor
-        md_bg_color: app.theme_cls.primaryFixedColor
-        radius: 20
-        size_hint: None, None
-        size: 2*[2*(1.75*60+10)] if len(root.char_simp) == 1 else 2*[0]
-        AsyncImage:
-            source: "appdata/images/empty.png" if root.img_source=='' else root.img_source
-            # source: "dictionaries/八_da1.png"
+        orientation: 'vertical'
+        adaptive_width: True
+        spacing: 10
+        ClickableBoxLayout:
+            md_bg_color: app.theme_cls.primaryFixedColor
+            radius: 20
+            size_hint: None, None
+            size: 2*[0] if root.ancient_img=="" else 2*[2*(1.75*60+10   )]
+            on_release: root.display_source(root.ancient_img)
+            FitImage:
+                # source: "./appdata/images/app_icon_fg.png" if not os.path.isfile(root.character_img) else root.character_img
+                source: "./appdata/images/app_icon_fg.png" if not os.path.isfile(root.ancient_img) else root.ancient_img
+                radius: 20
 
     EntryInfo: #MDAnchorLayout
         the_size: 60
@@ -196,3 +210,4 @@
     size_hint: None, None
     width: 2*(1.75*self.the_size + self.padding[0])
     height: 2*(1.75*self.the_size + self.padding[0])
+

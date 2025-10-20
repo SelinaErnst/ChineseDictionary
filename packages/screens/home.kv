@@ -17,9 +17,16 @@
                     app.wm.current_screen.directory = app.get_setting('dict_directory')
                     app.wm.current_screen.set_files()
             RigidIconTextButton: 
+                text: "Load Dictionary"
+                icon: 'upload'
+                style: 'filled'
+                padding: 50
+                width: 650
+                on_release: app.switch_screen("selectfile","left")
+            RigidIconTextButton: 
                 text: "New Dictionary"
                 icon: 'plus'
                 style: 'filled'
                 padding: 50
                 width: 650
-                on_release: app.switch_screen("selectfile","left")
+                on_release: app.switch_screen("namedict","left")

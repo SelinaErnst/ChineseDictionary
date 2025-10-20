@@ -75,7 +75,7 @@ class DictDirChooser(FileChooser):
             next_screen=app.switch_screen("viewdict","left")
             next_screen.dict_file=dict_path+dict_dir+f'.{self.file_format}'
             next_screen.dict_name=dict_dir
-            app.hide_widget(next_screen.ids.save_button)
+            # app.hide_widget(next_screen.ids.save_button)
             can_read = next_screen.read_dict_file(self.file_format)
         
 class DictFileChooser(FileChooser):

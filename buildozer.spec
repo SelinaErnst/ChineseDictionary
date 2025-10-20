@@ -19,7 +19,7 @@ source.include_exts = py,png,jpg,kv,atlas,json,ttf,otf,txt,db,jpeg,ico,mp4,mp3,s
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
-source.include_patterns = assets/*,packages/*,screens/*, appdata/*
+source.include_patterns = assets/*,packages/*,screens/*, appdata/*,character_images/*
 
 # (list) Source files to exclude (let empty to not exclude anything)
 source.exclude_exts = spec

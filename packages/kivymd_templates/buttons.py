@@ -58,3 +58,14 @@ class NavigationButton(MDButton):
 # class RectangularIconButtton(MDIconButton):
 #     radius=[0,]
 
+# = ============================================================== = #
+# =                              ICON                              = #
+# = ============================================================== = #
+
+class MyIconButton(MDButton):
+    size=ListProperty([100,100])
+    icon=StringProperty()
+    
+    def get_font_size(self,make_smaller_by=20):
+        minimal = sorted(self.size)[0]
+        return minimal - make_smaller_by

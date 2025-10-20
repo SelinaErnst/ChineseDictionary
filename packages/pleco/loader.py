@@ -15,7 +15,7 @@ header_dict={
         'pr':'TRADITIONAL CHARACTER',
         'opt':['TRAD','TRADI']},
     'CHAR_PRON':{
-        'pr':'PRONOUNCIATION',
+        'pr':'PRONUNCIATION',
         'opt':['PRON','PR']},
     'ENG':{
         'pr':'ENGLISH',

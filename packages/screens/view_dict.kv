@@ -2,6 +2,7 @@
 <ViewDict>:
     rv_scroll: rv_scroll
     grid: grid
+    bottom_nav: bottom_nav
     MDAnchorLayout:
         padding: 25,50,25,50
         MDBoxLayout:
@@ -24,9 +25,54 @@
                     default_size_hint: 1, None
                     default_height: 2*(1.75*60+10)+2*20
 
-    BottomFieldButton:
-        id: save_button
-        text: 'Save'
-        style: 'filled'
-        press_button: root.save_dictionary
-    
+    MDBottomSheet:
+        id: bottom_nav
+        size_hint_y: None
+        height: 170
+        sheet_type: "standard"
+
+        BottomSheetDragHandleContainer:
+            padding: 20
+            MDAnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                size_hint_y: None
+                height: bottom_nav.height-2*20
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    adaptive_width: True
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: 50
+                    MyIconButton:
+                        text: 'Add'
+                        icon: 'plus'
+                        size: self.parent.height, self.parent.height
+                        style: 'text'
+                        on_release: root.add_character()
+                    MyIconButton:
+                        text: 'Sort'
+                        icon: 'sort'
+                        size: self.parent.height, self.parent.height
+                        style: 'text'
+                        on_release: root.get_sorting_key()
+                    MyIconButton:
+                        text: 'Rename'
+                        icon: 'pencil'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: root.get_new_name()
+                    MyIconButton:
+                        text: 'Save'
+                        icon: 'content-save'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: root.save_dictionary()
+                    MyIconButton:
+                        text: 'Delete'
+                        icon: 'delete'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: root.delete_dictionary()
+
+                        
