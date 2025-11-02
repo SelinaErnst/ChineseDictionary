@@ -1,7 +1,8 @@
 from kivymd.uix.dialog.dialog import MDDialog, MDDialogButtonContainer
 from kivy.utils import platform
 from packages.pleco import character as pleco_character
-from packages.pleco import detect_type, decode_pinyin
+from packages.pleco import detect_type, convert_pronunciations
+import re
 
 if platform == 'android':
     from jnius import cast
@@ -104,6 +105,27 @@ class ConfirmChoice(MyDialog):
     file_name=StringProperty()
     dict_name=StringProperty()
     file_format=StringProperty()
+    
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        if self.file_format == "":
+            from packages.pleco import valid_ext
+            extension = os.path.splitext(self.file_name)[1]
+            try:
+                self.file_format = [f for f,e in valid_ext.items() if extension in e][0]
+            except:
+                self.file_format = ''
+                
+    def load_file(self,file_path):
+        self.file_path=file_path
+        if os.path.isfile(file_path):
+            count,first_line=0,""
+            with open(file_path, "r") as f:
+                first_line = f.readline().strip()
+                count = sum(1 for _ in f)+1
+            self.count=str(count)
+            self.first_line = first_line
+            
 
 class GrantAccess(MyDialog):
     deny_text=StringProperty('No')
@@ -141,14 +163,25 @@ class AddElement(MyDialog):
         prop=self.title.lower().replace(' ','_')
 
         if self.title != 'Character' and prop in character.categories:
+            text =  self.ids.input.text
+            text = convert_pronunciations(text)
+            # print(re.sub(r'\[(?:(?![\u4e00-\u9fff])[\S]+)\]',decode_pinyin,text.lstrip('[').rstrip(']')))
+
             if self.allow_multiple:
-                new_entry = [e.replace('\n',' ').strip(' ') for e in self.ids.input.text.lstrip('-').split('\n-') if e != '']
+                new_entry = [e.replace('\n',' ').strip(' ') for e in text.lstrip('-').split('\n-') if e != '']
             else:
-                new_entry = self.ids.input.text.lstrip('-').strip(' ').replace('\n',' ')
+                new_entry = text.lstrip('-').strip(' ').replace('\n',' ')
                 new_entry=detect_type(new_entry)
 
             if new_entry not in ["",[""],[]]:
-                character.update({prop:new_entry})
+                if type(new_entry) != character.get_default_dtype(prop):
+                    dt=character.get_default_dtype(prop)
+                    try:
+                        new_entry=dt(new_entry)
+                    except:
+                        return
+                
+                character.update({prop:new_entry},get_dtype_warning=False)
                 if prop not in current_screen.categories:
                     current_screen.list_translations(prop)
                 new_entry=new_entry if isinstance(new_entry,list) else [new_entry]

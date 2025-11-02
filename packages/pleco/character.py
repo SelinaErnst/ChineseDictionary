@@ -1,17 +1,18 @@
 from .entry import entry
 from .printentry import plecoprinter, plecoformat, link_pronunciations, decode_pinyin, encode_pinyin
+import re
 
 defaultkeys={
-    'simple':str,
-    'traditional':str,
-    'pronunciation':str,
+    'simple':str, #not list
+    'traditional':str, #not list
+    'pronunciation':str, #not list
     'english':list,
     'german':list,
     'measure_word':list,
     'radical':list,
     'opposite':list,
     'strokes':str,
-    'strokes_count':int,
+    'strokes_count':int, #not list
     'classifier':list,
     'variants':list,
     'relatives':list,
@@ -21,18 +22,20 @@ defaultkeys={
     'components':list,
     'mnemonics':list,
     'usage':list,
-    'origin':str,
+    'origin':str, #not list
     'ancient':list,
-    'images':dict,
+    'images':dict, #not list
     'link':list,
     'image_urls':list,
 }
 
 class character():
-    def __init__(self, startkeys=defaultkeys,**kwargs):
+    def __init__(self, startkeys=None,**kwargs):
         # defines every category that is included from the start
         # also: ORDER
-        startkeys={k : kwargs[k] if k in kwargs.keys() else None for k,dtype in startkeys.items()}
+        self.default_keys=defaultkeys if startkeys == None else startkeys
+        
+        startkeys={k : kwargs[k] if k in kwargs.keys() else None for k in self.default_keys.keys()}
         if 'pronounciation' in kwargs.keys(): startkeys.update({'pronunciation':kwargs['pronounciation']})
         
         self.entry=entry(**startkeys)
@@ -51,7 +54,7 @@ class character():
     
     def __str__(self):
         uniq=list(self.__uniq)
-        uniq[2]=self.show_pinyin()
+        # uniq[2]=self.show_pinyin()
         s=", ".join([str(e) for e in uniq])
         s=f'({s})'
         return s
@@ -122,6 +125,10 @@ class character():
         if category in self.entry.categories:
             return self.entry.__dict__[category]
     
+    def get_default_dtype(self,category):
+        if category in self.default_keys:
+            return self.default_keys[category]
+    
     def remove_property(self,category):
         self.entry.remove_category(category)
     
@@ -133,40 +140,53 @@ class character():
                 return False
         else:
             return False
+        
     def plecostring(self,
         translation=True,
         information=True,
         meaning=True,
         ancientform=True,
-        links=True
+        words_and_characters=True,
+        links=True,
         ):
         string=''
         if translation: string+=self.__printer.translation()
         if information: string+=self.__printer.information()
         if meaning: string+=self.__printer.meaning()
         if ancientform: string+=self.__printer.ancient_form()
+        if words_and_characters: string+=self.__printer.words_and_characters()
         if links: string+=self.__printer.links()
         trad=plecoformat('trad',self.__uniq[1])
         uniqstring=f'{self.__uniq[0]}{trad}\t{encode_pinyin(self.__uniq[2])}\t'
         return link_pronunciations(uniqstring+string)
     
-    def update(self,kwargs):
+    def update(self,kwargs,get_dtype_warning=False):
+
         self.entry.update(**kwargs)
-        # self.d.update(**kwargs)
         self.__printer=plecoprinter(self.entry)   
         self.__uniq=(self.entry.simple,self.entry.traditional,self.entry.pronunciation)
-    
+        if get_dtype_warning: self.check_dtypes()
+        
+    def check_dtypes(self):
+        dtypes = self.entry.get_dtypes()
+        wrong_dtypes=[]
+        for category in self.categories:
+            if self.entry.__dict__[category] != None and \
+                self.default_keys[category] != dtypes[category]:
+                    wrong_dtypes+=[category]
+        if wrong_dtypes!=[]:
+            print(f'The character {self} has incorrect dtypes for categories:',', '.join(wrong_dtypes))
+            return False
+        else: return True
+        
     def update_images(self,kwargs):
         if not hasattr(self.entry,'images') or self.entry.__dict__['images']==None:
-            # image_dict={'images':{}}
             self.entry.__dict__['images']={}
             image_dict={}
         else:
             image_dict=self.entry.__dict__['images']
         image_dict.update(kwargs)
         self.entry.__dict__['images']=image_dict
-        # self.entry.update(**image_dict)
-        # print(self.get_property('images'))
         
     def convert_to_unicode(self, character=None):
         character=self.__uniq[:2] if character==None else character
@@ -186,6 +206,12 @@ class character():
     
     def show_pinyin(self):
         return decode_pinyin(self.entry.pronunciation)
+    
+    def remove_pinyin(self, text=None):
+        text = self.entry.pronunciation if text==None else text
+        text = encode_pinyin(text)
+        text = re.sub(r'\d+', '', text)
+        return text
     
     def unicode_unique_string(self):
         unicode = '_'.join([c.replace('+','') for c in self.convert_to_unicode()])

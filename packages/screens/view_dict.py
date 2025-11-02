@@ -9,6 +9,8 @@ from packages.kivymd_templates import (
     AddElement,
     ConfirmDelete,
     ShowOptions,
+    MyFileManager,
+    ConfirmChoice,
 )
 
 class ViewDict(MyScreen):
@@ -16,40 +18,46 @@ class ViewDict(MyScreen):
     dict_name=StringProperty('Dictionary Name')
     entry_count=NumericProperty()
     dictionary=ObjectProperty()
+    file_format=StringProperty()
     
     def __init__(self, default=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.default=default
         if platform=="linux" and self.default:
             dict_dir="/media/selina/SHARE/MyProjects/Pleco/dictionaries/MCD/"
-            self.dict_file=dict_dir+"MCD.jsonl"
-            self.dict_name="MCD"
-            self.read_dict_file('jsonl')
-  
-    def read_dict_file(self,file_format):
-        self.empty_dict()
-        exists=os.path.exists(self.dict_file)
-        can_read = self.dictionary.read(self.dict_file,file_format=file_format,add=False)
+            self.set_up_screen(dict_name="MCD",dict_file=dict_dir+"MCD.jsonl",file_format='jsonl')
+            
+    def set_up_screen(self,dict_name,dict_file="",file_format=""):
+        self.dict_name = dict_name
+        self.dict_file = dict_file
+        self.search_entry.text = ""
+        self.file_format = file_format
+        if dict_file != "":
+            return self.__read_dict_file(file_format, add=False)
+        else:
+            self.__empty_dict()
+            self.set_list_items()
+            
+    def __read_dict_file(self,file_format, dict_file=None, add=False):
+        if not add: self.__empty_dict()
+        dict_file = dict_file if dict_file!=None else self.dict_file
+        exists=os.path.exists(dict_file)
+        can_read = self.dictionary.read(dict_file,file_format=file_format,add=add)
         if can_read:
             self.entry_count = len(self.dictionary.characters)
             self.set_list_items()
         else:
             self.set_list_items()
-            if exists: ErrorMsg(error='Cannot read dictionary file',msg=f'File {self.dict_file} exists').open()
-            else: ErrorMsg(error='Cannot read dictionary file',msg=f'File {self.dict_file} does not exist').open()
+            if exists: ErrorMsg(error='Cannot read dictionary file',msg=f'File {dict_file} exists').open()
+            else: ErrorMsg(error='Cannot read dictionary file',msg=f'File {dict_file} does not exist').open()
         return can_read
     
-    def empty_dict(self):
-        # self.dictionary=None
+    def __empty_dict(self):
         self.dictionary=dictionary(self.dict_name)
         self.entry_count=0
-    
-    def rename_dict(self,name):
-        self.dictionary.rename(name)
-        self.dict_name = name
-        
 
-    def convert_image(self, url, file_name,directory):
+
+    def __convert_image(self, url, file_name,directory):
         
         if url.endswith('svg') and platform != 'android':
             import cairosvg
@@ -58,11 +66,11 @@ class ViewDict(MyScreen):
         else:
             return "None"
     
-    def get_image_urls(self,character):
+    def __get_image_urls(self,character):
         if str(character) in self.image_urls.keys(): 
             character.entry.add_to('image_urls',self.image_urls[str(character)])
         
-    def get_character_image(self,character,directory,key):
+    def __get_character_image(self,character,directory,key):
         file_name = f'{character.unicode_unique_string()}.png'
         image_dict = character.get_property('images')
         is_dict = isinstance(image_dict,dict)
@@ -72,22 +80,22 @@ class ViewDict(MyScreen):
             source=(directory/file_name).as_posix()
             kwargs={key:source}
             character.update_images(kwargs)
-        elif not needs_update:
-            pass
-        elif not file_exists:
-            source=None
-            # source=self.convert_image(url=url,file_name=file_name,directory=directory)   
+        elif not file_exists and platform=='linux':
+            if str(character) in self.image_urls.keys() \
+                and self.image_urls[str(character)] != None:
+                    url=self.image_urls[str(character)][0]
+                    source=self.__convert_image(url=url,file_name=file_name,directory=directory.as_posix()+'/')   
+                    kwargs={key:source}
+                    character.update_images(kwargs)
            
-    def create_dataitem(self,character):
+    def __create_dataitem(self,character):
         char_simp, char_trad = character.uniq[:2]
         char_pron = character.show_pinyin()
         translation = character.entry.english[0] if character.has_translation() else ""
         from main import load_json, SCRIPT_DIR
         self.image_urls=load_json('image_urls.json')
-        # character.entry.remove_category('image_urls')
-        # self.get_image_urls(character=character)
-        self.get_character_image(character=character,directory=SCRIPT_DIR/'character_images'/'ancient_characters',key='ancient_image')
-        self.get_character_image(character=character,directory=SCRIPT_DIR/'character_images'/'shuowen_jiezi',key='shuowen_jiezi')
+        self.__get_character_image(character=character,directory=SCRIPT_DIR/'character_images'/'ancient_characters',key='ancient_image')
+        self.__get_character_image(character=character,directory=SCRIPT_DIR/'character_images'/'shuowen_jiezi',key='shuowen_jiezi')
         images=character.get_property('images')
         ancient_image = images['ancient_image'] if images!=None and 'ancient_image' in images.keys() else None
 
@@ -105,18 +113,30 @@ class ViewDict(MyScreen):
             }
         return dataitem 
     
-    def add_list_item(self,dataitem,text="",search=False):
-        if search:
-            pass
-            # if text.lower() in name.lower() or text=="":
+    def __add_list_item(self,dataitem,text="",search=False):
+        # if search:
+            # text = text.lower()
+            # text = text.replace('ü','v')
+            # text = dataitem["character"].remove_pinyin(text=text)
+            # search_for = dataitem["char_simp"],dataitem["char_trad"],dataitem["character"].remove_pinyin()
+            # if  any([text.lower() in c.lower() for c in search_for]) or text=="":
                 # self.rv_scroll.data.append(dataitem)
-        else: self.rv_scroll.data.append(dataitem)
+        # else: 
+        self.rv_scroll.data.append(dataitem)
     
     def set_list_items(self,text="",search=False):
         self.rv_scroll.data = []
-        for character in self.dictionary.sort():
-            dataitem=self.create_dataitem(character)
-            self.add_list_item(dataitem,text=text,search=search)
+        if self.search_entry.text != "": 
+            search = True
+            text = self.search_entry.text
+        if search:
+            search_dictionary = self.dictionary.search(text=text,exact=False,search_prompt=False)
+        else:
+            search_dictionary = self.dictionary
+            
+        for character in search_dictionary.sort():
+            dataitem=self.__create_dataitem(character)
+            self.__add_list_item(dataitem,text=text,search=search)
 
     def save_dictionary(self, output='all'):
         from main import ChD
@@ -141,13 +161,54 @@ class ViewDict(MyScreen):
         self.dialog.open()
     
     def add_character(self):
+        
         kwargs={
-            "title":'Character',
-            "support_text":f"'-' separates these categories: simple, traditional, pronunciation",
+            "title":"Add a new character",
+            "support_text": "There are two ways to add a new character to the dictionary. Either load a file containing one or more characters or add an entirely new one.",
+            "options":['Load character file','Add new character'],
+            "itemclass":"AddCharItem",
+            "list_height":300
         }
-        self.dialog = AddElement(**kwargs)
+        
+        self.dialog = ShowOptions(**kwargs) 
         self.dialog.open()
 
+    def add_new_character(self, mode):
+        if mode == "new":
+            kwargs={
+                "title":'Character',
+                "support_text":f"'-' separates these categories: simple, traditional, pronunciation",
+            }
+            self.dialog = AddElement(**kwargs)
+            self.dialog.open()
+        elif mode == "load":
+            self.file_manager = MyFileManager(
+                select_path=self.add_char_to_dict,
+                ext=[".jsonl",'.txt'], 
+            )
+            self.file_manager.show()
+        
+    def add_char_to_dict(self,path):
+        try:
+            self.dialog = ConfirmChoice(
+                    dict_name=self.dict_name,
+                    file_name=os.path.basename(path),
+                    # file_format=self.file_format,
+            )
+            self.dialog.load_file(path)
+            self.dialog.open()
+        except Exception as err:
+            error=f"{type(err).__name__}"
+            ErrorMsg(error=error,msg=str(err)).open()
+    
+    def load_dictionary(self):
+        if hasattr(self.dialog,'file_path'):
+            self.__read_dict_file(file_format=self.dialog.file_format, dict_file=self.dialog.file_path, add=True)
+
+    def rename_dict(self,name):
+        self.dictionary.rename(name)
+        self.dict_name = name
+        
     def get_new_name(self):
         kwargs={
             "title":'New name',
@@ -169,7 +230,7 @@ class ViewDict(MyScreen):
                    
         self.dialog = ShowOptions(**kwargs) 
         self.dialog.open()
-    
+        
     def sort_dictionary(self,key=None):
         self.dictionary.sorting_key = key
         self.set_list_items()
@@ -181,3 +242,15 @@ class ViewDict(MyScreen):
             self.dictionary = self.dictionary - character
             self.set_list_items()
             self.entry_count-=1
+            
+    def toggle_search_bar(self):
+        from main import ChD
+        app = ChD.get_running_app()
+        if not hasattr(self.search_entry,'hidden') or not self.search_entry.hidden:
+            app.hide_widget(self.filter,do_hide=True)
+            self.search_entry.hidden = True
+        else:
+            app.hide_widget(self.filter,do_hide=False)
+            self.search_entry.hidden = False            
+            
+            

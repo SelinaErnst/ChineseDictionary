@@ -46,3 +46,12 @@ class TitleLabels(MDBoxLayout):
     right_text=StringProperty()
     font_style=StringProperty('Title')
     role=StringProperty('medium')
+    
+class TitleLabelsWithIcon(MDBoxLayout):
+    left_text=StringProperty()
+    right_text=StringProperty()
+    font_style=StringProperty('Title')
+    role=StringProperty('medium')
+    icon=StringProperty('magnify')
+    press_button=ObjectProperty()
+    

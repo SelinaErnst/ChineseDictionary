@@ -1,12 +1,13 @@
 # from .convert_instructions import plecoformat
 # from .possible_instructions #import possible_instructions, adjustables
 # from .loader import read_plecotxt
-from .dictionary import dictionary
+from .dictionary import dictionary, valid_ext
 from .character import character
 from .entry import entry
 from .convert_instructions import plecoformat
-from .printentry import encode_pinyin, decode_pinyin
+from .printentry import encode_pinyin, decode_pinyin, convert_pronunciations
 import ast
+
 
 def detect_type(value: str):
     # 1️⃣ Try integer
@@ -30,3 +31,4 @@ def detect_type(value: str):
 
     # 4️⃣ Otherwise, it’s just a plain string
     return value
+

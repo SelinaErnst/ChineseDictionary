@@ -17,6 +17,9 @@ class entry():
     
     def to_dict(self):
         return self.everything
+    
+    def get_dtypes(self):
+        return {k: type(v) for k,v in self.__dict__.items() if not k.startswith('_')}
 
     def update(self,**kwargs):
         for key,value in kwargs.items():

@@ -31,16 +31,44 @@
     radius: 20
     padding: 20
     orientation: 'horizontal'
-    size_hint_y: None
-    height: 100
+    adaptive_height: True
     MDLabel:
         id: label
         text: root.left_text
         halign: 'left'
+        adaptive_height: True
     MDLabel:
         text: root.right_text
         halign: 'right'
         adaptive_width: True
+
+<TitleLabelsWithIcon>: #MDBoxLayout
+    label:label
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceDimColor
+    radius: 20
+    padding: 20
+    orientation: 'horizontal'
+    adaptive_height: True
+    MDLabel:
+        id: label
+        text: root.left_text
+        halign: 'left'
+        adaptive_height: True
+    MDAnchorLayout:
+        size_hint_x: None
+        width: 150
+        MyIconButton:
+            icon: root.icon
+            size: 80,80
+            padding: 50,0,50,0
+            style: 'text'
+            on_release: app.test('Not working') if root.press_button == None else root.press_button()
+    MDLabel:
+        text: root.right_text
+        halign: 'right'
+        adaptive_width: True
+        role: 'small'
 
 # <MultiLineLabel>: #MDAnchorLayout
 #     label:label
@@ -62,7 +90,9 @@
     label:label
     padding: 0,0,0,0
     size_hint: 1, None
+    # size_hint: None, None
     height: label.height
+    # width: 100
 
     MDLabel:
         id:label

@@ -32,9 +32,14 @@ class MyApp(MDApp):
                 return True
         else: return False
         
+    def dismiss_file_manager(self):
+        if hasattr(self.wm.current_screen,'file_manager') \
+            and self.wm.current_screen.file_manager._window_manager_open:
+                self.wm.current_screen.file_manager.close()
+                
     def file_manager_back(self):
         if hasattr(self.wm.current_screen,'file_manager') \
-            and self.wm.current_screen.manager_open:
+            and self.wm.current_screen.file_manager._window_manager_open:
                 self.wm.current_screen.file_manager.back()
                 return True
         else: return False

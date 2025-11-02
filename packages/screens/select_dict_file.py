@@ -8,16 +8,18 @@ from packages.kivymd_templates import (
     ErrorMsg, # snackbar
     ShowOptions, # dialog
     ConfirmChoice, # dialog
-    # GrantAccess, # dialog
+    MyFileManager,
 )
 
+from packages.pleco import valid_ext
+valid_ext.update({'all':[]})
 
 class SelectFile(MyScreen):
     dict_file=StringProperty()
     dict_name=StringProperty()
     file_name=StringProperty()
     file_format=StringProperty()
-    # dialog=ObjectProperty()
+    valid_ext = valid_ext
 
     def __init__(self,default=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -87,19 +89,13 @@ class SelectFile(MyScreen):
     def confirm(self):
         is_file,is_name,is_format=self.check_file(),self.check_name(),self.check_file_format()
         if is_file and is_name and is_format: 
-            title="Confirm choice"
-            msg=f"Check if this looks like a proper choice. Especially whether this fits the wanted format."
             try:
-                count,first_line=self.count_and_first_line()
                 self.dialog = ConfirmChoice(
-                        title=title,
-                        support_text=msg,
                         dict_name=self.dict_name,
                         file_name=self.file_name,
                         file_format=self.file_format,
-                        count=str(count),
-                        first_line=first_line
                 )
+                self.dialog.load_file(self.dict_file)
                 self.dialog.open()
             except Exception as err:
                 error=f"{type(err).__name__}"
@@ -110,14 +106,12 @@ class SelectFile(MyScreen):
                 msg='Cannot continue. There is an invalid entry.'
                 ).open()
         
-    def continue_on(self):
+    def load_dictionary(self):
         from main import ChD
         app=ChD.get_running_app()
         next_screen=app.switch_screen("viewdict",'left')
-        # app.hide_widget(next_screen.ids.save_button,do_hide=False)
-        next_screen.dict_file=self.dict_file
-        next_screen.dict_name=self.dict_name
-        can_read = next_screen.read_dict_file(self.file_format)
+        can_read = next_screen.set_up_screen(dict_name=self.dict_name,dict_file=self.dict_file,file_format=self.file_format)
+        
         if not can_read:
             app.previous_screen()
             ErrorMsg(
@@ -125,6 +119,38 @@ class SelectFile(MyScreen):
                 msg='Cannot read file as dictionary.'
                 ).open()
 
+    def choose(self):
+
+        from main import ChD
+        app = ChD.get_running_app()
+        directory = app.get_setting('import_directory')
+        try: 
+            if not self.check_file_format():
+                self.file_format='all'
+            self.file_manager = MyFileManager( 
+                select_path=self.select_path,
+                ext=self.valid_ext[self.file_format], 
+            )
+            self.file_manager.show(directory)
+                
+        except Exception as err:
+            error=f"{type(err).__name__}"
+            ErrorMsg(error=error,msg=str(err)).open()
+        
+    def select_path(self, path):
+        self.file_manager.close()
+        self.dict_file = path
+        self.dict_name = os.path.basename(path).split('.')[0]
+        self.file_format=self.get_file_format(os.path.basename(path))
+        
+    def get_file_format(self,file):
+        extension = os.path.splitext(file)[1]
+        try:
+            file_format = [f for f,e in self.valid_ext.items() if extension in e][0]
+            return file_format
+        except:
+            return ''
+        
 class NameDict(MyScreen):
     # dict_file=StringProperty()
     dict_name=StringProperty('')
@@ -146,7 +172,5 @@ class NameDict(MyScreen):
         from main import ChD
         app=ChD.get_running_app()
         next_screen=app.switch_screen("viewdict",'left')
-        next_screen.dict_name=self.dict_name
-        next_screen.dict_file=""
-        next_screen.empty_dict()
-        next_screen.set_list_items()
+        next_screen.set_up_screen(dict_name=self.dict_name)
+        

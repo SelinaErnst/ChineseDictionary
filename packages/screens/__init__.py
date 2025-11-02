@@ -1,5 +1,5 @@
 from .select_dict_file import SelectFile, NameDict
-from .file_chooser import DictFileChooser, DictDirChooser
+from .file_chooser import DictDirChooser
 from .view_dict import ViewDict
 from .settings import Settings
 

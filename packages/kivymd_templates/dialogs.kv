@@ -14,6 +14,8 @@
             root.accept_func
 
 <ConfirmChoice>: #MyDialog
+    title: "Confirm choice"
+    support_text: "Check if this looks like a proper choice."
     MDDialogContentContainer:
         orientation: "vertical"
         MDDivider:
@@ -40,8 +42,8 @@
             padding: 20,20,0,0
 
     MakeDecision:
-        accept_func: app.wm.current_screen.continue_on
-    
+        accept_func: 
+            app.wm.current_screen.load_dictionary
 
 
 <GrantAccess@MyDialog>:
@@ -118,7 +120,7 @@
         style: "text"
         on_release: 
             app.dismiss_dialog()
-            root.dismiss_func()
+            root.dismiss_func() if root.dismiss_func!=None else None
     Widget:
     RigidIconTextButton:
         width: root.button_width
@@ -127,5 +129,6 @@
         style: "text"
         on_release: 
             app.dismiss_dialog()
+            app.dismiss_file_manager()
             root.accept_func()
     Widget:

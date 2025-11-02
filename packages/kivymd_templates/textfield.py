@@ -2,6 +2,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.boxlayout import MDBoxLayout
 from .dialogs import ShowOptions, ShowPaletteOptions
 from .snackbars import ErrorMsg
+from .file_manager import MyFileManager
 
 from kivy.utils import hex_colormap
 
@@ -97,35 +98,10 @@ class FileOpener(EntryFieldWithIcon):
     selection = ListProperty([])
     role=StringProperty("medium")
     file_format=StringProperty()
-    
+        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def choose(self):
-        from main import ChD
-        app = ChD.get_running_app()
-        if self.selection != []: self.text = str(self.selection[0])
-        directory = app.get_setting('import_directory')
-        try:
-            if not app.wm.current_screen.check_file_format():
-                self.file_format='all'
-            else:
-                self.file_format=app.wm.current_screen.file_format
-            sc = app.switch_screen('filechooser','right')
-            sc.directory = directory
-            sc.file_format = self.file_format
-            sc.set_files()
-        except Exception as err:
-            error=f"{type(err).__name__}"
-            ErrorMsg(error=error,msg=str(err)).open()
-
-    def handle_selection(self, selection):
-        if selection != None:
-            self.selection = selection
-    def on_selection(self, *a, **k):
-        self.update()
-    def update(self):
-        self.text = str(self.selection[0])
     def is_correct(self):
         if 'file' in self.hint.lower():
             return self.parent.parent.parent.check_file()

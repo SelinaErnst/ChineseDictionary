@@ -4,7 +4,12 @@ import os
 from .loader import read_plecotxt
 from .character import character
 import re
-from .printentry import encode_pinyin
+from .printentry import encode_pinyin, decode_pinyin
+
+valid_ext={
+    'pleco':['.txt'],
+    'jsonl':['.jsonl']
+    }
 
 class dictionary():
     def __init__(self,name,characters=None,sorting_key='pronunciation'):
@@ -200,3 +205,31 @@ class dictionary():
             s=", ".join([str(e) for e in c.uniq])
             lines+=[f'{i}. character: {s}']
         return lines
+    
+    def search(self,text="",exact=False, search_prompt=True):
+        
+        def prepare_text(text):
+            text = text.lower()
+            if not exact:
+                text = text.replace('ü','v')
+                text = encode_pinyin(text)
+                text = re.sub(r'\d+', '', text)
+            else:
+                text = decode_pinyin(text)
+            return text.replace(' ','')
+        
+        def compare(t,c):
+            if not exact:
+                search_for = list(c.uniq)[:2]+[c.remove_pinyin()]
+            else:
+                search_for = list(c.uniq)[:2]+[c.show_pinyin()]
+            search_for = [s.replace(' ','') for s in search_for]
+            return any([t in e for e in search_for])
+        
+        search_text = prepare_text(text)
+        if search_prompt: print('Look for:',text,'or',search_text)
+        fits = [c for c in self.characters if compare(search_text,c)]
+        return dictionary(name=self.name, characters=fits)
+                    
+        # if  any([text.lower() in c.lower() for c in search_for]) or text=="":
+        

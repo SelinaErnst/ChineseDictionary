@@ -73,45 +73,42 @@ class DictDirChooser(FileChooser):
             file=file[0]            
             app=ChD.get_running_app()
             next_screen=app.switch_screen("viewdict","left")
-            next_screen.dict_file=dict_path+dict_dir+f'.{self.file_format}'
-            next_screen.dict_name=dict_dir
-            # app.hide_widget(next_screen.ids.save_button)
-            can_read = next_screen.read_dict_file(self.file_format)
+            next_screen.set_up_screen(dict_name=dict_dir,dict_file=dict_path+dict_dir+f'.{self.file_format}',file_format=self.file_format)
         
-class DictFileChooser(FileChooser):
-    file_format=StringProperty('all')
-    valid_ext={
-        'pleco':'.txt',
-        'jsonl':'.jsonl',
-        'all':''
-    }
-    def set_files(
-        self, 
-        directory=None, 
-        is_file=True, 
-        text="", 
-        search=False
-        ):
-        return super().set_files(directory, self.valid_ext, is_file, text, search)
-            
-    def update(self):
-        from main import ChD
-        self.directory = ChD.get_running_app().get_setting('import_directory')
-        self.set_files()
+    # class DictFileChooser(FileChooser):
+    #     file_format=StringProperty('all')
+    #     valid_ext={
+    #         'pleco':'.txt',
+    #         'jsonl':'.jsonl',
+    #         'all':''
+    #     }
+    #     def set_files(
+    #         self, 
+    #         directory=None, 
+    #         is_file=True, 
+    #         text="", 
+    #         search=False
+    #         ):
+    #         return super().set_files(directory, self.valid_ext, is_file, text, search)
+                
+    #     def update(self):
+    #         from main import ChD
+    #         self.directory = ChD.get_running_app().get_setting('import_directory')
+    #         self.set_files()
                     
-    def select(self,file):
-        path_file=self.directory+file
-        if os.path.isfile(path_file):
-            from main import ChD
-            next_screen=ChD.get_running_app().switch_screen("selectfile","left",remember=False)
-            next_screen.dict_file=path_file
-            next_screen.dict_name=os.path.basename(path_file).split('.')[0]
-            next_screen.file_format=self.get_file_format(file)
+    # def select(self,file):
+    #     path_file=self.directory+file
+    #     if os.path.isfile(path_file):
+    #         from main import ChD
+    #         next_screen=ChD.get_running_app().switch_screen("selectfile","left",remember=False)
+    #         next_screen.dict_file=path_file
+    #         next_screen.dict_name=os.path.basename(path_file).split('.')[0]
+    #         next_screen.file_format=self.get_file_format(file)
         
-    def get_file_format(self,file):
-        extension = os.path.splitext(file)[1]
-        try:
-            file_format = [f for f,e in self.valid_ext.items() if e == extension][0]
-            return file_format
-        except:
-            return ''
+    # def get_file_format(self,file):
+    #     extension = os.path.splitext(file)[1]
+    #     try:
+    #         file_format = [f for f,e in self.valid_ext.items() if e == extension][0]
+    #         return file_format
+    #     except:
+    #         return ''

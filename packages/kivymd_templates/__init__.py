@@ -1,6 +1,9 @@
 from .app import (
     MyApp
 )
+from .file_manager import (
+    MyFileManager
+)
 
 from .buttons import (
     MyIconTextButton,

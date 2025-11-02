@@ -3,16 +3,48 @@
     rv_scroll: rv_scroll
     grid: grid
     bottom_nav: bottom_nav
+    search_entry: search_entry
+    filter: filter
     MDAnchorLayout:
         padding: 25,50,25,50
         MDBoxLayout:
             orientation: 'vertical'
-            spacing: 20
-            TitleLabels:
-                anchor_x: "left"
-                left_text: root.dict_name
-                right_text: str(root.entry_count)
-                role: 'large'
+            MDBoxLayout:
+                adaptive_height: True
+                orientation: 'vertical'
+                TitleLabelsWithIcon:
+                    # md_bg_color: 'white'
+                    anchor_x: "left"
+                    left_text: root.dict_name
+                    right_text: str(root.entry_count)
+                    role: 'large'
+                    icon: 'magnify'
+                    press_button: root.toggle_search_bar
+                MDBoxLayout:
+                    id: filter
+                    size_hint_y: None
+                    height: search_entry.height + 2*20
+                    orientation: 'vertical'
+                    padding: 0,20,0,20
+                    MDTextField:
+                        id: search_entry
+                        theme_font_name: "Custom"
+                        font_name:"CH"
+                        on_text: root.set_list_items(self.text,True)
+                # MDStackLayout:
+                #     adaptive_height: True
+                #     CommonAssistChip: 
+                #         text: "translated"
+                #         icon: "translate"
+                #     CommonAssistChip: 
+                #         text: "radical"
+                #         icon: "alpha-r-box"
+                #     CommonAssistChip: 
+                #         text: "measure word"
+                #         icon: "scale-unbalanced"
+                #     CommonAssistChip: 
+                #         text: "grammatical"
+                #         icon: "bookshelf"
             MDRecycleView:
                 id: rv_scroll
                 viewclass: 'DictionaryItem'
@@ -75,4 +107,21 @@
                         size: self.parent.height, self.parent.height
                         on_release: root.delete_dictionary()
 
+
+<CommonAssistChip@MDChip>
+    text: ""
+    icon: ""
+    type: "filter"
+    radius: 20
+    theme_elevation_level: "Custom"
+    elevation_level: 1
+    theme_shadow_softness: "Custom"
+    shadow_softness: 2
+    # MDChipLeadingIcon:
+        # icon: root.icon
+    MDChipText:
+        text: root.text
+        role: 'small'
+    # MDChipTrailingIcon:
+    #     icon: root.icon
                         

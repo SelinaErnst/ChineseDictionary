@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import os
 from plyer import filechooser
-from packages.pleco import dictionary, decode_pinyin
+from packages.pleco import dictionary, convert_pronunciations
 from kivy.utils import platform
 
 # = ––––––––––––– do not put this below kivy packages –––––––––––– = #
@@ -28,10 +28,10 @@ if platform in ["linux","win"]:
     # Window.size = (1411, 2560) # Tab S6
     Window.size = (1080, 2114) # Galaxy S24
 # = –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– = #
+from kivy.metrics import Metrics, dp, sp
 
 from packages.screens import (
     SelectFile, NameDict,
-    DictFileChooser, 
     DictDirChooser,
     ViewDict,
     Settings,
@@ -54,6 +54,7 @@ from packages.kivymd_templates import (
     ShowOptions,
     AttentionMsg,
     ErrorMsg,
+    MyFileManager,
 )
 
 from kivy.lang import Builder
@@ -201,6 +202,7 @@ KV="""
 <Bullets>:
     adaptive_height: True          
 <ListElement>:
+    width: 300
     label_padding: 25,10,20,10
     label_width: self.width-35
     anchor_x: 'right'
@@ -227,9 +229,13 @@ class Head(ButtonBehavior, MultiLineLabel):
 
 class Bullets(MDStackLayout):
 
-    def create_bullets(self,results,font_name='CH'):
+    def create_bullets(self,results,font_name='CH',use_both_directions=False):
+        if use_both_directions: 
+            size_hint = [None,None]
+        else:
+            size_hint = [1,None]
         for r in results:
-            label=ListElement(text=str(r), font_name=font_name, size_hint=[1,None])
+            label=ListElement(text=str(r), font_name=font_name, size_hint=size_hint)
             self.add_widget(label)
     
     def remove_bullets(self):
@@ -239,15 +245,17 @@ class MyList(MDBoxLayout):
     prop=StringProperty()
     translations=ListProperty()
     bullets=ObjectProperty()
+    small_bullets=['variants','relatives','words','others']
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         head_text=self.prop.replace('_',' ').capitalize()
         head_label=Head(text=head_text)
         head = MDAnchorLayout(anchor_y='top', anchor_x="left", size_hint_x=None, width=320)
         head.add_widget(head_label)
-        font_name = 'CH' if self.prop.lower()!='german' else 'Roboto'
+        # font_name = 'CH' if self.prop.lower()!='german' else 'Roboto'
         self.bullets=Bullets()
-        self.bullets.create_bullets(results=self.translations)
+        use_both_directions = True if self.prop.lower() in self.small_bullets else False
+        self.bullets.create_bullets(results=self.translations,use_both_directions=use_both_directions)
         self.add_widget(head)
         # self.children[0].add_widget(head_label)
         self.add_widget(self.bullets)
@@ -259,7 +267,7 @@ class ShowCharacter(MyScreen):
     categories=ListProperty()
     head_categories=['simple','traditional','pronunciation']
     not_listed_categories=['strokes','ancient','images','image_urls']
-    default_height=78
+    default_height=dp(78/float(Metrics.density))
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -280,7 +288,6 @@ class ShowCharacter(MyScreen):
         for category in self.head_categories:
             if category in self.ids:
                 if category == 'pronunciation':
-                    # text=decode_pinyin(self.character.get_property(category))
                     text=self.character.show_pinyin()
                 else:
                     text=self.character.get_property(category)
@@ -349,8 +356,9 @@ class ShowCharacter(MyScreen):
         self.dialog.open()
         
     def select_new_category(self):
-        missing_categories=[cat for cat in self.character.get_missing_categories() if cat not in self.not_listed_categories]
+        missing_categories=[cat for cat in self.character.get_missing_categories()]
         hidden_categories=[cat for cat in self.character.get_existing_categories() if cat in self.not_listed_categories]
+        
         kwargs={
             "title":"Select the category",
             'support_text':"The categories shown here will contain information about the character. By selecting one of them, a new entry can be given.",
@@ -363,42 +371,27 @@ class ShowCharacter(MyScreen):
         self.dialog.open()
         
     def choose_png_file(self):
-        from kivymd.uix.filemanager import MDFileManager
-        self.manager_open = False
-        self.file_manager = MDFileManager(
-            exit_manager=self.exit_manager,
+        self.file_manager = MyFileManager(
             select_path=self.select_path,
             ext=[".png"], 
         )
-        self.open_file_manager()
-        
-    def open_file_manager(self):
-        if platform == 'android':
-            from android.storage import primary_external_storage_path
-            directory=primary_external_storage_path()
-        else:
-            directory=os.path.expanduser("~")
-        self.file_manager.show(directory)
-        self.manager_open = True
+        self.file_manager.show()
         
     def select_path(self, path):
-        self.exit_manager()
+        self.file_manager.close()
         from main import SCRIPT_DIR
         file_name = f'{self.character.unicode_unique_string()}.png'
-        directory=SCRIPT_DIR/'character_images'/'ancient_characters'
+        directory=SCRIPT_DIR/'character_images'/'my_images'
+        os.makedirs(directory, exist_ok=True)
         if self.move_and_rename_file(src_path=path,dest_dir=directory,new_name=file_name):
             kwargs={'ancient_image':os.path.join(str(directory), file_name)}
             self.character.update_images(kwargs)
-        
-    def exit_manager(self, *args):
-        self.manager_open = False
-        self.file_manager.close()
         
     def move_and_rename_file(self,src_path, dest_dir, new_name):
         dest_path = os.path.join(str(dest_dir), new_name)
         try:
             import shutil
-            shutil.move(src_path, dest_path)
+            shutil.copyfile(src_path, dest_path)
             AttentionMsg(attention='Image was uploaded',msg=f'Ancient image was defined as {dest_path}, based on {src_path}').open()
             return True
         except Exception as err:
@@ -465,7 +458,6 @@ class ChD(MyApp):
             Settings(name='settings',settings=self.settings),
             SelectFile(name="selectfile", default=default),
             NameDict(name='namedict'),
-            DictFileChooser(name="filechooser"),
             DictDirChooser(name='selectdict'),
             ViewDict(name="viewdict", default=default),
         ]

@@ -33,6 +33,11 @@
         app.wm.current_screen.sort_dictionary(self.text)
         app.dismiss_dialog()
 
+<AddCharItem@FlexTextButton>:
+    on_release:
+        app.dismiss_dialog()
+        if 'new' in self.text.lower(): app.wm.current_screen.add_new_character('new')
+        elif 'load' in self.text.lower(): app.wm.current_screen.add_new_character('load')
 
 <ThemeItem@FlexTextButton>: 
     on_release: 

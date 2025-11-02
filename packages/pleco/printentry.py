@@ -12,44 +12,49 @@ PinyinToneMark = {
 }
 
 def decode_pinyin(s):
-    if s!=None:
-        s = s.lower()
-        r = ""
-        t = ""
-        for c in s:
-            if c >= 'a' and c <= 'z':
-                t += c
-            elif c == ':':
-                assert t[-1] == 'u'
-                t = t[:-1] + "\u00fc"
-            else:
-                if c >= '0' and c <= '5':
-                    tone = int(c) % 5 # tone 5 -> 0
-                    if tone != 0:
-                        m = re.search("[aoeiuv\u00fc]+", t)
-                        if m is None:
-                            t += c
-                        elif len(m.group(0)) == 1:
-                            t = t[:m.start(0)] + PinyinToneMark[tone][PinyinToneMark[0].index(m.group(0))] + t[m.end(0):]
-                        else:
-                            if 'a' in t:
-                                t = t.replace("a", PinyinToneMark[tone][0])
-                            elif 'o' in t:
-                                t = t.replace("o", PinyinToneMark[tone][1])
-                            elif 'e' in t:
-                                t = t.replace("e", PinyinToneMark[tone][2])
-                            elif t.endswith("ui"):
-                                t = t.replace("i", PinyinToneMark[tone][3])
-                            elif t.endswith("iu"):
-                                t = t.replace("u", PinyinToneMark[tone][4])
+    words = s.split(' ')
+    result = []
+    for s  in words:
+        if s!=None and re.search(r'\d', s):
+            s = s.lower()
+            r = ""
+            t = ""
+            for c in s:
+                if c >= 'a' and c <= 'z':
+                    t += c
+                elif c == ':':
+                    assert t[-1] == 'u'
+                    t = t[:-1] + "\u00fc"
+                else:
+                    if c >= '0' and c <= '5':
+                        tone = int(c) % 5 # tone 5 -> 0
+                        if tone != 0:
+                            m = re.search("[aoeiuv\u00fc]+", t)
+                            if m is None:
+                                t += c
+                            elif len(m.group(0)) == 1:
+                                t = t[:m.start(0)] + PinyinToneMark[tone][PinyinToneMark[0].index(m.group(0))] + t[m.end(0):]
                             else:
-                                t += "!"
-                r += t
-                t = ""
-        r += t
-        return r
-
-
+                                if 'a' in t:
+                                    t = t.replace("a", PinyinToneMark[tone][0])
+                                elif 'o' in t:
+                                    t = t.replace("o", PinyinToneMark[tone][1])
+                                elif 'e' in t:
+                                    t = t.replace("e", PinyinToneMark[tone][2])
+                                elif t.endswith("ui"):
+                                    t = t.replace("i", PinyinToneMark[tone][3])
+                                elif t.endswith("iu"):
+                                    t = t.replace("u", PinyinToneMark[tone][4])
+                                else:
+                                    t += "!"
+                    r += t
+                    t = ""
+            r += t
+            result+=[r]
+        else:
+            result+=[s]
+    return ''.join(result)
+    
 def encode_pinyin(pinyin: str) -> str:
     if pinyin!=None:
         tone_map = {
@@ -112,8 +117,16 @@ def link_to_string(match):
     linked_string = plecoformat('link',naked_string)
     return f'[{linked_string}]'
 
+def pyinyin_to_string(match):
+    naked_string = match.group().lstrip('[').rstrip(']')
+    pinyin_string = decode_pinyin(naked_string)
+    return f'[{pinyin_string}]'
+
 def link_pronunciations(plecostring):
     return re.sub(r'\[(?:(?![\u4e00-\u9fff])[\S]+)\]',link_to_string,plecostring)
+
+def convert_pronunciations(plecostring):
+    return re.sub(r'\[(?:(?![\u4e00-\u9fff])[\S]+)\]',pyinyin_to_string,plecostring)
 
 class plecoprinter():
     def __init__(self,entry=None):
@@ -145,17 +158,28 @@ class plecoprinter():
             dict_entries=[plecoformat('link',de) for de in self.__entry.dict_entries]
         else:
             dict_entries=None
-        return plecoformat('grey',plecoformat('bold','INFORMATION'))+plecoformat(
+        title=plecoformat('grey',plecoformat('bold','INFORMATION')) 
+        content=plecoformat(
             'indent',
-            # definition('STROKES:','grey','bold','dot',f'({self.__entry.strokecount}) {self.__entry.strokeorder}')+
-            definition('STROKES:','grey','bold','dot',self.__entry.strokes)+
-            definition('CLASSIFIER:','grey','bold','dot',self.__entry.classifier)+
-            definition('VARIANTS:','grey','bold','dot',self.__entry.variants)+
-            definition('RELATIVES:','grey','bold','dot',self.__entry.relatives)+
-            definition('WORDS:','grey','bold','dot',self.__entry.words)+
-            definition('DISTINGUISH:','grey','bold','dot',self.__entry.others)+
-            definition('DICTIONARY ENTRIES:','grey','bold','dot',dict_entries,newline=True)
+            definition('CLASSIFIER:','grey','narrowbold','dot',self.__entry.classifier)+
+            definition('VARIANTS:','grey','narrowbold','dot',self.__entry.variants)+
+            definition('DISTINGUISH:','grey','narrowbold','dot',self.__entry.others)+
+            definition('DICTIONARY ENTRIES:','grey','narrowbold','dot',dict_entries,newline=True)
         )
+        return title+content
+    
+    def words_and_characters(self):
+        categories=['relatives','words']
+        n_categories = len([cat for cat in categories if cat in self.__entry.categories and self.__entry.__dict__[cat]!=None])
+        if n_categories < 1: return ''
+        title=plecoformat('grey',plecoformat('bold','OCCURENCES')) 
+        content=plecoformat(
+            'indent',
+            definition('RELATIVES:','grey','narrowbold','dot',self.__entry.relatives)+
+            definition('WORDS:','grey','narrowbold','dot',self.__entry.words)
+            )   
+        return title+content
+    
     def meaning(self):
         categories=['components','mnemonics','usage','origin']
         n_categories = len([cat for cat in categories if cat in self.__entry.categories and self.__entry.__dict__[cat]!=None])
@@ -169,13 +193,17 @@ class plecoprinter():
         else:
             comp=''
             components=self.__entry.components
-        return plecoformat('grey',plecoformat('bold','CHARACTER MEANING'))+plecoformat(
+            
+        title=plecoformat('grey',plecoformat('bold','CHARACTER'))
+        content=plecoformat(
             'indent',
-            definition('COMPONENTS:','grey','bold','dot',components)+comp+
-            definition('MNEOMICS:','grey','bold','point',self.__entry.mnemonics)+
-            definition('COMPONENT USAGE:','grey','bold','point',self.__entry.usage)+
-            definition('ORIGINS:','grey','bold','point',self.__entry.origin)
+            definition('STROKES:','grey','narrowbold','dot',self.__entry.strokes)+
+            definition('COMPONENTS:','grey','narrowbold','dot',components)+comp+
+            definition('MNEMONICS:','grey','narrowbold','point',self.__entry.mnemonics)+
+            definition('MEANING AS COMPONENT:','grey','narrowbold','point',self.__entry.usage)+
+            definition('ORIGINS:','grey','narrowbold','point',self.__entry.origin)
         ) 
+        return title+content
 
     def ancient_form(self):
         categories=['ancient']
@@ -184,7 +212,9 @@ class plecoprinter():
         
         ancientform = ''.join(self.__entry.ancient) if isinstance(self.__entry.ancient,list) else self.__entry.ancient
         ancientform = ancientform if ancientform != None else ""
-        return plecoformat('grey',plecoformat('bold','ANCIENT FORM:'))+plecoformat('textbig',f'{ancientform}')
+        title=plecoformat('grey',plecoformat('bold','ANCIENT FORM:'))
+        content=plecoformat('textbig',f'{ancientform}')+plecoformat('newline')
+        return title+content
 
     def links(self):
         categories=['link']
