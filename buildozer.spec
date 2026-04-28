@@ -15,17 +15,17 @@ source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
 # source.include_exts = py,png,jpg,kv,atlas,json,ttf,otf,txt
-source.include_exts = py,png,jpg,kv,atlas,json,ttf,otf,txt,db,jpeg,ico,mp4,mp3,sqlite,sqlite3
+source.include_exts = py,png,chd,json,ttf,otf,txt,kv,jpg,jpeg,atlas,db,ico,mp4,mp3,sqlite,sqlite3
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
-source.include_patterns = assets/*,packages/*,screens/*, appdata/*,character_images/ancient_characters/*,character_images/shuowen_jiezi/*
+source.include_patterns =  packages/*, appdata/*
 
 # (list) Source files to exclude (let empty to not exclude anything)
-source.exclude_exts = spec
+source.exclude_exts = spec, gitignore, git
 
 # (list) List of directory to exclude (let empty to not exclude anything)
-source.exclude_dirs = tests, bin, venv, .gitignore, .git
+source.exclude_dirs = bin, venv, test_packages, dictionaries, images
 
 # (list) List of exclusions using pattern matching
 # Do not prefix with './'
@@ -41,7 +41,7 @@ version = 0.1
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
 # requirements = python3, kivy==2.3.1, https://github.com/kivymd/KivyMD/archive/master.zip, exceptiongroup, asynckivy, asyncgui, materialyoucolor, android
-requirements = python3, kivy==2.3.1, https://github.com/kivymd/KivyMD/archive/master.zip, plyer==2.1.0, requests, pillow, hostpython3, jnius, exceptiongroup, asynckivy, asyncgui, materialyoucolor, android
+requirements = python3==3.11.1, hostpython3==3.11.1, kivy==2.3.1, https://github.com/kivymd/KivyMD/archive/master.zip, plyer==2.1.0, requests, pillow, jnius, exceptiongroup, asynckivy, asyncgui, materialyoucolor, android, typeguard, typing_extensions
 
 
 # (str) Custom source folders for requirements
@@ -49,7 +49,7 @@ requirements = python3, kivy==2.3.1, https://github.com/kivymd/KivyMD/archive/ma
 # requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
-#presplash.filename = %(source.dir)s/data/presplash.png
+presplash.filename = %(source.dir)s/appdata/images/presplash.png
 
 # (str) Icon of the application
 #icon.filename = %(source.dir)s/data/icon.png

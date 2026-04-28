@@ -1,32 +1,48 @@
 <Home>: #MyScreen
-    id: "home"
     MDAnchorLayout:  
         MDBoxLayout:
             orientation: 'vertical'
             spacing: 50
+            size_hint_x: None 
+            width: 700+2*(140)
             adaptive_height: True
-            adaptive_width: True
-            RigidIconTextButton: 
-                text: "Select Dictionary"
+            RigidIconTextButton:
+                text: 'Grammar'
                 icon: 'bookshelf'
                 style: 'filled'
-                padding: 50
-                width: 650
-                on_release: 
-                    app.switch_screen("selectdict","left")
-                    app.wm.current_screen.directory = app.get_setting('dict_directory')
-                    app.wm.current_screen.set_files()
-            RigidIconTextButton: 
-                text: "Load Dictionary"
-                icon: 'upload'
-                style: 'filled'
-                padding: 50
-                width: 650
-                on_release: app.switch_screen("selectfile","left")
-            RigidIconTextButton: 
-                text: "New Dictionary"
-                icon: 'plus'
-                style: 'filled'
-                padding: 50
-                width: 650
-                on_release: app.switch_screen("namedict","left")
+                font_style: 'Title'
+                role: 'medium'
+                width: self.parent.width
+ 
+            MDGridLayout:
+                id: dictionaries
+                rows:1
+                cols:3
+                adaptive_height: True
+                spacing: 20
+                RigidIconTextButton:
+                    text: 'Dictionaries'
+                    icon: 'format-list-text'
+                    style: 'filled'
+                    font_style: 'Title'
+                    role: 'medium'
+                    width: 700-2*20
+                    on_release: 
+                        app.switch_screen("select_dict","left")
+                        app.wm.current_screen.directory = app.get_setting('dict_directory')
+                        app.wm.current_screen.set_files()
+                MyIconButton: 
+                    text: "Load Dictionary"
+                    icon: 'upload'
+                    style: 'filled'
+                    padding: 50,50,50,50
+                    size:  [140,140]
+                    on_release: app.switch_screen("upload_dict","left")
+                # Widget:
+                MyIconButton: 
+                    text: "New Dictionary"
+                    icon: 'plus'
+                    style: 'filled'
+                    padding: 50,50,50,50
+                    size:  [140,140]
+                    on_release: app.switch_screen("new_dict","left")

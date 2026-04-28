@@ -1,0 +1,89 @@
+<ChLabel>:
+    theme_font_name: "Custom"
+    font_name:"CH"
+
+<AnchoredLabel>: #MDAnchorLayout
+    label:label
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceBrightColor
+    radius: 20
+    padding: 20
+    MDLabel:
+        id:label
+        text: root.text
+        font_style: root.font_style
+        role: root.role
+        halign: root.halign
+
+<TitleLabel@MDLabel>:
+    font_style: "Title"
+    role: "medium"
+    adaptive_width: True
+    size_hint_y: None
+    height: 100
+
+<TitleLabels>: #MDBoxLayout
+    label:label
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceDimColor
+    radius: 20
+    padding: 20
+    orientation: 'horizontal'
+    adaptive_height: True
+    MDLabel:
+        id: label
+        text: root.left_text
+        halign: 'left'
+        adaptive_height: True
+    MDLabel:
+        text: root.right_text
+        halign: 'right'
+        adaptive_width: True
+
+<MultiLineLabel>: #MDAnchorLayout
+    label:label
+    padding: 0,0,0,0
+    size_hint: 1, None
+    height: label.height
+
+    text: ''
+    font_style: 'Label'
+    role: 'medium'
+    bold: False
+    font_name: 'CH'
+    halign: 'left'
+    theme_font_size: 'Primary'
+    font_size: 50
+    text_color: None
+    label_bg_color: None
+    label_width: None
+    label_height: 0
+    label_padding: 20,0,20,0
+
+    MDLabel:
+        id:label
+        text: root.text
+
+        font_style: root.font_style
+        role: root.role
+        bold: root.bold
+        theme_font_size: root.theme_font_size
+        font_size: sp(root.font_size)
+        theme_font_name: "Custom"
+        font_name: root.font_name
+        text_color: self.text_color if root.text_color == None else root.text_color
+        
+        halign: root.halign
+        md_bg_color: app.theme_cls.transparentColor if root.label_bg_color == None else root.label_bg_color
+
+        adaptive_height: True
+        height: max(root.label_height, self.texture_size[1])
+        size_hint_x: 1 if root.label_width == None else None
+        width: self.width if root.label_width == None else root.label_width
+        padding: root.label_padding
+
+        radius: 20
+
+        allow_copy: True
+        # on_copy: app.test(root.text+str(self.size))
+        on_copy: app.test(root.text)

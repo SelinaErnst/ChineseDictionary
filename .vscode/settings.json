@@ -26,8 +26,8 @@
         "onef",
         "oneg",
         "pleco",
+        "pyinyin",
         "Roboto",
-        "selectdict",
         "selectfile",
         "selina",
         "shuowen",
@@ -44,10 +44,24 @@
         "twof",
         "updatedict",
         "viewclass",
-        "viewdict",
         "xinch",
         "xpix",
         "yinch",
         "ypix"
-    ]
+    ],
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./tests",
+        "-p",
+        "test*.py"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "test_packages"
+    ],
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "materialkv.pythonFile": "main.py"
 }

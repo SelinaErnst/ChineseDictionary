@@ -1,0 +1,180 @@
+<ShowCharacter>:
+    bottom_nav: bottom_nav
+
+    MDStackLayout:
+        padding: 0,0,0,200
+        MDBoxLayout:
+            adaptive_height: True
+            orientation: 'horizontal'
+            md_bg_color: app.theme_cls.surfaceBrightColor
+            padding: 20,20,20,20
+            spacing: 20
+            MDStackLayout:
+                adaptive_height: True
+                # md_bg_color: 'green'
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    adaptive_height: True
+                    spacing: 10
+                    MultiLineLabel:
+                        id: simple
+                        text: root.get_category('simple')
+                        label_bg_color: app.theme_cls.onPrimaryContainerColor
+                        text_color: app.theme_cls.onPrimaryColor
+                        role: 'medium'
+                        font_style: "Title"
+                        label_height: root.default_height
+                    MultiLineLabel:
+                        id: traditional
+                        text: root.get_category('traditional')
+                        label_bg_color: app.theme_cls.onPrimaryContainerColor
+                        text_color: app.theme_cls.onPrimaryColor
+                        role: 'medium'
+                        font_style: "Title"
+                        label_height: root.default_height
+                Separator:
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    adaptive_height: True
+                    MDBoxLayout:
+                        size_hint: None,None
+                        size: 0,root.default_height
+                    MultiLineLabel:
+                        id: pronunciation
+                        text: root.character.pinyin
+                        role: 'medium'
+                        font_style: "Label"
+                        label_padding: 20,12,0,12
+                        label_height: root.default_height
+            MDAnchorLayout:
+                anchor_y: 'bottom'
+                anchor_x: 'right'
+                size_hint_x: None
+                width: edit.size[0]
+                MDStackLayout:
+                    size_hint: None, None
+                    width: edit.size[0]
+                    height: 2*edit.size[0]+20
+                    MyIconButton:
+                        id: edit
+                        size: root.default_height, root.default_height
+                        icon: 'pencil'
+                        style: 'text'
+                        on_release:  root.edit_character()
+                    Separator:
+                    MyIconButton:
+                        size: edit.size
+                        icon: 'plus'
+                        style: 'text'
+                        on_release: root.select_new_category()
+                        
+        ScrollView:
+            MDStackLayout:
+                id: scroll
+                size_hint: 1, None
+                height: self.minimum_height+(66+2*10)*2
+                padding: 20
+                spacing: 20
+                
+                
+    MDBottomSheet:
+        id: bottom_nav
+        size_hint_y: None
+        height: 170
+        radius: 0
+        sheet_type: "standard"
+        # sheet_type: "modal"
+        md_bg_color: app.theme_cls.surfaceBrightColor
+
+        BottomSheetDragHandleContainer:
+            padding: 20
+            adaptive_height: True
+            MDAnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                size_hint_y: None
+                height: bottom_nav.height-2*20
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    adaptive_width: True
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: 50
+                    MyIconButton:
+                        text: 'Delete'
+                        icon: 'delete'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: 
+                            # current_screen = app.switch_screen('view_dict','right')
+                            root.del_character()
+                            # bottom_nav.set_state("toggle")
+                    MyIconButton:
+                        text: 'Replace'
+                        icon: 'auto-upload'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: 
+                            root.choose_char_file()
+                            # bottom_nav.set_state("toggle")
+                    MyIconButton:
+                        text: 'Upload Image'
+                        icon: 'image-search'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: 
+                            root.upload_new_image()
+                            # bottom_nav.set_state("toggle")
+                    MyIconButton:
+                        text: 'Export'
+                        icon: 'content-save'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release:
+                            root.export_character()
+                            # bottom_nav.set_state("toggle")
+                    MyIconButton:
+                        text: 'Previous Character'
+                        icon: 'arrow-left'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: 
+                            root.show_previous()
+                    MyIconButton:
+                        text: 'Next Character'
+                        icon: 'arrow-right'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: 
+                            root.show_next()
+<MyList>:
+    orientation: 'horizontal'
+    adaptive_height: True
+<Head>:
+    role: 'small'
+    label_bg_color: self.theme_cls.onPrimaryContainerColor
+    text_color: self.theme_cls.onPrimaryColor
+    font_name: "Roboto"
+    bold: True
+    on_release: app.wm.current_screen.edit_property(root.text)
+<Bullets>:
+    adaptive_height: True          
+<ListElement>:
+    width: 300
+    label_padding: 25,10,20,10
+    label_width: self.width-35
+    anchor_x: 'right'
+    anchor_y: 'top'
+    # md_bg_color: 'red'
+    role: 'small'
+    label_bg_color: app.theme_cls.surfaceDimColor
+    MDAnchorLayout:
+        md_bg_color:[0,0,0,0]
+        padding: 23,20,0,0
+        anchor_x: 'left'
+        anchor_y: 'top'
+        MDRelativeLayout:
+            md_bg_color: app.theme_cls.onPrimaryContainerColor
+            size_hint: None,None
+            size: 20,20
+            

@@ -1,0 +1,47 @@
+
+<MyFileManager>:
+    background_color_selection_button: app.theme_cls.primaryContainerColor
+    # background_color_selection_button: app.theme_cls.onPrimaryColor
+    # background_color_selection_button: app.theme_cls.primaryColor
+
+    # background_color_selection_button: app.theme_cls.primaryFixedColor
+    # background_color_selection_button: app.theme_cls.onPrimaryFixedVariantColor
+
+    MDAnchorLayout:
+        anchor_y: 'bottom'
+        anchor_x: 'left'
+        padding: 0,0,0,30
+        MultiLineLabel:
+            text: root.description
+            size_hint_x: None
+            width: root.width-180
+            padding: 40
+            label_padding: 20,20,20,20
+
+<MyFileManagerItemPreview@BoxLayout>
+    name: ""
+    path: ""
+    realpath: ""
+    type: "folder"
+    events_callback: lambda x: None
+    _selected: False
+    orientation: "vertical"
+    size_hint_y: None
+    height: root.height
+    padding: "20dp"
+    spacing: "12dp"
+
+    MDFileManagerThumbnail:
+        mipmap: True
+        source: root.path
+        on_release:
+            root.events_callback( \
+            os.path.join(root.realpath, root.name), root)
+
+    MDLabel:
+        text: root.name
+        adaptive_height: True
+        shorten: True
+        shorten_from: "center"
+        halign: "center"
+        text_size: self.width, None

@@ -1,0 +1,36 @@
+from kivymd.uix.label import MDLabel
+from kivymd.uix.anchorlayout import MDAnchorLayout
+from kivymd.uix.boxlayout import MDBoxLayout
+
+from kivy.properties import (
+    StringProperty, 
+    NumericProperty,
+    ObjectProperty,
+    ListProperty,
+    BooleanProperty,
+    )
+
+from kivy.lang import Builder
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+Builder.load_file(current_dir+'/labels.kv')
+
+class ChLabel(MDLabel):
+    pass
+
+class AnchoredLabel(MDAnchorLayout):
+    text=StringProperty()
+    font_style=StringProperty('Label')
+    role=StringProperty('medium')
+    halign=StringProperty('left')
+    # height=NumericProperty(100)
+    
+class MultiLineLabel(MDAnchorLayout):
+    press_button=ObjectProperty()
+
+class TitleLabels(MDBoxLayout):
+    left_text=StringProperty()
+    right_text=StringProperty()
+    font_style=StringProperty('Title')
+    role=StringProperty('medium')
+    

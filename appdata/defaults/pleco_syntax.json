@@ -1,0 +1,61 @@
+{
+  "newline": "\ueab1",
+  "tab": "\uecd1",
+  "bracket": [
+    "[",
+    "]"
+  ],
+  "link": [
+    "\ueab8",
+    "\ueabb"
+  ],
+  "italic": [
+    "\ueab4",
+    "\ueab5"
+  ],
+  "underline": [
+    "\ueab6",
+    "\ueab7"
+  ],
+  "bold": [
+    "\ueab2",
+    "\ueab3"
+  ],
+  "narrow_bold": [
+    "\ueabe",
+    "\ueabf"
+  ],
+  "slightly_bold": [
+    "\ueac0",
+    "\ueab3"
+  ],
+  "bg": [
+    "\ueabc",
+    "\ueabd"
+  ],
+  "textsmall": [
+    "\ueac5AA00",
+    "\ueac6"
+  ],
+  "textbig": [
+    "\ueac5AA10",
+    "\ueac6"
+  ],
+  "color": [
+    "\ueac1",
+    "\ueac2"
+  ],
+  "block": [
+    "\ueac3",
+    "\ueac4"
+  ],
+  "left": "1A0A",
+  "right": " A0P",
+  "indent": "1A0P",
+  "line": "\ueac7AAAA",
+  "point": "\u25fc",
+  "dot": "\u00b7",
+  "mark": "uA0Z",
+  "markline": "zA0Z",
+  "zitools": "https://zi.tools/zi/"
+}

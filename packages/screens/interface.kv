@@ -16,7 +16,7 @@
                 on_release: nav_drawer.set_state("toggle")
                 
         MDTopAppBarTitle:
-            text: "Chinese Dictionary"
+            text: "ChD"
             halign: "center"
             role: 'medium'
             
@@ -60,7 +60,7 @@
                 MDNavigationDrawerDivider:
                 NavigationButton:
                     on_release: 
-                        app._show_validation_dialog()
+                        app._MyApp__show_validation_dialog()
                         nav_drawer.set_state("toggle")
                     icon: "account-check"
                     text: "Access"

@@ -3,65 +3,75 @@
     rv_scroll: rv_scroll
     grid: grid
     bottom_nav: bottom_nav
+
     search_entry: search_entry
+    search_filter: search_filter
+    search_button: header.search_button
+
     filter: filter
+    filter_box: filter_box
+    filter_button: header.filter_button
+
+    sorter: sorter
+    sorter_box: sorter_box
+    sorter_button: header.sorter_button
+
     MDAnchorLayout:
-        padding: 25,50,25,50
+        padding: 25,50,25,0
         MDBoxLayout:
             orientation: 'vertical'
             MDBoxLayout:
                 adaptive_height: True
                 orientation: 'vertical'
-                TitleLabelsWithIcon:
-                    # md_bg_color: 'white'
-                    anchor_x: "left"
+                DictNameWithButtons:
+                    id: header
                     left_text: root.dict_name
                     right_text: str(root.entry_count)
-                    role: 'large'
-                    icon: 'magnify'
-                    press_button: root.toggle_search_bar
                 MDBoxLayout:
-                    id: filter
+                    id: sorter_box
                     size_hint_y: None
-                    height: search_entry.height + 2*20
+                    height: sorter.height
+                    Sorter:
+                        id: sorter
+                MDBoxLayout:
+                    id: search_filter
+                    size_hint_y: None
+                    height: search_entry.height
                     orientation: 'vertical'
-                    padding: 0,20,0,20
+                    padding: 0,0,0,10
                     MDTextField:
                         id: search_entry
                         theme_font_name: "Custom"
                         font_name:"CH"
                         on_text: root.set_list_items(self.text,True)
-                # MDStackLayout:
-                #     adaptive_height: True
-                #     CommonAssistChip: 
-                #         text: "translated"
-                #         icon: "translate"
-                #     CommonAssistChip: 
-                #         text: "radical"
-                #         icon: "alpha-r-box"
-                #     CommonAssistChip: 
-                #         text: "measure word"
-                #         icon: "scale-unbalanced"
-                #     CommonAssistChip: 
-                #         text: "grammatical"
-                #         icon: "bookshelf"
+                MDBoxLayout:
+                    id: filter_box
+                    size_hint_y: None
+                    height: filter.height
+                    # md_bg_color: 'red'
+                    Filter:
+                        id: filter
+                        # md_bg_color: 'blue'
             MDRecycleView:
                 id: rv_scroll
                 viewclass: 'DictionaryItem'
                 RecycleBoxLayout:
                     id: grid
+                    padding: 0,0,0,300
                     orientation: "vertical"
                     spacing: 10
                     size_hint: 1, None
                     height: self.minimum_height
                     default_size_hint: 1, None
-                    default_height: 2*(1.75*60+10)+2*20
+                    default_height: 260
 
     MDBottomSheet:
         id: bottom_nav
         size_hint_y: None
         height: 170
         sheet_type: "standard"
+        radius:0
+        md_bg_color: app.theme_cls.surfaceDimColor
 
         BottomSheetDragHandleContainer:
             padding: 20
@@ -77,51 +87,149 @@
                     height: self.parent.height
                     spacing: 50
                     MyIconButton:
+                        text: 'Delete'
+                        icon: 'delete'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        on_release: root.del_dictionary()
+                    MyIconButton:
                         text: 'Add'
                         icon: 'plus'
                         size: self.parent.height, self.parent.height
                         style: 'text'
                         on_release: root.add_character()
                     MyIconButton:
-                        text: 'Sort'
-                        icon: 'sort'
-                        size: self.parent.height, self.parent.height
-                        style: 'text'
-                        on_release: root.get_sorting_key()
-                    MyIconButton:
-                        text: 'Rename'
-                        icon: 'pencil'
+                        text: 'Export'
+                        icon: 'download'
                         style: 'text'
                         size: self.parent.height, self.parent.height
-                        on_release: root.get_new_name()
+                        on_release: root.choose_export_method()
                     MyIconButton:
                         text: 'Save'
                         icon: 'content-save'
                         style: 'text'
                         size: self.parent.height, self.parent.height
-                        on_release: root.save_dictionary()
-                    MyIconButton:
-                        text: 'Delete'
-                        icon: 'delete'
-                        style: 'text'
-                        size: self.parent.height, self.parent.height
-                        on_release: root.delete_dictionary()
+                        on_release: root.save_dictionary(make_msg=False)
+
+<DictNameWithButtons@MDBoxLayout>: #MDBoxLayout
+    filter_button: filter_button
+    search_button: search_button
+    sorter_button: sorter_button
+
+    left_text: ''
+    right_text: ''
+    anchor_x: "left"
+
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceDimColor
+    radius: 20
+    padding: 0,20,20,20
+    spacing: 20
+    orientation: 'horizontal'
+    adaptive_height: True
+
+    MDAnchorLayout:
+        size_hint_x: None
+        width: 1*(80)
+        anchor_y: 'top'
+        MDBoxLayout:
+            adaptive_height: True
+            MyIconButton:
+                icon: 'pencil'
+                size: 80,80 
+                padding: 50,0,50,0
+                style: 'text'
+                on_release: app.wm.current_screen.get_new_name()
+
+    MDLabel:
+        text: root.left_text
+        halign: 'left'
+        adaptive_height: True
+        font_style: 'Title'
+        role: 'medium'
+
+    MDAnchorLayout:
+        size_hint_x: None
+        width: 3*(80)+2*(20)
+        MDBoxLayout:
+            adaptive_height: True
+            spacing: 20
+            MyIconButton:
+                id: sorter_button
+                icon: 'sort'
+                size: 80,80
+                padding: 50,0,50,0
+                style: 'elevated'
+                # on_release: app.wm.current_screen.get_sorting_key()
+                # on_release: app.wm.current_screen.toggle_sorter()
+                on_release: app.wm.current_screen.toggle_filter(app.wm.current_screen.sorter_box,app.wm.current_screen.sorter)
+            MyIconButton:
+                id: search_button
+                icon: 'magnify'
+                size: 80,80
+                padding: 50,0,50,0
+                style: 'elevated'
+                on_release: app.wm.current_screen.toggle_search_bar()
+            MyIconButton:
+                id: filter_button
+                icon: 'filter'
+                size: 80,80
+                padding: 50,0,50,0
+                style: 'elevated'
+                on_release: app.wm.current_screen.toggle_filter(app.wm.current_screen.filter_box,app.wm.current_screen.filter)
+    MDLabel:
+        text: root.right_text
+        halign: 'right'
+        adaptive_width: True
+        font_style: 'Title'
+        role: 'medium'
 
 
-<CommonAssistChip@MDChip>
+<Toggle>:
+    size_hint_y: None
+    height: 0 # toggle -> self.minimum_height
+    # padding: 0,10,0,10
+    padding: 0,0,0,10
+    spacing: 10
+
+<Filter@Toggle>: #MDStackLayout
+    FilterOption: 
+        text: "translated"
+        icon: "translate"
+        on_release: self.toggle_three()
+    FilterOption: 
+        text: "radical"
+        icon: "alpha-r-box"
+        on_release: self.toggle_three()
+    FilterOption: 
+        text: "measure word"
+        icon: "scale-unbalanced"
+        on_release: self.toggle_three()
+    FilterOption: 
+        text: "grammatical"
+        icon: "bookshelf"
+        on_release: self.toggle_three()
+
+<Sorter@Toggle>:
+    FilterOption: 
+        id: simple
+        text: "simple"
+        on_release: self.toggle_two(only_one=True)
+    FilterOption: 
+        id: traditional
+        text: "traditional"
+        on_release: self.toggle_two(only_one=True)
+    FilterOption: 
+        id: pronunciation
+        text: "pronunciation"
+        on_release: self.toggle_two(only_one=True)
+
+<FilterOption>: #FlexTextButton
     text: ""
     icon: ""
-    type: "filter"
-    radius: 20
-    theme_elevation_level: "Custom"
-    elevation_level: 1
-    theme_shadow_softness: "Custom"
-    shadow_softness: 2
-    # MDChipLeadingIcon:
-        # icon: root.icon
-    MDChipText:
-        text: root.text
-        role: 'small'
-    # MDChipTrailingIcon:
-    #     icon: root.icon
-                        
+    style: "tonal"
+    theme_bg_color: 'Custom'
+    md_bg_color: app.theme_cls.surfaceContainerLowColor if self.active_filter == 'ignore' else (app.theme_cls.surfaceTintColor if self.active_filter == 'include' else (app.theme_cls.errorContainerColor if self.active_filter == 'exclude' else 'white'))
+    role: 'medium'
+    icon_size: sp(9)
+    padding: 20

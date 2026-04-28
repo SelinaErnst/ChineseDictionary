@@ -1,0 +1,80 @@
+<DictionaryUpload>: #MDScreen
+    MDStackLayout: 
+        # anchor_y: 'top'
+        padding: 50,50,50,0
+        spacing: 20
+        TitleLabel:
+            text: f"Import Dictionary File"
+        MDBoxLayout:
+            radius: 20
+            md_bg_color: app.theme_cls.surfaceBrightColor
+            orientation: 'vertical'
+            size_hint_x: 1
+            adaptive_height: True
+            padding: 20,20,20,20
+            spacing: 50
+            EntryField:
+                id: name_entry
+                hint: "Dictionary name"
+                role: "medium"
+                text: root.dict_name
+                is_correct: root.check_name
+            EntryFieldWithIcon:
+                id: file_entry
+                hint: "File path"
+                role: "small"
+                text: root.dict_file
+                press_button: root.choose # function
+                is_correct: root.check_file
+                icon: "folder-open"
+            EntryFieldWithIcon:
+                id: file_format
+                hint: "File format"
+                role: "medium"
+                text: root.file_format
+                press_button: root.show_file_formats
+                is_correct: root.check_file_format
+                icon: 'information'
+                allow_empty: True
+            MDBoxLayout:
+                adaptive_height: True
+                spacing: 20
+                Widget:
+                MyIconTextButton:
+                    text: "Add"
+                    icon: "plus"    
+                    style: "elevated"
+                    on_press: root.confirm()
+
+
+<FileContent>:
+
+    adaptive_height: True
+    # size_hint_y: None
+    # height: 500
+    MDBoxLayout:
+        # md_bg_color: 'red'
+        orientation: "vertical"
+        adaptive_height: True
+        # MDDivider:
+        TableRow:
+            head: "File"
+            content: root.file_name
+        TableRow:
+            head: "Format"
+            content: root.file_format
+        TableRow:
+            head: "Name"
+            content: root.dict_name
+        TableRow:
+            head: "Entries"
+            content: root.count
+        # MDDivider:
+        ChLabel:
+            text: root.first_line
+            theme_font_size: 'Custom'
+            font_size: sp(9)
+            shorten: True
+            valign: 'center'
+            adaptive_height: True
+            padding: 20,20,0,0

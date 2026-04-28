@@ -1,0 +1,15 @@
+<DictionaryChooser>:
+    options: options
+    directory: app.get_setting('dict_directory')
+    MDAnchorLayout:
+        padding: 50
+        anchor_y: 'top'
+        MDBoxLayout:
+            orientation: 'vertical'
+            spacing: 20
+            adaptive_height: True
+            TitleLabel:
+                text: "My Dictionaries"
+            Options:
+                id: options
+                itemclass: root.itemclass

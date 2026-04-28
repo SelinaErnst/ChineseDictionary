@@ -1,0 +1,215 @@
+
+<TableRow>: #MDBoxLayout
+    orientation: "horizontal"
+    adaptive_height: True
+    MDLabel:
+        name: "head"
+        size_hint_x: None
+        width: root.head_width
+        text: root.head
+        role: root.role
+    MDLabel:
+        adaptive_width: True
+        text: root.content
+        role: root.role
+        pos_hint: {"x":0}
+
+
+
+# = ============================================================== = #
+# =                 LIST ITEM WITH BUTTON BEHAVIOR                 = #
+# = ============================================================== = #
+
+
+<CustomListItem>: #MDAnchorLayout
+    radius: 20
+    padding: 20,20,20,20
+
+<MyListItem>: #CustomListItem
+    md_bg_color: self.theme_cls.surfaceContainerLowColor
+    anchor_x: 'center'
+    size_hint_y: None
+    height: 150
+    on_release:
+        app.dismiss_all()
+        root.func(self.text) if root.func!=None else None
+    MDLabel:
+        id: label
+        text: root.text
+        adaptive_width: True
+        style: 'Label'
+        role: 'medium'
+
+<MyMultiLineItem>: #CustomListItem
+    md_bg_color: self.theme_cls.surfaceContainerLowColor
+    anchor_y: 'center'
+    size_hint_y: None
+    height: label.height+40
+    on_release:
+        app.dismiss_all()
+        root.func(self.text) if root.func!=None else None
+    MDLabel:
+        id: label
+        text: root.text
+        adaptive_height: True
+        style: 'Label'
+        role: 'medium'
+
+<PaletteItem>: #CustomListItem
+    md_bg_color: self.theme_cls.surfaceContainerLowColor
+    # md_bg_color: self.update_color(root.text, app.theme_cls.theme_style)
+    padding: 20,0,20,0
+    radius: 20
+    on_release: 
+        app.apply_palette(self.text)
+    MDBoxLayout:
+        MDLabel:
+            id: label
+            text: root.text
+            theme_font_size: 'Custom'
+            font_size: sp(9)
+            size_hint_x: None
+            width: 400
+        MDGridLayout:
+            id: color_grid
+            radius: 20
+            cols: 19
+
+            PaletteColor:
+                md_bg_color: root.color_onea
+            PaletteColor:
+                md_bg_color: root.color_oneb
+            PaletteColor:
+                md_bg_color: root.color_onec
+            PaletteColor:
+                md_bg_color: root.color_oned
+            PaletteColor:
+                md_bg_color: root.color_onee
+            PaletteColor:
+                md_bg_color: root.color_onef
+            PaletteColor:
+                md_bg_color: root.color_oneg   
+            PaletteColor:
+                md_bg_color: root.color_twoa
+            PaletteColor:
+                md_bg_color: root.color_twob
+            PaletteColor:
+                md_bg_color: root.color_twoc
+            PaletteColor:
+                md_bg_color: root.color_twod
+            PaletteColor:
+                md_bg_color: root.color_twoe
+            PaletteColor:
+                md_bg_color: root.color_twof
+            PaletteColor:
+                md_bg_color: root.color_trea
+            PaletteColor:
+                md_bg_color: root.color_treb
+            PaletteColor:
+                md_bg_color: root.color_trec
+            PaletteColor:
+                md_bg_color: root.color_tred
+            PaletteColor:
+                md_bg_color: root.color_tree
+            PaletteColor:
+                md_bg_color: root.color_tref
+
+<PaletteColor@MDBoxLayout>: #MDBoxLayout
+    theme_bg_color: "Custom" 
+
+<DictionaryItem>: #CustomListItem
+    radius: 20
+    md_bg_color: app.theme_cls.surfaceContainerColor
+    on_release: app.wm.current_screen.show_char(self.character)
+
+    # height: 500
+    spacing: 20
+    image_size: root.height-2*root.spacing
+    symbol_size: (root.height-2*root.spacing)/2
+
+    size_hint_y: None
+    MDBoxLayout:
+        orientation: 'horizontal'
+        spacing: root.spacing
+        MDStackLayout:
+            spacing: 10
+            MDBoxLayout:
+                orientation: 'horizontal'
+                spacing: 50
+                size_hint: 0.9, None
+                height: 50 # as small as possible
+                ChLabel:
+                    text: root.char_simp
+                    role: 'medium'
+                    max_lines: 1
+                    adaptive_width: True
+                ChLabel:
+                    text: root.char_trad
+                    role: 'medium'
+                    max_lines: 1
+                    adaptive_width: True
+            ChLabel:
+                adaptive_height: True
+                max_lines: 1
+                text: root.char_pron
+                role: 'small'
+            ChLabel:
+                padding: 0,self.parent.spacing[0]*0.75,0,0
+                adaptive_height: True
+                max_lines: 2
+                text: root.translation
+                theme_font_size: 'Custom'
+                font_size: sp(9)
+                theme_line_height: 'Custom'
+                line_height: 0.9
+        
+        MDBoxLayout:
+            orientation: 'vertical'
+            adaptive_width: True
+            ClickableBoxLayout:
+                radius: 20
+                size_hint: None, None
+                size: 2*[0] if root.preview_image=="" else 2*[root.image_size]
+                md_bg_color: app.theme_cls.primaryFixedColor
+                source: root.preview_image
+                FitImage:
+                    radius: 20
+                    source: "./appdata/images/app_icon_fg.png" if not os.path.isfile(root.preview_image) else root.preview_image
+
+        EntryInfo: #MDAnchorLayout
+            size: 2*[root.image_size]
+            MDGridLayout:
+                cols:2
+                EntryType:
+                    icon: self.choose_icon(root.has_translation,['','translate'])
+                    # symbol_size: self.get_size(root.has_translation,[0,root.symbol_size])
+                    symbol_size: root.symbol_size
+                EntryType:
+                    icon: self.choose_icon(root.is_radical,['','alpha-r-box'])
+                    # symbol_size: self.get_size(root.is_radical,[0,root.symbol_size])
+                    symbol_size: root.symbol_size
+                EntryType:
+                    icon: self.choose_icon(root.is_measure_word,['','scale-unbalanced'])
+                    # symbol_size: self.get_size(root.is_measure_word,[0,root.symbol_size])
+                    symbol_size: root.symbol_size
+                EntryType:
+                    icon: self.choose_icon(root.is_grammatical,['','bookshelf'])
+                    # symbol_size: self.get_size(root.is_grammatical,[0,root.symbol_size])
+                    symbol_size: root.symbol_size
+
+<EntryType>: #MDIconButton
+    symbol_size: 100
+    size_hint: None, None
+    size: self.symbol_size, self.symbol_size
+    font_size: self.symbol_size*(0.6)
+    theme_font_size: 'Custom'
+    theme_icon_color: 'Custom'
+    icon_color: app.theme_cls.primaryColor
+    allow_hover: False
+    ripple_effect: False
+
+<EntryInfo@MDAnchorLayout>: #MDAnchorLayout
+    md_bg_color: app.theme_cls.surfaceDimColor
+    radius: 20
+    size_hint: None, None
+

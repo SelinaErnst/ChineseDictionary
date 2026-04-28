@@ -10,47 +10,59 @@
                 id: theme_style
                 hint: 'Theme Style'
                 text:  app.theme_cls.theme_style
-                support_text: 'Choose light or dark mode.'
-                icon: 'theme-light-dark'
-                press_button: self.show_options
-                options: ['Light', 'Dark']
-                icons: ['brightness-5','brightness-2']
-                itemclass: 'ThemeItem'
-                list_height: 300
+                icon: 'theme-light-dark'    
+                press_button: self.switch_theme
             Setting:
                 id: palette
+                icon: 'palette'
                 hint: 'Palette'
                 text:  app.theme_cls.primary_palette
-                support_text: 'Choose palette from this list of available options.'
-                icon: 'palette'
                 press_button: self.show_options
                 options: self.get_palettes()
-                itemclass: 'PaletteItem'
-                list_height: root.height * 0.5
             Setting:
                 id: app_directory
                 setting: 'app_directory'
                 hint: 'App Directory'
                 text: app.get_setting('app_directory',default=True)
-                support_text: 'The app directory is the folder where configuration files are stored. The directory has to exist already. \nREMEMBER: the path has to end with "/" to be recognized as a folder.'
                 icon: 'folder-open'
-                press_button: self.show_options
-                options: app.app_dir_example
-                itemclass: 'DirectoryItem'
-                list_height: 300
+                press_button: self.choose_directory
             Setting:
                 id: import_directory
                 setting: 'import_directory'
                 hint: 'Import Directory'
                 text: app.get_setting('import_directory')
-                support_text: 'The import directory is the folder where dictionary files are imported from. The directory has to exist already. It is recommended to choose a folder in the app directory. \nREMEMBER: the path has to end with "/" to be recognized as a folder.'
                 icon: 'folder-open'
-                press_button: self.show_options
-                options: app.import_dir_example
-                itemclass: 'DirectoryItem'
-                list_height: 300
+                press_button: self.choose_directory
+            MDStackLayout:
+                adaptive_height: True
+                spacing: 50
+                MultiLineIconTextButton:
+                    text: 'Template'
+                    icon: 'pencil'
+                    on_release: root.open_file(app.get_setting('pleco_template'))
+                MultiLineIconTextButton:
+                    text: 'Categories'
+                    icon: 'pencil'
+                    on_release: root.open_file(app._MyApp__appdata+'defaults/'+'dictionary_categories.json')
+            MultiLineIconTextButton:
+                text: 'Reset Settings'
+                icon: 'backup-restore'
+                on_release: app.reset_settings()
+
         BottomFieldButton:
-            text: 'Save Settings'
+            text: 'Save'
             style: 'filled'
             press_button: root.save_settings
 
+<ShowFileContent>:
+    input: input
+    anchor_y: 'bottom'
+    TextInput:
+        id: input
+        text: root.text
+        font_size: sp(11)
+
+    BottomFieldButton:
+        text: 'Save'
+        style: 'elevated'
+        press_button: root.change_file    

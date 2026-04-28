@@ -1,0 +1,65 @@
+possible_instructions={
+    'newline':'',
+    'tab':'',
+    'trad_start':'[', 'trad_end':']',
+    'link_start':'', 'link_end':'',
+    'bold_start':'', 'bold_end':'',
+    'itlalic_start':'', 'itlalic_end':'',
+    'narrowbold_start':'', 'narrowbold_end':'',
+    'slightlybold_start':'', 'slightlybold_end':'',
+    'underline_start':'', 'underline_end':'',
+    'bg_start':'', 'bg_end':'',
+    'textsmall_start':'AA00', 'textsmall_end':'',
+    'textbig_start':'AA10', 'textbig_end':'',
+    'color_start':'', 'color_end':'',
+    'color_blue':'', 
+    'color_teal':'',
+    'color_green':'',
+    'color_grey':'',
+    'block_start':'', 'block_end':'',
+    'block_left':'1A0A',
+    'block_indent':'1A0P',
+    'block_right':' A0P',
+    'line':'AAAA', 
+    'point':'◼',
+    'dot':'·',
+    'zitools':'https://zi.tools/zi/',
+    'KXrad':'KangXi radical #'
+}
+
+# possible_instructions={
+#     'newline':'[NL]',
+#     'tab':'[TAB]',
+#     'trad_start':'[BR1]', 'trad_end':'[BR2]',
+#     'link_start':'[L_1]', 'link_end':'[L_2]',
+#     'bold_start':'[BO_1]', 'bold_end':'[BO_2]',
+#     # 'itlalic_start':'', 'itlalic_end':'',
+#     'narrowbold_start':'[NB_1]', 'narrowbold_end':'[NB_2]',
+#     # 'slightlybold_start':'', 'slightlybold_end':'',
+#     # 'underline_start':'', 'underline_end':'',
+#     # 'bg_start':'', 'bg_end':'',
+#     'textsmall_start':'[TXTs_1]', 'textsmall_end':'[TXTs_2]',
+#     'textbig_start':'[TXTb_1]', 'textbig_end':'[TXTb_2]',
+#     'color_start':'[COL_1]', 'color_end':'[COL_2]',
+#     'color_blue':'[BLUE]', 
+#     'color_teal':'[TEAL]',
+#     'color_green':'[GREE]',
+#     'color_grey':'[GRAY]',
+#     'block_start':'[BLO_1]', 'block_end':'[BLO_2]',
+#     'block_left':'[LEFT]',
+#     'block_indent':'[INDE]',
+#     'block_right':'[RIGH]',
+#     # 'line':'AAAA', 
+#     'point':'[P]',
+#     'dot':'[D]',
+#     # 'zitools':'https://zi.tools/zi/',
+#     # 'KXrad':'KangXi radical #'
+# }
+# # THESE have to be the same as above
+adjustables={
+    'textsmall_start':'AA00', 
+    'textbig_start':'AA10',
+    'block_left':'1A0A',
+    'block_indent':'1A0P',
+    'block_right':' A0P',
+}
