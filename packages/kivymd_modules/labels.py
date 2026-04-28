@@ -18,12 +18,12 @@ Builder.load_file(current_dir+'/labels.kv')
 class ChLabel(MDLabel):
     pass
 
-class AnchoredLabel(MDAnchorLayout):
-    text=StringProperty()
-    font_style=StringProperty('Label')
-    role=StringProperty('medium')
-    halign=StringProperty('left')
-    # height=NumericProperty(100)
+# class AnchoredLabel(MDAnchorLayout):
+#     text=StringProperty()
+#     font_style=StringProperty('Label')
+#     role=StringProperty('medium')
+#     halign=StringProperty('left')
+#     # height=NumericProperty(100)
     
 class MultiLineLabel(MDAnchorLayout):
     press_button=ObjectProperty()

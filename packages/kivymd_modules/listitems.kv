@@ -166,15 +166,9 @@
         MDBoxLayout:
             orientation: 'vertical'
             adaptive_width: True
-            ClickableBoxLayout:
-                radius: 20
-                size_hint: None, None
+            ImageBox:
                 size: 2*[0] if root.preview_image=="" else 2*[root.image_size]
-                md_bg_color: app.theme_cls.primaryFixedColor
                 source: root.preview_image
-                FitImage:
-                    radius: 20
-                    source: "./appdata/images/app_icon_fg.png" if not os.path.isfile(root.preview_image) else root.preview_image
 
         EntryInfo: #MDAnchorLayout
             size: 2*[root.image_size]

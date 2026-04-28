@@ -39,14 +39,10 @@ class ImageBox(ClickableBoxLayout):
     source=StringProperty()
     use_default=BooleanProperty(False)
     
-    @property
-    def imagefile(self):
+    def imagefile(self,source):
         default_file="./appdata/images/app_icon_fg.png"
         if (not os.path.isfile(self.source) or self.use_default):
             image_file=default_file
         else:
             image_file=self.source
-        return image_file
-    #     source: "./appdata/images/app_icon_fg.png" if not os.path.isfile(root.preview_image) else root.preview_image
-        # source: "./appdata/images/app_icon_fg.png" if (not os.path.isfile(root.source) or root.use_default) else root.source
-        
+        return image_file        

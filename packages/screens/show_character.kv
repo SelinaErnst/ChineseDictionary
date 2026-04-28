@@ -6,7 +6,8 @@
         MDBoxLayout:
             adaptive_height: True
             orientation: 'horizontal'
-            md_bg_color: app.theme_cls.surfaceBrightColor
+            # md_bg_color: app.theme_cls.surfaceBrightColor
+            md_bg_color: app.theme_cls.surfaceContainerColor
             padding: 20,20,20,20
             spacing: 20
             MDStackLayout:
@@ -19,19 +20,20 @@
                     MultiLineLabel:
                         id: simple
                         text: root.get_category('simple')
-                        label_bg_color: app.theme_cls.onPrimaryContainerColor
-                        text_color: app.theme_cls.onPrimaryColor
                         role: 'medium'
                         font_style: "Title"
                         label_height: root.default_height
+                        label_bg_color: app.theme_cls.surfaceBrightColor
+                        # label_bg_color: app.theme_cls.primaryContainerColor
+                        # text_color: app.theme_cls.onPrimaryContainerColor
                     MultiLineLabel:
                         id: traditional
                         text: root.get_category('traditional')
-                        label_bg_color: app.theme_cls.onPrimaryContainerColor
-                        text_color: app.theme_cls.onPrimaryColor
                         role: 'medium'
                         font_style: "Title"
                         label_height: root.default_height
+                        label_bg_color: app.theme_cls.surfaceBrightColor
+                        # text_color: app.theme_cls.onPrimaryContainerColor
                 Separator:
                 MDBoxLayout:
                     orientation: 'horizontal'
@@ -46,6 +48,8 @@
                         font_style: "Label"
                         label_padding: 20,12,0,12
                         label_height: root.default_height
+                        label_bg_color: app.theme_cls.surfaceBrightColor
+                        # text_color: app.theme_cls.onPrimaryContainerColor
             MDAnchorLayout:
                 anchor_y: 'bottom'
                 anchor_x: 'right'
@@ -84,7 +88,7 @@
         radius: 0
         sheet_type: "standard"
         # sheet_type: "modal"
-        md_bg_color: app.theme_cls.surfaceBrightColor
+        md_bg_color: app.theme_cls.surfaceContainerColor
 
         BottomSheetDragHandleContainer:
             padding: 20
@@ -152,10 +156,9 @@
     adaptive_height: True
 <Head>:
     role: 'small'
-    label_bg_color: self.theme_cls.onPrimaryContainerColor
-    text_color: self.theme_cls.onPrimaryColor
+    label_bg_color: self.theme_cls.surfaceContainerLowColor
     font_name: "Roboto"
-    bold: True
+    # bold: True
     on_release: app.wm.current_screen.edit_property(root.text)
 <Bullets>:
     adaptive_height: True          

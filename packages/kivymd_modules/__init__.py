@@ -17,7 +17,6 @@ from .buttons import (
 
 from .dialogs import (
     CustomDialog,
-    MyDialog,
     ConfirmFileChoice,
     ConfirmExport,
     GrantAccess,
@@ -33,7 +32,7 @@ from .dialogs import (
 
 from .labels import (
     ChLabel,
-    AnchoredLabel,
+    # AnchoredLabel,
     MultiLineLabel,
 )
 

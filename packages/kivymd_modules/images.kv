@@ -8,8 +8,8 @@
     radius: 20
     size_hint: None, None
     size: [200,200]
-    md_bg_color: app.theme_cls.primaryFixedColor
+    md_bg_color: app.theme_cls.primaryFixedDimColor
     on_release: app.test(root.source)
     FitImage:
         radius: 20
-        source: root.imagefile
+        source: root.imagefile(root.source)

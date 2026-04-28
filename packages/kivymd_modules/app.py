@@ -212,6 +212,7 @@ class MyApp(MDApp):
             return False
 
     def open_widget(self,widget):
+        self.dismiss_all()
         self.wm.current_screen.layout = widget
         self.wm.current_screen.add_widget(widget)
         self.wm.current_screen.ids['layout'] = widget

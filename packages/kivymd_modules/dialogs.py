@@ -313,7 +313,6 @@ class ShowPaletteOptions(CustomDialog):
         self.decision.add_widget(decision)
         self.content.add_widget(content)    
 
-# class ShowOptions(MyDialog):
 class ShowOptions(CustomDialog):
     
     def __init__(self,title="",support_text="",*args,**kwargs):
@@ -324,32 +323,6 @@ class ShowOptions(CustomDialog):
         content=Options(**kwargs)
         self.decision.add_widget(decision)
         self.content.add_widget(content)    
-        
-    def create_dataitem(self,text,**kwargs):
-        dataitem={
-            'setting':self.setting,
-            'text': text,
-            'style': 'text',
-            'theme_bg_color': 'Custom',
-            'md_bg_color': self.theme_cls.surfaceBrightColor,
-            'radius':20,
-            'callback':lambda x:x}
-        dataitem.update(kwargs)
-        return dataitem 
-    
-    def add_list_item(self,dataitem):
-        self.rv_scroll.data.append(dataitem)
-        
-    def set_list_items(self):
-        self.rv_scroll.data = []
-        if self.icons == []:
-            for option in self.options: 
-                dataitem=self.create_dataitem(option)
-                self.add_list_item(dataitem)
-        elif len(self.icons) == len(self.options):
-            for option,icon in zip(self.options,self.icons):
-                dataitem=self.create_dataitem(text=option,icon=icon)
-                self.add_list_item(dataitem)
                 
 class ConfirmUnsaved(CustomDialog):
     direction=StringProperty('left')
@@ -374,11 +347,6 @@ class ConfirmUnsaved(CustomDialog):
         app.wm.current_screen.edited=False
         app.switch_screen(screen_name=self.screen_name, direction=self.direction, remember=self.remember,force=True)
         
-
-class MyDialog(MDDialog):
-    title = StringProperty()
-    support_text = StringProperty()        
-
 class AddElement(CustomDialog):
 
     def __init__(self, **kwargs):
