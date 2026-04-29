@@ -70,7 +70,7 @@
                         size: edit.size
                         icon: 'plus'
                         style: 'text'
-                        on_release: root.select_new_category()
+                        on_release: root.new_category()
                         
         ScrollView:
             MDStackLayout:
@@ -119,7 +119,7 @@
                         style: 'text'
                         size: self.parent.height, self.parent.height
                         on_release: 
-                            root.choose_char_file()
+                            root.replace_character()
                             # bottom_nav.set_state("toggle")
                     MyIconButton:
                         text: 'Upload Image'
@@ -127,7 +127,7 @@
                         style: 'text'
                         size: self.parent.height, self.parent.height
                         on_release: 
-                            root.upload_new_image()
+                            root.add_image()
                             # bottom_nav.set_state("toggle")
                     MyIconButton:
                         text: 'Export'
@@ -159,7 +159,7 @@
     label_bg_color: self.theme_cls.surfaceContainerLowColor
     font_name: "Roboto"
     # bold: True
-    on_release: app.wm.current_screen.edit_property(root.text)
+    on_release: app.wm.current_screen.edit_category(root.text)
 <Bullets>:
     adaptive_height: True          
 <ListElement>:
@@ -177,7 +177,8 @@
         anchor_x: 'left'
         anchor_y: 'top'
         MDRelativeLayout:
-            md_bg_color: app.theme_cls.onPrimaryContainerColor
+            # md_bg_color: app.theme_cls.onPrimaryContainerColor
+            md_bg_color: app.theme_cls.primaryColor
             size_hint: None,None
             size: 20,20
             

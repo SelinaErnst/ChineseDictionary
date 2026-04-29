@@ -1,6 +1,7 @@
 # from .printentry import encode_pinyin
 from .unicode_characters import chinese_char,not_chinese_char,pleco_char
 from .unicode_characters import PinyinToneMark
+from .unicode_characters import encode_pinyin, decode_pinyin
 from .character import Character
 import re
 import os
@@ -139,84 +140,6 @@ def create_container(typ:_CONTAINER,text:str='DEFAULT',helper:bool=False,bracket
     else: return f'{container}'
 
 
-def decode_pinyin(s):
-    # ba1 -> bā, nv3 -> nǚ
-    s = "" if s==None else s
-    s = s.replace('ü','v')
-    words = str(s).split(' ')
-    result = []
-    for s  in words:
-        if s!=None and re.search(r'\d', s):
-            s = s.lower()
-            r = ""
-            t = ""
-            for c in s:
-                if c >= 'a' and c <= 'z':
-                    t += c
-                elif c == ':':
-                    assert t[-1] == 'u'
-                    t = t[:-1] + "\u00fc"
-                else:
-                    if c >= '0' and c <= '5':
-                        tone = int(c) % 5 # tone 5 -> 0
-                        if tone != 0:
-                            m = re.search("[aoeiuv\u00fc]+", t)
-                            if m is None:
-                                t += c
-                            elif len(m.group(0)) == 1:
-                                t = t[:m.start(0)] + PinyinToneMark[tone][PinyinToneMark[0].index(m.group(0))] + t[m.end(0):]
-                            else:
-                                if 'a' in t:
-                                    t = t.replace("a", PinyinToneMark[tone][0])
-                                elif 'o' in t:
-                                    t = t.replace("o", PinyinToneMark[tone][1])
-                                elif 'e' in t:
-                                    t = t.replace("e", PinyinToneMark[tone][2])
-                                elif t.endswith("ui"):
-                                    t = t.replace("i", PinyinToneMark[tone][3])
-                                elif t.endswith("iu"):
-                                    t = t.replace("u", PinyinToneMark[tone][4])
-                                else:
-                                    t += "!"
-                    r += t
-                    t = ""
-            r += t
-            result+=[r]
-        else:
-            s=s.replace('v','ü')
-            result+=[s]
-    return ''.join(result)
-    
-def encode_pinyin(pinyin: str) -> str:
-    # bā -> ba1
-    if pinyin!=None:
-        tone_map = {
-            'ā': ('a', '1'), 'á': ('a', '2'), 'ǎ': ('a', '3'), 'à': ('a', '4'),
-            'ē': ('e', '1'), 'é': ('e', '2'), 'ě': ('e', '3'), 'è': ('e', '4'),
-            'ī': ('i', '1'), 'í': ('i', '2'), 'ǐ': ('i', '3'), 'ì': ('i', '4'),
-            'ō': ('o', '1'), 'ó': ('o', '2'), 'ǒ': ('o', '3'), 'ò': ('o', '4'),
-            'ū': ('u', '1'), 'ú': ('u', '2'), 'ǔ': ('u', '3'), 'ù': ('u', '4'),
-            'ǖ': ('v', '1'), 'ǘ': ('v', '2'), 'ǚ': ('v', '3'), 'ǜ': ('v', '4'),
-            'ü': ('v', ''),  # plain ü → v0
-        }
-        result = ""
-        tone_digit = ""
-        for c in pinyin:
-            if c in tone_map:
-                base, tone = tone_map[c]
-                result += base
-                tone_digit = tone
-            else:
-                # words can be seperated by space
-                if (c == ' ') and tone_digit:
-                    result += tone_digit
-                    tone_digit = ""
-                result += c
-        if tone_digit:
-            result += tone_digit
-        return result
-
-
 def convert_pronunciations(text:str):
     
     def pyinyin_to_string(match):
@@ -287,7 +210,7 @@ class Header():
     
     def __init__(self,container:str):
         cont_name,specs,self.text=self.__get_specs(container=container)
-        self.__font,self.__color,self.__visible = specs.split('|')
+        self.__font,self.__color,self.__visible = specs
         self.__font=get_font(self.__font)
         self.__color=get_color(self.__color)
         self.__visible=get_vis(self.__visible)
@@ -303,9 +226,20 @@ class Header():
         return create_container(typ='H',helper=False,brackets=False) 
     
     def __get_specs(self,container:str):
-        if len(container.split(':')) !=3: container=self.default
-        container_specs=re.match(r'(.*?):\[(.*?)\]:(.*)',container).groups()
-        return container_specs
+        
+        pattern=r'(.*?):\[(.*?)\]:(.*)'
+        if re.match(pattern,container) == None: container=self.default
+        elif len(re.match(pattern,container).groups())!=3: container=self.default
+        container_specs=re.match(pattern,container).groups()
+            
+        pattern=r'(\w*)\|(\w*)\|(\w*)'
+        specs=container_specs[1]
+        if re.match(pattern,specs)==None: specs='normal|normal|normal'
+        elif len(re.match(pattern,specs).groups())!=3: specs='normal|normal|normal'
+        specs = re.match(pattern,specs).groups()
+
+        return (container_specs[0],specs,container_specs[2])
+        
 
     def write(self):
         if self.visible:
@@ -354,14 +288,18 @@ class Content():
         return create_container(typ=self.__kind,helper=False,brackets=False)    
         
     def __get_specs(self,container):
-        container_specs = container.split(':')
-        if len(container_specs)!=3: 
-            if container.startswith('T'): self.__kind='T'
-            else: self.__kind='L'
-            container_specs=self.default
+        
+        pattern=r'(.*?):\[(.*?)\]:(.*)'
+        if re.match(pattern,container) == None: container=self.default
+        elif len(re.match(pattern,container).groups())!=3: container=self.default
+        container_specs=re.match(pattern,container).groups()
             
-        self.__pattern=r'\[(.*)\|(.*)\|(.*)\]'
-        specs = re.match(self.__pattern,container_specs[1]).groups()
+        pattern=r'(\w*)\|(\w*)\|(\w*)'
+        specs=container_specs[1]
+        if re.match(pattern,specs)==None: specs='normal|normal|normal'
+        elif len(re.match(pattern,specs).groups())!=3: specs='normal|normal|normal'
+        specs = re.match(pattern,specs).groups()
+        
         return (container_specs[0],specs,container_specs[2])
     
     def write(self):

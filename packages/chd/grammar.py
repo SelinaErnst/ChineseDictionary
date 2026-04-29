@@ -14,11 +14,14 @@ class Sentence():
         self.marked_text=self.text
 
     def __repr__(self):
-        return f'Sentence:{self.text}'
+        return f'Sentence: {self.text}'
 
     def __str__(self):
         result=[t for t in [self.marked_text,self.pronunciation,self.translation] if t!=""]
         return f"{convert_to_pleco_syntax('newline')}".join(result)
+    
+    def to_dict(self):
+        return {'text':self.text,'pronunciation':self.pronunciation,'translation':self.translation}
     
     def mark_char(self,char:Character):
         finder=self.__find_ch_char(char,'simple')
@@ -91,19 +94,16 @@ class Grammar():
     def __init__(self,
                  level:str=None,title:str='',subtitle:str='',
                  structures:list=[],opposite_structures:list=[],
-                 explanation:str='',sentences:list=[]):
+                 explanation:str='',sentences:list=[],
+                 characters:list=[],opposite_characters:list=[]):
+
         self.level = level
         self.title = title
         self.subtitle = subtitle
         
         self.explanation = explanation
         self.sentences,self.structures,self.opposite_structures=[],[],[]
-        self.add_sentence(sentences)
-        self.add_opp_structure(opposite_structures)
-        self.add_structure(structures)
-        
-        self.characters = Dictionary(name='grammar_characters',sorting_key='simple')
-        self.opposite_characters = Dictionary(name='grammar_opp_characters',sorting_key='simple')
+        self.characters,self.opposite_characters=[],[]
         
         categories={
             'level':str,
@@ -116,6 +116,16 @@ class Grammar():
             'all_other_char':list}
         
         self.__character = Character(needed_categories=categories)
+        
+        self.add_sentence(sentences)
+        self.add_opp_structure(opposite_structures)
+        self.add_structure(structures)
+        
+        self.characters = Dictionary(name='grammar_characters',sorting_key='simple')
+        self.opposite_characters = Dictionary(name='grammar_opp_characters',sorting_key='simple')
+        
+        self.add_character(characters)
+        self.add_opp_character(opposite_characters)
     
     def __repr__(self):
         return str(self)
@@ -179,9 +189,11 @@ class Grammar():
         uniq_list=[]
         if isinstance(char,Character): uniq_list=[char.uniq]
         elif isinstance(char,tuple): uniq_list=[char]
-        elif isinstance(char,list) or isinstance(char,Dictionary): 
-            if not isinstance(char[0],Character): uniq_list=[char]
-            else: uniq_list=[c.uniq for c in char]
+        elif isinstance(char,list) or isinstance(char,Dictionary):
+            if len(char) == 0: uniq_list=[]
+            elif isinstance(char[0],Character): uniq_list=[c.uniq for c in char]
+            elif len(char[0])==3: uniq_list=char
+            
         for uniq in uniq_list:
             new_char = self.__character.copy().update(simple=uniq[0],traditional=uniq[1],pronunciation=uniq[2])
             self.characters+=new_char
@@ -191,8 +203,9 @@ class Grammar():
         if isinstance(char,Character): uniq_list=[char.uniq]
         elif isinstance(char,tuple): uniq_list=[char]
         elif isinstance(char,list) or isinstance(char,Dictionary): 
-            if not isinstance(char[0],Character): uniq_list=[char]
-            else: uniq_list=[c.uniq for c in char]
+            if len(char) == 0: uniq_list=[]
+            elif isinstance(char[0],Character): uniq_list=[c.uniq for c in char]
+            elif len(char[0])==3: uniq_list=char
         for uniq in uniq_list:
             new_char = self.__character.copy().update(simple=uniq[0],traditional=uniq[1],pronunciation=uniq[2])
             self.opposite_characters+=new_char
@@ -207,25 +220,29 @@ class Grammar():
             
     def add_structure(self,element):
         if not isinstance(element,list): element=[element]
-        for e in element: self.structures.append(e)
+        for e in element: self.structures.append(e) # e is str
             
     def add_opp_structure(self,element):
         if not isinstance(element,list): element=[element]
-        for e in element: self.opposite_structures.append(e)
+        for e in element: self.opposite_structures.append(e) # e is str
         
     def add_sentence(self,element=None,**kwargs):
-        if not isinstance(element,list): 
+        if element==None:
+            sentence=Sentence(**kwargs)
+            self.sentences.append(sentence)
+        elif not isinstance(element,list): 
             element=[element]
-        for e in element: 
-            if not isinstance(e,Sentence): 
-                try:
-                    if e==None: e=Sentence(**kwargs)
-                    else: e=Sentence(content=e)
-                except:
-                    print(f"WARNING: '{e}' not accepted as sentence")
-                    return
-            self.sentences.append(e)
             
+        for ele in element: 
+            if not isinstance(ele,Sentence):
+                if type(ele) in [tuple,list] and len(ele)==3:
+                    sentence=Sentence(content=ele)
+                    self.sentences.append(sentence)
+                elif isinstance(ele,dict):
+                    sentence=Sentence(**ele)
+                    self.sentences.append(sentence)
+            else:
+                self.sentences.append(ele)
         
     def remove_sentence(self,element:Sentence):
         if isinstance(element,list): element=[element]
@@ -253,3 +270,18 @@ class Grammar():
                 # print(char.info(),w.text)
                 complete_text.append(w.text)
         return f'\n'.join(complete_text)
+
+    def to_dict(self):
+        
+        grammar_dict={
+            'level':self.level,
+            'title':self.title,
+            'subtitle':self.subtitle,
+            'structures':self.structures.copy(),
+            'opposite_structures':self.opposite_structures.copy(),
+            'explanation':self.explanation,
+            'sentences':[sentence.to_dict() for sentence in self.sentences],
+            'characters': [character.uniq for character in self.characters],
+            'opposite_characters': [character.uniq for character in self.opposite_characters],
+        }
+        return grammar_dict

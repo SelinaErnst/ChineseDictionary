@@ -13,7 +13,9 @@
                 font_style: 'Title'
                 role: 'medium'
                 width: self.parent.width
- 
+                on_release: 
+                    app.switch_screen("gram_list","left")
+                    app.wm.current_screen.set_list_items()
             MDGridLayout:
                 id: dictionaries
                 rows:1

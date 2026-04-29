@@ -52,26 +52,35 @@ class Dictionary():
         characters = [c.copy() for c in self.characters]
         return Dictionary(name=self.name,characters=characters,sorting_key=self.sorting_key)
     
-    def set_categories(self,categories):
-        # defines default categories and dtypes for characters
-        self.__category_dictionary=categories 
+    # = ============================================================== = #
+    # =                         GET PROPERTIES                         = #
+    # = ============================================================== = #
     
     @property
     def character_index(self):
         return [c.uniq for c in self.characters]
-    
     
     def index(self,c):
         if isinstance(c,Character):
             return self.characters.index(c)
         elif isinstance(c,tuple):
             return self.character_index.index(c)
-            
     
     @property
     def sorting_key(self):
         return self._sorting_key
+    
+    # = ============================================================== = #
+    # =                         SET PROPERTIES                         = #
+    # = ============================================================== = #
+    
+    def set_categories(self,categories):
+        # defines default categories and dtypes for characters
+        self.__category_dictionary=categories 
 
+    def rename(self,name):
+        self.name = name
+        
     @sorting_key.setter
     def sorting_key(self, key):
         acceptable = ['simple','traditional','pronunciation']
@@ -80,7 +89,11 @@ class Dictionary():
             self.sort()
         else:
             print(f'\nWARNING: Sorting key is not valid. Choose from: {acceptable}')
-        
+
+    # = ============================================================== = #
+    # =                          MAGIC METHODS                         = #
+    # = ============================================================== = #
+    
     def __repr__(self):
         header = f'<{self.name}> dictionary: {len(self.characters)} character entries'
         lines=[]
@@ -161,8 +174,12 @@ class Dictionary():
         else:
             return False
     
-    def _get_sorted_characters(self,sorting_key=None):
-        sorting_key = self.sorting_key if sorting_key == None else sorting_key
+    # = ============================================================== = #
+    # =                          SORT & SEARCH                         = #
+    # = ============================================================== = #
+    
+    # def _get_sorted_characters(self,sorting_key=None):
+        # sorting_key = self.sorting_key if sorting_key == None else sorting_key
     
     def sort(self,sorting_key=None):
         sorting_key = self.sorting_key if sorting_key == None else sorting_key
@@ -183,9 +200,35 @@ class Dictionary():
         self.characters.sort(key=lambda x: encode_pinyin(get_next_key(char=x,sorting_key=sorting_key)))
         
         return self
-
-    def rename(self,name):
-        self.name = name
+    
+    def search(self,text:str="",exact:bool=False,search_prompt:bool=False):
+        exact=True
+        
+        def prepare_text(text:str):
+            text = text.lower().replace(' ','')
+            pinyin = decode_pinyin(text)
+            pinyin_numeric = encode_pinyin(pinyin)
+            pinyin_toneless = re.sub(r'\d+', '', pinyin_numeric)
+            if not exact: return [pinyin_toneless]
+            else: return [pinyin_numeric,pinyin]
+        
+        def compare(text:str|list,character:Character,use_variants:bool=True):
+            if isinstance(text,str): text=[text]
+            if not exact: search_for = list(character.uniq)[:2]+[character.pinyin_toneless]
+            else: search_for = list(character.uniq)[:2]+[character.pinyin_numeric,character.pinyin]
+            if use_variants: search_for += character.clean_variants
+            search_for = [s.replace(' ','') for s in search_for]
+            found=any([any([t in s for t in text]) for s in search_for])
+            return found
+        
+        search_text = prepare_text(text)
+        if search_prompt: print('Look for:',text,'or',search_text)
+        fits = [char for char in self.characters if compare(text=search_text,character=char)]
+        return Dictionary(name=self.name, characters=fits, sorting_key=self.sorting_key)
+        
+    # = ============================================================== = #
+    # =                              READ                              = #
+    # = ============================================================== = #
     
     def read(self,filename,file_format:_EXPORT_CHOICES|None=None,add=True,categories=None,template=None):
         filename,ext = os.path.splitext(filename)
@@ -244,6 +287,10 @@ class Dictionary():
             else: return False
         else: return False
     
+    # = ============================================================== = #
+    # =                              WRITE                             = #
+    # = ============================================================== = #
+    
     def write(self,directory:str='./',filename:str|None=None,file_format:_EXPORT_CHOICES|None=None,**kwargs):
         filename = self.name if filename == None else filename
         file_format=choose_file_ext(file_format)
@@ -259,7 +306,7 @@ class Dictionary():
         filename = filename+'.jsonl' if filename == self.name else filename
         with open(directory+filename,'w') as outfile:
             for c in self.characters:
-                json.dump(c.to_dict(), outfile)
+                json.dump(c.to_dict(), outfile, indent=None, ensure_ascii=False)
                 outfile.write('\n')
     
     def to_txt(self,directory:str,template:str,filename=None):
@@ -270,29 +317,6 @@ class Dictionary():
                 for c in self.characters]
             file.write('\n'.join(pleco_text))
         
-    def search(self,text:str="",exact:bool=False,search_prompt:bool=False):
-        exact=True
-        
-        def prepare_text(text:str):
-            text = text.lower().replace(' ','')
-            pinyin = decode_pinyin(text)
-            pinyin_numeric = encode_pinyin(pinyin)
-            pinyin_toneless = re.sub(r'\d+', '', pinyin_numeric)
-            if not exact: return [pinyin_toneless]
-            else: return [pinyin_numeric,pinyin]
-        
-        def compare(text:str|list,character:Character,use_variants:bool=True):
-            if isinstance(text,str): text=[text]
-            if not exact: search_for = list(character.uniq)[:2]+[character.pinyin_toneless]
-            else: search_for = list(character.uniq)[:2]+[character.pinyin_numeric,character.pinyin]
-            if use_variants: search_for += character.clean_variants
-            search_for = [s.replace(' ','') for s in search_for]
-            found=any([any([t in s for t in text]) for s in search_for])
-            return found
-        
-        search_text = prepare_text(text)
-        if search_prompt: print('Look for:',text,'or',search_text)
-        fits = [char for char in self.characters if compare(text=search_text,character=char)]
-        return Dictionary(name=self.name, characters=fits, sorting_key=self.sorting_key)
+
                     
         

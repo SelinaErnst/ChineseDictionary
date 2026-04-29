@@ -2,8 +2,7 @@ import json
 from pathlib import Path
 import os
 import traceback
-# from plyer import filechooser
-from packages.chd import Dictionary, Character
+from packages.chd import Dictionary, Character, Grammar
 from kivy.utils import platform
 
 from resizing import change_metrics, window_size
@@ -11,42 +10,30 @@ from resizing import change_metrics, window_size
 change_metrics()
 window_size(device='GalaxyS24',orientation='portrait')
 
-from kivy.metrics import Metrics, dp, sp
-
 from packages.screens import (
     DictionaryNew, 
     DictionaryUpload,
     DictionaryChooser,
     ViewDict,
     Settings,
-    ShowCharacter
+    Home,
+    ShowCharacter,
+    Interface,
+    WindowManager,
     )
 
-from packages.kivymd_modules import (
+from packages.kivy import (
     MyApp,
     MyScreen,
-    ObjectProperty,
     ListProperty,
-    StringProperty,
     MDBoxLayout,
-    MDStackLayout,
-    MDAnchorLayout,
     ScreenManager,
-    MDSnackbar,
-    MultiLineLabel,
-    ButtonBehavior,
-    AddElement,
-    ShowOptions,
-    AttentionMsg,
-    ErrorMsg,
-    MyFileManager,
     ConfirmUnsaved,
-    MDLabel
+    print_class,
+    Builder,
+    LabelBase,
+    ColorProperty
 )
-
-from kivy.lang import Builder
-from kivy.core.text import LabelBase
-from packages.kivymd_modules import print_class
 
 SCRIPT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
@@ -57,25 +44,150 @@ DTYPE_MAP = {
     "dict": dict,
 }
 
-print_class('MDLabel',search='size')
+# print_class('MDLabel',search='size')
 # print('main')
 
+# = ============================================================== = #
+# =                             GRAMMAR                            = #
+# = ============================================================== = #
+
+from packages.kivy import MyScreen
+
 KV="""
-
-        
+<GrammarList>:
+    rv_scroll: rv_scroll
+    filter: filter
+    search: search
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        Toggle:
+            id: filter
+            height: self.minimum_height
+            Level:
+                text: 'A1'
+            Level:
+                text: 'A2'
+            Level:
+                text: 'B1'
+            Level:
+                text: 'B2'
+            Level:
+                text: 'C1'
+            Level:
+                text: 'C2'
+        MDAnchorLayout:
+            size_hint_y: None
+            height: search.height+20
+            anchor_y: 'top'
+            anchor_x: 'left'
+            MDTextField:
+                id: search
+                theme_font_name: "Custom"
+                font_name:"CH"
+                on_text: root.set_list_items()
+                
+        MDBoxLayout:
+            MDRecycleView:
+                id: rv_scroll
+                viewclass: 'GrammarItem'
+                RecycleBoxLayout:
+                    id: scroll
+                    padding: 0,0,0,300
+                    orientation: "vertical"
+                    size_hint: 1, None
+                    height: self.minimum_height
+                    default_size_hint: 1, None
+                    default_height: None
+                    spacing: 10
+                
+<Level@TextToggleButton>:
+    font_style: 'Title'
+    role: 'large'
+    width: self.height
+    on_release: self.toggle_two(only_one=False)
+    custom_color: app.custom.colors['level'+self.text]
+    custom_font_color: app.custom.colors['text_level'+self.text]
+                
 """
+gr1={
+    'level':'B1',
+    'title':'Expressing AGAIN in the past',
+    'subtitle':'Expresses repetition of a an action that has already occurred in the past',
+    'structures':['(Subj. +) 又 + Verb + 了'],
+    'opposite_structures':['(Subj. +) 又 + 不 / 没 + Verb (+ 了)'],
+    'explanation':"又 [yòu] is used in declarative sentences and describes the simple repetition of actions. This repeated action has already occurred once in the past. It doesn't have to be in quick succession; it happened before, and now it's happened again. 再  [hái] and 还  [zài] can be used to indicate 'again' or repeating a previous action.",
+}
+gr1=Grammar(**gr1)
 
-class Interface(MDBoxLayout):
-    pass
-    
-class WindowManager(ScreenManager):
-    previous_screen_names=ListProperty()
-    previous_transition_directions=ListProperty()
+gr2={
+    'level':'B2',
+    'title':'Emphasizing negation   ',
+    # 'subtitle':'Expresses repetition of a an action that has already occurred in the past',
+    'structures':['(Subj. +) 又 + Verb + 了'],
+    'opposite_structures':['(Subj. +) 又 + 不 / 没 + Verb (+ 了)'],
+    'explanation':"又 [yòu] is used in declarative sentences and describes the simple repetition of actions. This repeated action has already occurred once in the past. It doesn't have to be in quick succession; it happened before, and now it's happened again. 再  [hái] and 还  [zài] can be used to indicate 'again' or repeating a previous action.",
+}
+gr2=Grammar(**gr2)
 
-class Home(MyScreen):
+class GrammarList(MyScreen):
     
-    def __init__(self, *args,**kwargs):
-        super().__init__(*args,**kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.set_list_items()
+        for child in self.filter.children:
+            child.toggle_on()
+        
+    @property        
+    def grammar_list(self):
+        g = [gr1,gr2]*100
+        return g
+        
+    def create_dataitem(self,grammar,**kwargs):
+        dataitem={'grammar':grammar,'callback':lambda x:x}
+        dataitem.update(grammar.to_dict())
+        if grammar.level.startswith('A'): color='blue'
+        elif grammar.level.startswith('B'): color='green'
+        # elif grammar.level.startswith('B'): color=self.theme_cls.levelB
+        elif grammar.level.startswith('C'): color='orange'
+        kwargs={k:v for k,v in kwargs.items() if v!=None}
+        kwargs.update({'level_color':color})
+        dataitem.update(kwargs)
+        return dataitem 
+        
+    def set_list_items(self):
+        from kivy.clock import Clock
+        Clock.max_iteration = 24
+        self.rv_scroll.data = []
+        
+        def apply_filter(dataitem):
+            include,exclude = self.filter.include,self.filter.exclude
+            if dataitem['grammar'].level in include: return True
+            elif dataitem['grammar'].level in exclude: return False
+            else: return False
+            
+        def apply_search(dataitem):
+            search_entry = self.search.text
+            title = dataitem['grammar'].title.lower()
+            subtitle = dataitem['grammar'].subtitle.lower()
+            if search_entry.lower() in title: return True
+            elif search_entry.lower() in subtitle: return True
+            else: return False
+        
+        for gr in self.grammar_list:
+            dataitem=self.create_dataitem(grammar=gr)
+            if apply_filter(dataitem) and apply_search(dataitem):
+                self.add_list_item(dataitem)
+            
+    def add_list_item(self,dataitem):
+        self.rv_scroll.data.append(dataitem)
+
+# = ============================================================== = #
+# =                              MAIN                              = #
+# = ============================================================== = #
+
+
+
 class ChD(MyApp):
     window_size_myphone= (1080, 2114)
 
@@ -96,24 +208,48 @@ class ChD(MyApp):
         print(self.get_metrics())
     
     def build(self):
-        screens = [
-            Home(name="home"), 
-            Settings(name='settings'),
-            DictionaryNew(name='new_dict'), # creates new dictionary
-            DictionaryUpload(name="upload_dict"), # creates new based on file
-            DictionaryChooser(name='select_dict'), # select from existing
-            ViewDict(name="view_dict"), # view selected dictionary
-        ]
-        
+        super().build()
         interface = Interface()
         self.add_window_manager(interface.wm)
-        for screen in screens:
-            self.wm.add_widget(screen)
+        Screen = self.get_screen_widget('home')
+        self.wm.add_widget(Screen(name='home'))
+        self.add_more_screens()
         return interface
     
-    def on_start(self):
-        return super().on_start()
+    def add_more_screens(self):
+        for name in [screen.name for screen in self.wm.screens]:
+            screen_instance = self.wm.get_screen(name)
+            if name != 'home': self.wm.remove_widget(screen_instance)
+        screens = [screen(name=name) for name,screen in self.__screen_map.items() if name!='home']
+        for screen in screens:
+            self.wm.add_widget(screen)
     
+    def reload(self,name:str|None=None):
+        self.switch_screen('home','right')
+        if name!=None  and name in [screen.name for screen in self.wm.screens]:
+            screen_instance = self.wm.get_screen(name)
+            self.wm.remove_widget(screen_instance)
+            Screen = self.get_screen_widget(name)
+            self.wm.add_widget(Screen(name=name))
+        else:
+            self.add_more_screens()
+    
+    @property
+    def __screen_map(self):
+        screen_map={
+            'home': Home,
+            'settings': Settings,
+            'new_dict': DictionaryNew, # creates new dictionary
+            'upload_dict': DictionaryUpload, # creates new dictionary
+            'select_dict': DictionaryChooser, # creates new dictionary
+            'view_dict': ViewDict, # creates new dictionary
+            'gram_list': GrammarList,
+        }
+        return screen_map
+    
+    def get_screen_widget(self,name):
+        return self.__screen_map[name]
+
     # = ============================================================== = #
     # =                            SETTINGS                            = #
     # = ============================================================== = #
@@ -242,7 +378,7 @@ class ChD(MyApp):
         return self.wm.current_screen
     
     # = ============================================================== = #
-    # =                              OTHER                             = #
+    # =                          SURVEILLANCE                          = #
     # = ============================================================== = #
     
     def check_character_for_multiple(self,character:Character):

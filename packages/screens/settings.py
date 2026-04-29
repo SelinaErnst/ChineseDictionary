@@ -1,6 +1,6 @@
 import os
 import traceback
-from packages.kivymd_modules import (
+from packages.kivy import (
     MyScreen,
     ErrorMsg, # snackbar
     EntryFieldWithIcon,
@@ -38,19 +38,31 @@ class Settings(MyScreen):
     
     def __init__(self,*args, **kwargs):
         super().__init__(*args, **kwargs)
+        # settings are only initialized at the start
         self.settings = self.get_settings()
-        
+    
     def get_settings(self):
+        # get all the settings (user defined settings if available, if not default settings)
         from main import ChD
         app = ChD.get_running_app()
         return app.settings
+    
+    # = ============================================================== = #
+    # =                             WIDGET                             = #
+    # = ============================================================== = #
+            
+    def open_file(self,file):
+        layout = ShowFileContent(md_bg_color='red',file=file)
+        layout.read_file()
+        self.open_widget(layout)
+        
+    # = ============================================================== = #
+    # =                         CHANGE SETTINGS                        = #
+    # = ============================================================== = #
         
     def update_settings(self):
         for setting in self.ids.keys():
-            # do the updating
-            # key = updater[setting]()
-            from main import ChD
-            key = ChD.get_running_app().get_setting(setting)
+            key = self.get_setting(setting)
             self.ids[setting].ids.label.text = key
             self.settings[setting] = key
 
@@ -75,11 +87,6 @@ class Settings(MyScreen):
                 app.save_user_settings(new_settings)
                 app.update_design()
                 
-                # AttentionMsg(
-                #     attention='User settings saved',
-                #     msg=''
-                #     ).open()
-                
             except Exception as err:
                 error=f"{type(err).__name__}"
                 ErrorMsg(error=error,msg=str(err)).open()            
@@ -92,26 +99,32 @@ class Settings(MyScreen):
                 error="Invalid settings",
                 msg=f'Cannot save, check settings: {incorrect_entries}'
                 ).open()
-            
-    def open_file(self,file):
-        from main import ChD
-        app = ChD.get_running_app()
-        layout = ShowFileContent(md_bg_color='red',file=file)
-        layout.read_file()
-        app.open_widget(layout)
-
 class Setting(EntryFieldWithIcon):
     icon = StringProperty()
     options = ListProperty() # determines valid entries
     icons = ListProperty()
     itemclass = StringProperty()
-    # list_height = NumericProperty()
     support_text = StringProperty()
     setting= StringProperty()
     
-    def show_options(self):
+    # = ============================================================== = #
+    # =                         SELECT OPTIONS                         = #
+    # = ============================================================== = #
+    
+    # = –––––––––––––––––––––––– theme  style –––––––––––––––––––––––– = #
+    
+    def switch_theme(self):
         from main import ChD
-        root = ChD.get_running_app().wm.current_screen
+        ChD.get_running_app().switch_theme()
+        self.ids.label.text = self.theme_cls.theme_style
+        
+    @property
+    def themes(self):
+        return ['Dark','Light']
+        
+    # = ––––––––––––––––––––––– primary palette –––––––––––––––––––––– = #
+    
+    def select_palette(self):
         # update if any changes were made outside of app
         self.children[1]._check_text()
         
@@ -120,49 +133,54 @@ class Setting(EntryFieldWithIcon):
             dialog = ShowPaletteOptions(**kwargs)
             dialog.open()
         
-    def choose_directory(self):
+    @property
+    def palettes(self):
+        return [palette.capitalize() for palette in hex_colormap.keys()]
+            
+    # = ––––––––––––––––––––––––– directories –––––––––––––––––––––––– = #
+        
+    def select_directory(self):
         from main import ChD
         app = ChD.get_running_app()
+        screen = app.wm.current_screen
         
+        def select_path(path):
+            self.text = path+'/'
+            screen.file_manager.close()
+            
         try: 
-            app.wm.current_screen.file_manager = MyFileManager(
+            screen.file_manager = MyFileManager(
                 description=f'Decide on {self.hint.lower()}.',
-                select_path=self.select_path,
+                select_path=select_path,
                 ext=['.____nothing____'], 
             )
-            app.wm.current_screen.file_manager.show(use_root_folder=True)
-                
+            screen.file_manager.show(path=None,use_root_folder=True)
+            
         except Exception as err:
             error=f"{type(err).__name__}"
             ErrorMsg(error=error,msg=str(err)).open()
             import traceback
             print(traceback.format_exc())
-            
-    def select_path(self, path):
-        self.text = path+'/'
-        from main import ChD
-        app = ChD.get_running_app()
-        app.wm.current_screen.file_manager.close()
          
-    def get_palettes(self):
-        return [palette.capitalize() for palette in hex_colormap.keys()]
+    # = ============================================================== = #
+    # =                              VALID                             = #
+    # = ============================================================== = #
     
-    def switch_theme(self):
-        from main import ChD
-        ChD.get_running_app().switch_theme()
-        self.ids.label.text = self.theme_cls.theme_style
-
+    def is_path(self,path:str):
+        correct_syntax = path.endswith('/')
+        exists = os.path.isdir(path)
+        return correct_syntax and exists
+    
     # overwriting (dont change name!)
     def is_correct(self):
         if 'directory' in self.hint.lower():
-            correct_syntax = self.ids.label.text.endswith('/')
-            return os.path.isdir(self.ids.label.text) and correct_syntax
+            return self.is_path(self.ids.label.text)
         elif 'palette' in self.hint.lower():
-            correct = self.ids.label.text in self.options
+            correct = self.ids.label.text in self.palettes
             if correct: self.theme_cls.primary_palette = self.ids.label.text
             return correct
         elif 'theme' in self.hint.lower():
-            correct = self.ids.label.text in ['Light','Dark']
+            correct = self.ids.label.text in self.themes
             if correct: self.theme_cls.theme_style = self.ids.label.text
             return correct
         else:

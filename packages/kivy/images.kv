@@ -1,0 +1,15 @@
+<ImageDisplay>:
+    adaptive_height: True
+    # md_bg_color: 'blue'
+    orientation: 'rl-bt'
+    spacing: 20
+
+<ImageBox>:
+    radius: 20
+    size_hint: None, None
+    size: [200,200]
+    md_bg_color: app.theme_cls.onSurfaceLightColor
+    on_release: app.test(root.source)
+    FitImage:
+        radius: 20
+        source: root.imagefile(root.source)

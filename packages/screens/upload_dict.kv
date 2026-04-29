@@ -25,7 +25,7 @@
                 hint: "File path"
                 role: "small"
                 text: root.dict_file
-                press_button: root.choose # function
+                press_button: root.select_file # function
                 is_correct: root.check_file
                 icon: "folder-open"
             EntryFieldWithIcon:
@@ -33,7 +33,7 @@
                 hint: "File format"
                 role: "medium"
                 text: root.file_format
-                press_button: root.show_file_formats
+                press_button: root.select_file_format
                 is_correct: root.check_file_format
                 icon: 'information'
                 allow_empty: True
@@ -45,7 +45,7 @@
                     text: "Add"
                     icon: "plus"    
                     style: "elevated"
-                    on_press: root.confirm()
+                    on_press: root.preview()
 
 
 <FileContent>:

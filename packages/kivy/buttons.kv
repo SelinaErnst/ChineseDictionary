@@ -1,0 +1,146 @@
+<Toggle>: #MDStackLayout
+    size_hint_y: None
+    height: 0 # toggle -> self.minimum_height
+    spacing: 10
+
+<ToggleButton>: #MDButton
+    radius: 20
+    text: ""
+    icon: ""
+    theme_bg_color: 'Custom'
+    custom_color: None
+    custom_font_color: None
+    md_bg_color: app.theme_cls.surfaceContainerLowColor if self.active_filter == 'ignore' else ((app.theme_cls.surfaceTintColor if root.custom_color==None else root.custom_color) if self.active_filter == 'include' else (app.theme_cls.errorContainerColor if self.active_filter == 'exclude' else 'white'))
+    font_color: app.theme_cls.onSurfaceVariantColor if self.active_filter == 'ignore' else ((app.theme_cls.onPrimaryColor if root.custom_font_color==None else root.custom_font_color) if self.active_filter == 'include' else (app.theme_cls.onErrorContainerColor if self.active_filter == 'exclude' else 'white'))
+    role: 'medium'
+    font_style: 'Label'
+    style: "tonal"  
+
+<IconTextToggleButton>: #ToggleButton
+    icon_size: sp(9)
+    role: 'medium'
+    height: self.ids.label.texture_size[1]
+    padding: 20 
+
+    MDButtonIcon: 
+        pos_hint: {'x': 0,'center_y': 0.5}
+        id: icon
+        icon: root.icon
+        # padding: root.padding+20,root.padding,20,root.padding
+        padding: root.padding*2,root.padding,root.padding,root.padding
+        font_size: self.font_size if root.icon_size==None else root.icon_size
+        theme_text_color: 'Custom'
+        text_color: root.font_color
+    MDButtonText: 
+        id: label
+        text: root.text
+        pos_hint: {'right': 1,'center_y': 0.5}
+        # padding: 0,root.padding,root.padding+20,root.padding
+        padding: 0,root.padding,root.padding*2,root.padding
+        font_style: root.font_style
+        role: root.role
+        theme_text_color: 'Custom'
+        text_color: root.font_color
+
+<TextToggleButton>: #ToggleButton
+    height: self.ids.label.texture_size[1]
+    role: 'medium'
+    theme_width: "Custom"
+    width: self.ids.label.width+2*self.padding
+    padding: 20 
+
+    MDButtonText:
+        id: label
+        text: root.text
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        # adaptive_width: True
+        padding: root.padding
+        font_style: root.font_style
+        role: root.role
+        theme_text_color: 'Custom'
+        text_color: root.font_color
+
+# = ============================================================== = #
+# =                          ICON AND TEXT                         = #
+# = ============================================================== = #
+
+<MyIconTextButton>: #MDButton
+    radius: 20
+    height: self.ids.label.texture_size[1] #based on padding
+    font_style: 'Label'
+    role: 'large'
+    icon_size: None
+    padding: 30
+
+    MDButtonIcon: 
+        pos_hint: {'x': 0,'center_y': 0.5}
+        id: icon
+        icon: root.icon
+        padding: root.padding+20,root.padding,20,root.padding
+        font_size: self.font_size if root.icon_size==None else root.icon_size
+    MDButtonText: 
+        id: label
+        text: root.text
+        pos_hint: {'right': 1,'center_y': 0.5}
+        padding: 0,root.padding,root.padding+20,root.padding
+        font_style: root.font_style
+        role: root.role
+    
+<RigidIconTextButton>: #MyIconTextButton
+    theme_width: "Custom"
+    # width: self.ids.label.width+2*self.padding
+
+<MultiLineIconTextButton>: #MyIconTextButton
+    theme_width: "Custom" 
+    width: (self.ids.icon.texture_size[0]+self.ids.label.texture_size[0])
+
+# used with Interface
+<NavigationButton>:  #MDButton
+    radius: 20
+    theme_width: "Custom"
+    size_hint_x: 1
+    style: 'text'
+    MDButtonIcon: 
+        icon: root.icon
+    MDButtonText: 
+        text: root.text
+        role: 'large'
+        padding: 50
+
+# = ============================================================== = #
+# =                            ONLY TEXT                           = #
+# = ============================================================== = #
+
+<MyTextButton>: #MDButton
+    radius: 20
+    height: self.ids.label.texture_size[1]
+    MDButtonText:
+        id: label
+        text: root.text
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        adaptive_width: True
+        padding: root.padding
+        font_style: root.font_style
+        role: root.role
+
+<RigidTextButton>: #MyTextButton
+    theme_width: "Custom"
+
+<FlexTextButton>: #MyTextButton
+    theme_width: "Custom"
+    width: self.ids.label.texture_size[0]
+
+# = ============================================================== = #
+# =                              ICON                              = #
+# = ============================================================== = #
+
+<MyIconButton>: #MDButton
+    theme_width: "Custom"
+    size: self.size
+    radius: 20
+    pos_hint: {'center_x': 0.5,'center_y': 0.5}
+    MDButtonIcon:
+        icon: root.icon
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        theme_font_size: 'Custom'
+        font_size: sorted(root.size)[0] - 20

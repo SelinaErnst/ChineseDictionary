@@ -17,22 +17,22 @@
                 icon: 'palette'
                 hint: 'Palette'
                 text:  app.theme_cls.primary_palette
-                press_button: self.show_options
-                options: self.get_palettes()
+                press_button: self.select_palette
+                options: self.palettes
             Setting:
                 id: app_directory
                 setting: 'app_directory'
                 hint: 'App Directory'
                 text: app.get_setting('app_directory',default=True)
                 icon: 'folder-open'
-                press_button: self.choose_directory
+                press_button: self.select_directory
             Setting:
                 id: import_directory
                 setting: 'import_directory'
                 hint: 'Import Directory'
                 text: app.get_setting('import_directory')
                 icon: 'folder-open'
-                press_button: self.choose_directory
+                press_button: self.select_directory
             MDStackLayout:
                 adaptive_height: True
                 spacing: 50

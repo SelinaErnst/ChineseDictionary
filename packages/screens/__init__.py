@@ -16,3 +16,19 @@ Builder.load_file(current_dir+'/upload_dict.kv')
 Builder.load_file(current_dir+'/dict_chooser.kv')
 Builder.load_file(current_dir+'/view_dict.kv')
 Builder.load_file(current_dir+'/show_character.kv')
+
+from packages.kivy import (
+    MyScreen,
+    MDBoxLayout,
+    ScreenManager,
+    ListProperty
+    )
+class Home(MyScreen):
+    
+    def __init__(self, *args,**kwargs):
+        super().__init__(*args,**kwargs)
+class Interface(MDBoxLayout):
+    pass
+class WindowManager(ScreenManager):
+    previous_screen_names=ListProperty()
+    previous_transition_directions=ListProperty()

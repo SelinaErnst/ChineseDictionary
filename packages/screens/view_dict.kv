@@ -31,6 +31,7 @@
                     id: sorter_box
                     size_hint_y: None
                     height: sorter.height
+                    # md_bg_color: 'blue'
                     Sorter:
                         id: sorter
                 MDBoxLayout:
@@ -54,6 +55,8 @@
                         # md_bg_color: 'blue'
             MDRecycleView:
                 id: rv_scroll
+                scroll_type: ['bars', 'content']
+                effect_cls: "ScrollEffect"
                 viewclass: 'DictionaryItem'
                 RecycleBoxLayout:
                     id: grid
@@ -63,7 +66,8 @@
                     size_hint: 1, None
                     height: self.minimum_height
                     default_size_hint: 1, None
-                    default_height: 260
+                    # default_height: 300
+                    default_height: None
 
     MDBottomSheet:
         id: bottom_nav
@@ -103,7 +107,7 @@
                         icon: 'download'
                         style: 'text'
                         size: self.parent.height, self.parent.height
-                        on_release: root.choose_export_method()
+                        on_release: root.export()
                     MyIconButton:
                         text: 'Save'
                         icon: 'content-save'
@@ -139,7 +143,7 @@
                 size: 80,80 
                 padding: 50,0,50,0
                 style: 'text'
-                on_release: app.wm.current_screen.get_new_name()
+                on_release: app.wm.current_screen.edit_name()
 
     MDLabel:
         text: root.left_text
@@ -184,52 +188,36 @@
         font_style: 'Title'
         role: 'medium'
 
-
-<Toggle>:
-    size_hint_y: None
-    height: 0 # toggle -> self.minimum_height
-    # padding: 0,10,0,10
-    padding: 0,0,0,10
-    spacing: 10
-
 <Filter@Toggle>: #MDStackLayout
-    FilterOption: 
+    padding: 0,0,0,10
+    IconTextToggleButton: 
         text: "translated"
         icon: "translate"
         on_release: self.toggle_three()
-    FilterOption: 
+    IconTextToggleButton: 
         text: "radical"
         icon: "alpha-r-box"
         on_release: self.toggle_three()
-    FilterOption: 
+    IconTextToggleButton: 
         text: "measure word"
         icon: "scale-unbalanced"
         on_release: self.toggle_three()
-    FilterOption: 
+    IconTextToggleButton: 
         text: "grammatical"
         icon: "bookshelf"
         on_release: self.toggle_three()
 
 <Sorter@Toggle>:
-    FilterOption: 
+    padding: 0,0,0,10
+    TextToggleButton: 
         id: simple
         text: "simple"
         on_release: self.toggle_two(only_one=True)
-    FilterOption: 
+    TextToggleButton: 
         id: traditional
         text: "traditional"
         on_release: self.toggle_two(only_one=True)
-    FilterOption: 
+    TextToggleButton: 
         id: pronunciation
         text: "pronunciation"
         on_release: self.toggle_two(only_one=True)
-
-<FilterOption>: #FlexTextButton
-    text: ""
-    icon: ""
-    style: "tonal"
-    theme_bg_color: 'Custom'
-    md_bg_color: app.theme_cls.surfaceContainerLowColor if self.active_filter == 'ignore' else (app.theme_cls.surfaceTintColor if self.active_filter == 'include' else (app.theme_cls.errorContainerColor if self.active_filter == 'exclude' else 'white'))
-    role: 'medium'
-    icon_size: sp(9)
-    padding: 20

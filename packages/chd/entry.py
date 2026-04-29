@@ -11,21 +11,21 @@ class Entry():
             line=head
             for i,element in enumerate(values):
                 if isinstance(values,list):
-                    if i+1 != len(values): line+=f'- {element}\n{distance}'
-                    else: line+=f'- {element}'
+                    if i+1 != len(values): line+=f'| - {element}\n|{distance[:-1]}'
+                    else: line+=f'| - {element}'
                 elif isinstance(values,dict):
                     el_values = values[element]
-                    if i+1 != len(values): line+=f'- {element}: {el_values}\n{distance}'
-                    else: line+=f'- {element}: {el_values}'
+                    if i+1 != len(values): line+=f'| - {element}: {el_values}\n|{distance[:-1]}'
+                    else: line+=f'| - {element}: {el_values}'
             return line
         
         string=''
         for cat,values in self.to_dict().items():
-            cat='|{0:{width}}|'.format(cat.upper(),width=width-3)
+            cat='|{0:{width}}'.format(cat.upper(),width=width-3)
             head='\n'+'{0:{width}}'.format(cat,width=width)
             if type(values) in [list,dict]: line = write_list(head=head,values=values)
-            elif type(values) in [str,int]: line=f'{head}{values}'
-            elif values==None: line=f'{head}'
+            elif type(values) in [str,int]: line=f'{head}| {values}'
+            elif values==None: line=f'{head}|'
             else: line=""
             string+=line
         return string

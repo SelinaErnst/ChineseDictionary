@@ -64,5 +64,9 @@
                         nav_drawer.set_state("toggle")
                     icon: "account-check"
                     text: "Access"
-
-        
+                NavigationButton:
+                    on_release: 
+                        app.reload()
+                        nav_drawer.set_state("toggle")
+                    icon: "reload"
+                    text: "Reload"

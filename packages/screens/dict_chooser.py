@@ -2,12 +2,11 @@
 import os
 from kivy.properties import StringProperty, ListProperty
 
-from packages.kivymd_modules import (
+from packages.kivy import (
     MyScreen,   
     ErrorMsg,
     AttentionMsg,
 )
-
 class DictionaryChooser(MyScreen):
     filelist=ListProperty()
     directory=StringProperty()
@@ -34,23 +33,17 @@ class DictionaryChooser(MyScreen):
             self.filelist=[f for f in self.filelist if f.endswith(valid_ext[self.file_format])]
             
         self.options.set_options(self.filelist)
-        self.options.set_list_items(func=self.select)
+        self.options.set_list_items(func=self.select_dictionary)
         return self.filelist
     
-    def select(self, dict_dir):
+    def select_dictionary(self, dict_dir):
         dict_path=self.directory+dict_dir+'/'
 
-        try:
-            file = [f for f in os.listdir(dict_path) if f==dict_dir+'.'+self.file_format]
-            file=file[0]            
-            from main import ChD
-            app=ChD.get_running_app()
-            next_screen=app.switch_screen("view_dict","left")
-            next_screen.set_up_screen(dict_name=dict_dir,dict_file=dict_path+dict_dir+f'.{self.file_format}',file_format=self.file_format)
-        
-        
-        except Exception as err:
-            error=f"{type(err).__name__}"
-            ErrorMsg(error=error,msg=str(err)).open()
-            import traceback
-            print(traceback.format_exc())
+        file = [f for f in os.listdir(dict_path) if f==dict_dir+'.'+self.file_format]
+        file = file[0]
+        dict_file = dict_path+dict_dir+f'.{self.file_format}'
+        if os.path.isfile(dict_file):
+            next_screen=self.switch_screen("view_dict","left")
+            next_screen.set_up_screen(dict_name=dict_dir,dict_file=dict_file,file_format=self.file_format)
+        else:
+            ErrorMsg(error='File missing',msg=f'Dictionary file ({self.file_format}) does not exist.').open()

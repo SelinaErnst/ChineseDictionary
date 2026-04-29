@@ -1,0 +1,307 @@
+
+<TableRow>: #MDBoxLayout
+    orientation: "horizontal"
+    adaptive_height: True
+    MDLabel:
+        name: "head"
+        size_hint_x: None
+        width: root.head_width
+        text: root.head
+        role: root.role
+    MDLabel:
+        adaptive_width: True
+        text: root.content
+        role: root.role
+        pos_hint: {"x":0}
+
+
+
+# = ============================================================== = #
+# =                 LIST ITEM WITH BUTTON BEHAVIOR                 = #
+# = ============================================================== = #
+
+
+<CustomListItem>: #MDAnchorLayout
+    radius: 20
+    padding: 20,20,20,20
+
+<MyListItem>: #CustomListItem
+    md_bg_color: self.theme_cls.surfaceContainerLowColor
+    anchor_x: 'center'
+    size_hint_y: None
+    height: 150
+    on_release:
+        app.dismiss_all()
+        root.func(self.text) if root.func!=None else None
+    MDLabel:
+        id: label
+        text: root.text
+        adaptive_width: True
+        style: 'Label'
+        role: 'medium'
+
+<MyMultiLineItem>: #CustomListItem
+    md_bg_color: self.theme_cls.surfaceContainerLowColor
+    anchor_y: 'center'
+    size_hint_y: None
+    height: label.height+40
+    on_release:
+        app.dismiss_all()
+        root.func(self.text) if root.func!=None else None
+    MDLabel:
+        id: label
+        text: root.text
+        adaptive_height: True
+        style: 'Label'
+        role: 'medium'
+
+<PaletteItem>: #CustomListItem
+    md_bg_color: self.theme_cls.surfaceContainerLowColor
+    # md_bg_color: self.update_color(root.text, app.theme_cls.theme_style)
+    padding: 20,0,20,0
+    radius: 20
+    on_release: 
+        app.apply_palette(self.text)
+    MDBoxLayout:
+        MDLabel:
+            id: label
+            text: root.text
+            theme_font_size: 'Custom'
+            font_size: sp(9)
+            size_hint_x: None
+            width: 400
+        MDGridLayout:
+            id: color_grid
+            radius: 20
+            cols: 19
+
+            PaletteColor:
+                md_bg_color: root.color_onea
+            PaletteColor:
+                md_bg_color: root.color_oneb
+            PaletteColor:
+                md_bg_color: root.color_onec
+            PaletteColor:
+                md_bg_color: root.color_oned
+            PaletteColor:
+                md_bg_color: root.color_onee
+            PaletteColor:
+                md_bg_color: root.color_onef
+            PaletteColor:
+                md_bg_color: root.color_oneg   
+            PaletteColor:
+                md_bg_color: root.color_twoa
+            PaletteColor:
+                md_bg_color: root.color_twob
+            PaletteColor:
+                md_bg_color: root.color_twoc
+            PaletteColor:
+                md_bg_color: root.color_twod
+            PaletteColor:
+                md_bg_color: root.color_twoe
+            PaletteColor:
+                md_bg_color: root.color_twof
+            PaletteColor:
+                md_bg_color: root.color_trea
+            PaletteColor:
+                md_bg_color: root.color_treb
+            PaletteColor:
+                md_bg_color: root.color_trec
+            PaletteColor:
+                md_bg_color: root.color_tred
+            PaletteColor:
+                md_bg_color: root.color_tree
+            PaletteColor:
+                md_bg_color: root.color_tref
+
+<PaletteColor@MDBoxLayout>: #MDBoxLayout
+    theme_bg_color: "Custom" 
+
+<GrammarItem>: #CustomListItem
+    # height: max(288, min(title.height+subtitle.height+structure.height+2*self.padding[0], 404))
+    height: 404
+    padding: 30
+    
+    level: ""
+    title: ""
+    subtitle: ""
+    
+    md_bg_color: self.theme_cls.surfaceContainerLowColor
+    level_color: app.theme_cls.onPrimaryColor
+    
+    MDBoxLayout:
+        spacing: root.padding[0]
+        MDAnchorLayout:
+            size_hint_x: None
+            width: level.width
+            anchor_y: 'top'
+            MDAnchorLayout:
+                id: level
+                md_bg_color: app.custom.colors['level'+root.level]
+                size_hint: None,None
+                size: 2*[120]
+                radius: 20
+                MDLabel:
+                    text: root.level
+                    font_style: 'Title'
+                    role: 'large'
+                    adaptive_width: True
+                    adaptive_height: True
+                    # theme_text_color: 'Custom'
+                    text_color: app.custom.colors['text_level'+root.level]
+
+        MDStackLayout:
+            id: infobox
+            MDBoxLayout:
+                adaptive_height: True
+                orientation: 'vertical'
+                ChLabel:
+                    id: title
+                    text: root.title
+                    font_style: 'Label'
+                    role: 'large'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    text_size: self.width, None
+                    halign: 'left'
+                    shorten: True
+                ChLabel:
+                    id: subtitle
+                    text: root.subtitle
+                    font_style: 'Label'
+                    role: 'small'
+                    adaptive_height: True
+                    max_lines: 3
+                    padding: 0,0,0,15
+                    valign: 'top'
+                    halign: 'left'
+                MDDivider:
+            MDBoxLayout:
+                adaptive_height: True
+                ChLabel:
+                    id: structure
+                    text: root.get_category(root.grammar,'structure')
+                    font_style: 'Label'
+                    role: 'small'
+                    adaptive_height: True
+                    max_lines: 1
+                    padding: 0,15,0,0
+                    valign: 'top'
+                    halign: 'left'
+
+
+<DictionaryItem>: #CustomListItem
+    radius: 20
+    md_bg_color: app.theme_cls.surfaceContainerColor
+    on_release: app.wm.current_screen.show_char(self.character)
+
+    size_hint_y: None
+    height: 210
+    spacing: 20
+    image_size: root.height-2*root.spacing
+    symbol_size: (root.height-2*root.spacing)/2
+
+    char_simp: ""
+    char_trad: ""
+    char_pron: ""
+    translation: ""
+
+    preview_image: ""
+    character_img: ""
+
+    is_radical: False
+    is_measure_word: False
+    is_grammatical: False
+    has_translation: False
+
+    MDBoxLayout:
+        orientation: 'horizontal'
+        MDBoxLayout:
+            MDStackLayout:
+                spacing: 10
+                padding: 0,0,15,0
+                MDBoxLayout:
+                    size_hint_y: None
+                    height: 58
+                    orientation: 'horizontal'
+                    spacing: root.padding[0]+10
+                    ChLabel:
+                        id: simp
+                        text: root.char_simp
+                        font_style: 'Label'
+                        role: 'large'
+                        adaptive_height: True
+                        adaptive_width: True
+                        shorten: True
+                        shorten_from: 'right'
+                    ChLabel:
+                        id: trad
+                        text: root.char_trad
+                        font_style: 'Label'
+                        role: 'large'
+                        adaptive_height: True
+                        adaptive_width: True
+                        shorten: True
+                        shorten_from: 'right'
+                ChLabel:
+                    id: pron
+                    text: root.char_pron
+                    font_style: 'Label'
+                    role: 'small'
+                    adaptive_height: True
+                    shorten: True
+                    shorten_from: 'right'
+                ChLabel:
+                    id: transl
+                    text: root.translation
+                    adaptive_height: True
+                    shorten: True
+                    shorten_from: 'right'
+                    theme_font_size: 'Custom'
+                    font_size: sp(8)
+
+        MDBoxLayout:
+            spacing: 0 if root.preview_image=="" else 20
+            adaptive_width: True
+            MDAnchorLayout:
+                size: 2*[root.image_size]
+                radius: 20
+                size_hint: None, None
+                opacity: 0.0 if root.preview_image=="" else 1
+                ImageBox:
+                    size: 2*[root.image_size]
+                    source: root.preview_image
+            MDAnchorLayout:
+                size: 2*[root.image_size]
+                radius: 20
+                size_hint: None, None
+                md_bg_color: app.theme_cls.surfaceColor
+                MDGridLayout:
+                    cols:2
+                    EntryType:
+                        icon: self.choose_icon(root.has_translation,['','translate'])
+                        symbol_size: root.symbol_size
+                    EntryType:
+                        icon: self.choose_icon(root.is_radical,['','alpha-r-box'])
+                        symbol_size: root.symbol_size
+                    EntryType:
+                        icon: self.choose_icon(root.is_measure_word,['','scale-unbalanced'])
+                        symbol_size: root.symbol_size
+                    EntryType:
+                        icon: self.choose_icon(root.is_grammatical,['','bookshelf'])
+                        symbol_size: root.symbol_size
+
+<EntryType>: #MDIconButton
+    symbol_size: 100
+    size_hint: None, None
+    size: self.symbol_size, self.symbol_size
+    font_size: self.symbol_size*(0.6)
+    theme_font_size: 'Custom'
+    theme_icon_color: 'Custom'
+    icon_color: app.theme_cls.primaryColor
+    allow_hover: False
+    ripple_effect: False
+
+
+<CategoryItem>: #CustomListItem
+
