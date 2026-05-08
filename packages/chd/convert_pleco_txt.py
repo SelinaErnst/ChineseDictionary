@@ -1,5 +1,5 @@
 # from .printentry import encode_pinyin
-from .unicode_characters import chinese_char,not_chinese_char,pleco_char
+from .unicode_characters import chinese_char,not_chinese_char,pleco_char, unassigned_extensions
 from .unicode_characters import PinyinToneMark
 from .unicode_characters import encode_pinyin, decode_pinyin
 from .character import Character
@@ -10,11 +10,19 @@ from pathlib import Path
 from typing import Literal, TypeAlias
 
 APP_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent.parent
+
 def load_json(path, default_dir=APP_DIR):
     path=path if default_dir==None else Path(default_dir)/path
     with open(path, "r") as f:
-        settings = json.load(f)
-    return settings
+        data = json.load(f)
+    return data
+
+def dump_json(data,path, default_dir=APP_DIR,indent=4):
+    path=path if default_dir==None else Path(default_dir)/path
+    with open(path, "w") as f:
+        json.dump(data, f, indent=indent,ensure_ascii=False)
+    return True
+
 
 _PLECO_COMMAND: TypeAlias = Literal[
     'newline', 'tab', 'point', 'dot',
@@ -85,7 +93,8 @@ def get_font(font:str|None=None):
     if font=='normal': font=None
     return font
 def get_color(color:str|None=None):
-    if not is_color(color) or color=='none': color=None
+    if is_color_name(color): color=_CHD_COLOR[color]
+    elif not is_color(color) or color=='none': color=None
     return color
 def get_size(size:str=None):
     size = get_spec(spec_input=size,spec_map=_CHD_SIZE_MAP)
@@ -156,6 +165,7 @@ def link_pronunciations(text:str):
     
     def link_to_string(match):
         naked_string = match.group().lstrip('[').rstrip(']')
+        naked_string = decode_pinyin(naked_string)
         linked_string = convert_to_pleco_syntax('link',naked_string)
         return f'[{linked_string}]'
     
@@ -244,7 +254,7 @@ class Header():
     def write(self):
         if self.visible:
             return convert_to_pleco_syntax(
-                command=[self.__font,'color'],text=self.text,color_name=self.__color)
+                command=[self.__font,'color'],text=self.text,color=self.__color)
         else: return ""
         
     def write_with_content(self,content:str):
@@ -256,7 +266,7 @@ class Header():
         elif self.__visible in ['ignore']: written=False
         elif self.__visible in ['available','hidden']: written=(not is_empty(content))
         
-        if written:
+        if written and re.findall(f'[\w|{unassigned_extensions}]',content)!=[]:
             text=self.write()+content
             if self.visible: text+=convert_to_pleco_syntax('newline')
         else: text=""
@@ -336,10 +346,11 @@ class Content():
     def create_text(self):
         if self.content==None: return ""
         else: 
+            # print(self.__color)
             text=convert_to_pleco_syntax(
                 command=[self.__size,self.__font,'color'],
                 text=self.content,
-                color_name=self.__color)
+                color=self.__color)
             return text
     
 class Block():

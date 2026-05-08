@@ -7,13 +7,12 @@
             text: f"Import Dictionary File"
         MDBoxLayout:
             radius: 20
-            # md_bg_color: app.theme_cls.surfaceBrightColor #surfaceContainerColor
-            md_bg_color: app.theme_cls.surfaceContainerColor #surfaceContainerColor
+            md_bg_color: app.custom.colors['dialog_bg']
             orientation: 'vertical'
             size_hint_x: 1
             adaptive_height: True
-            padding: 20,20,20,20
-            spacing: 50
+            padding: 40
+            spacing: 40
             EntryField:
                 id: name_entry
                 hint: "Dictionary name"
@@ -44,7 +43,7 @@
                 MyIconTextButton:
                     text: "Add"
                     icon: "plus"    
-                    style: "elevated"
+                    style: "tonal"
                     on_press: root.preview()
 
 

@@ -2,7 +2,7 @@
 
 <ErrorMsg>:
     radius: 20,20,0,0
-    md_bg_color: root.theme_cls.onErrorContainerColor
+    md_bg_color: root.theme_cls.errorColor
     orientation: "horizontal"
     MDSnackbarText:
         text: root.error
@@ -35,3 +35,4 @@
         pos_hint: {"center_x": 0.5}
         icon: "close"
         on_release: root.dismiss()
+        text_color: root.theme_cls.inversePrimaryColor

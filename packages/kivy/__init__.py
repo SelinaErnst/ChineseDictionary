@@ -28,15 +28,16 @@ from .dialogs import (
     CustomDialog,
     ConfirmFileChoice,
     ConfirmExport,
+    ConfirmDelete,
     GrantAccess,
     ChooseAppDirectory,
     ShowOptions,
     ShowPaletteOptions,
     MakeDecision,
     MakeSimpleDecision,
-    AddElement,
-    ConfirmDelete,
-    ConfirmUnsaved
+    EditElement,
+    ConfirmUnsaved,
+    ConfirmDecision
 )
 
 from .labels import (
@@ -57,6 +58,7 @@ from .listitems import (
     CustomListItem,
     MyListItem,
     MyMultiLineItem,
+    CategoryItem
 )
 
 from .screens import (
@@ -70,7 +72,6 @@ from .snackbars import (
 
 from .textfield import (
     EntryField,
-    Property,
     EntryFieldWithIcon,
 )
 
@@ -113,6 +114,8 @@ from kivymd.uix.card import MDCard, MDCardSwipe
 from kivymd.uix.navigationdrawer import MDNavigationDrawerItem, MDNavigationDrawer
 from kivymd.uix.appbar.appbar import MDBottomAppBar, MDActionBottomAppBarButton
 from kivymd.uix.filemanager import MDFileManager
+from kivymd.uix.divider import MDDivider
+from kivymd.uix.bottomsheet import MDBottomSheet
 
 from kivy.uix.textinput import TextInput
 

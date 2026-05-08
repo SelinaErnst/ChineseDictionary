@@ -1,18 +1,35 @@
 <EntryField>: #MDTextField
     id: label
+    height: root.standard_height
     font_style: "Label"
-    mode: "filled"
-    theme_bg_color: 'Custom'
-    fill_color_normal: app.theme_cls.surfaceContainerLowColor
-    fill_color_focus: app.theme_cls.surfaceContainerHighColor
+    mode: "outlined" # filled
     theme_font_name: 'Custom'
     font_name: 'CH'
-    height: root.standard_height
+
+    # color: "dark-light"
+    color_focus: app.custom.colors['textfield_set_focus'] 
+    # if root.color=="dark-light" else app.custom.colors['textfield_bright']
+    color_normal: app.custom.colors['textfield_set_normal'] 
+    # if root.color=="dark-light" else app.custom.colors['textfield_dark']
+
+    theme_text_color: "Custom"
+    text_color_normal: root.color_normal
+    text_color_focus: root.color_focus
+    theme_line_color: 'Custom'
+    line_color_normal: root.color_normal
+    line_color_focus: root.color_focus
+    theme_error_color: "Custom"
+    error_color: app.custom.colors['textfield_error']
+
+    # theme_bg_color: 'Custom'
+    # fill_color: 'black'
+    # fill_color_normal: app.theme_cls.surfaceContainerLowColor
+    # fill_color_focus: app.theme_cls.surfaceContainerHighColor
+
     MDTextFieldHintText:
         text: root.hint
-
-<Property>:
-    standard_height: 130
+        text_color_normal: root.color_normal
+        text_color_focus: root.color_focus
 
 <EntryFieldWithIcon>: #MDBoxLayout
     label: label

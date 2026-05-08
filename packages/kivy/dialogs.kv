@@ -3,23 +3,23 @@
     content: content
     decision: decision
     padding: 40
-    md_bg_color: [0, 0, 0, 0.7]
+    md_bg_color: app.custom.colors['bg_overlay']
 
     title: 'TITLE'
     support_text: ''
     dialog_padding: 40,40
     dialog_width: None
-    box_pos: {'center_x': .5,'center_y': 0.5}
+    box_pos: {'center_x':.5,'top':.98}
 
     title_font_style: 'Title'
     title_font_role: 'large'
-
 
     MDBoxLayout:
         id: box
         radius: 20
         pos_hint: root.box_pos
-        md_bg_color: app.theme_cls.surfaceContainerColor
+        y: 20
+        md_bg_color: app.custom.colors['dialog_bg']
         padding: root.dialog_padding
         orientation: 'vertical'
         adaptive_height: True
@@ -39,21 +39,16 @@
             label_padding: 0,50,0,50
         MDBoxLayout:
             id: content
-            adaptive_height: True
             orientation: 'vertical'
+            spacing: 20
+            size_hint_y: None
+            height: self.minimum_height
+
         MDBoxLayout:
             id: decision
             adaptive_height: True
             orientation: 'vertical'
-            # md_bg_color: 'red'
 
-<GrantAccess>: #CustomDialog
-    title: 'Grant Access To Storage'
-    accept_func:  root.permissions_external_storage
-    deny_func:  root.permission_denied
-    confirm_text: 'Accept'
-    deny_text: 'Return'
-    dialog_width: 850
 
 <ChooseAppDirectory>: #CustomDialog
     title: 'Choose Location for App Documents'
@@ -65,25 +60,45 @@
     title: 'Primary Palette'
     dialog_padding: 10,40
 
-<AddElement>: #CustomDialog
-    box_pos: {'center_x': .5,'center_y': 0.7}
+<EditElement>: #CustomDialog
+    # box_pos: {'center_x': .5,'center_y': 0.7}
 
-<ConfirmUnsaved>: #CustomDialog
-    # MakeDecision:
-    accept_func: root.save_changes
-    deny_func: root.continue_to_next_screen
+<ConfirmDecision>: #CustomDialog
     dialog_width: 850
-
-<ConfirmDelete>: #CustomDialog
+    box_pos: {'center_x':.5,'center_y':.5}
+<ConfirmDelete>: #ConfirmDecision
     title: 'Delete\n'+root.name
-    dialog_width: 850
-
-<ConfirmExport>: #CustomDialog
+<ConfirmExport>: #ConfirmDecision
     title: 'Export\n'+root.name
-    dialog_width: 850
+<ConfirmUnsaved>: #ConfirmDecision
+    title: 'Save Changes to\n'+root.name if root.name!="" else "Save Changes"
+
+<GrantAccess>: #CustomDialog
+    title: 'Grant Access To Storage'
+    # accept_func:  root.permissions_external_storage
+    # deny_func:  root.permission_denied
+    confirm_text: 'Accept'
+    deny_text: 'Return'
+    # dialog_width: 850
+
 
 <ConfirmFileChoice>:
     title: 'Preview'
+
+<DictOptions>: #ScrollView
+    scroll: scroll
+    size_hint_y: None
+    # height: scroll.height
+    height: max(root.min_h,min(root.max_h, scroll.minimum_height))
+    ScrollView:
+        MDStackLayout:
+            id: scroll
+            size_hint: 1, None
+            height: self.minimum_height
+            # height: 1000
+            # padding: 10
+            padding: 20,20,20,0
+            spacing: 20
 
 <Options>: #MDBoxLayout
     rv_scroll: rv_scroll
@@ -117,6 +132,8 @@
             size: root.button_width, root.button_width
             icon: root.deny_icon
             style: "elevated"
+            md_bg_color: app.custom.colors['dialog_button_bg']
+            font_color: app.custom.colors['dialog_button_fg']
             on_release: 
                 app.dismiss_all()
                 root.deny_func() if root.deny_func!=None else None
@@ -127,6 +144,8 @@
             size: root.button_width, root.button_width
             icon: root.confirm_icon
             style: "elevated"
+            md_bg_color: app.custom.colors['dialog_button_bg']
+            font_color: app.custom.colors['dialog_button_fg']
             on_release: 
                 app.dismiss_all()
                 root.accept_func() if root.accept_func!=None else None
@@ -144,6 +163,8 @@
             width: root.button_width
             icon: root.deny_icon
             text: root.deny_text
+            md_bg_color: app.custom.colors['dialog_button_bg']
+            font_color: app.custom.colors['dialog_button_fg']
             style: "elevated"
             on_release: 
                 app.dismiss_all()
@@ -154,12 +175,14 @@
             icon: root.confirm_icon
             text: root.confirm_text
             style: "elevated"
+            md_bg_color: app.custom.colors['dialog_button_bg']
+            font_color: app.custom.colors['dialog_button_fg']
             on_release: 
                 app.dismiss_all()
                 root.accept_func() if root.accept_func!=None else None
         # Widget:
 
-<SimpleClose>
+<SimpleClose>:
     icon: 'close'
     adaptive_height: True
     orientation: 'vertical'
@@ -172,3 +195,66 @@
             icon: root.icon
             on_release: app.dismiss_all()
             style: 'elevated'
+            md_bg_color: app.custom.colors['dialog_button_bg']
+            font_color: app.custom.colors['dialog_button_fg']
+
+<DictElement>: #MDBoxLayout
+    input: input
+    key: ""
+    value: ""
+    orientation: 'vertical'
+    size_hint_y: None
+    height: input.height
+    TextInput:
+        id: input
+        font_name: "CH"
+        font_size: sp(11)
+        hint_text: root.key
+        text: root.value
+
+        background_color: app.custom.colors['text_input_bg']
+        foreground_color: app.custom.colors['text_input_fg']
+
+        multiline: True
+        size_hint_y: None
+        height: self.minimum_height
+        padding: 20
+
+<AddOption>: #MDAnchorLayout
+    orientation: 'horizontal'
+    # size_hint_y: None
+    size_hint: 1,None
+    height: 140
+    MDAnchorLayout:
+        size_hint: None,None
+        size: button.width+40,root.height
+        MyIconButton:
+            id: button
+            icon: 'plus'
+            on_release: root.add_option(input.text)
+
+    MDAnchorLayout:
+        size_hint_y: None
+        height: root.height
+        TextInput:
+            id: input
+            font_name: "CH"
+            font_size: sp(12)
+            hint_text: 'new'
+            multiline: False
+            size_hint_y: None
+            background_color: app.custom.colors['text_input_bg']
+            foreground_color: app.custom.colors['text_input_fg']
+            height: self.minimum_height
+            padding: 20
+
+<ElementInput>: #TextInput
+
+    background_color: app.custom.colors['text_input_bg']
+    foreground_color: app.custom.colors['text_input_fg']
+    font_size: sp(12)
+    font_name: "CH"
+    multiline: True
+    size_hint_y: None
+    line_spacing: 10
+    height: max(root.min_h,min(root.max_h, self.minimum_height))

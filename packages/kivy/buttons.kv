@@ -10,11 +10,15 @@
     theme_bg_color: 'Custom'
     custom_color: None
     custom_font_color: None
-    md_bg_color: app.theme_cls.surfaceContainerLowColor if self.active_filter == 'ignore' else ((app.theme_cls.surfaceTintColor if root.custom_color==None else root.custom_color) if self.active_filter == 'include' else (app.theme_cls.errorContainerColor if self.active_filter == 'exclude' else 'white'))
-    font_color: app.theme_cls.onSurfaceVariantColor if self.active_filter == 'ignore' else ((app.theme_cls.onPrimaryColor if root.custom_font_color==None else root.custom_font_color) if self.active_filter == 'include' else (app.theme_cls.onErrorContainerColor if self.active_filter == 'exclude' else 'white'))
+    # md_bg_color: app.theme_cls.surfaceContainerLowColor if self.active_filter == 'ignore' else ((app.theme_cls.surfaceTintColor if root.custom_color==None else root.custom_color) if self.active_filter == 'include' else (app.theme_cls.errorContainerColor if self.active_filter == 'exclude' else 'white'))
+    # md_bg_color: app.custom.toggle_colors(theme_cls=app.theme_cls,custom_color={'include':root.custom_color},kind="bg")
+    md_bg_color: app.custom.colors[self.active_filter+'_bg'] if self.active_filter != 'include' or root.custom_font_color==None else root.custom_color
+    # font_color: app.theme_cls.onSurfaceVariantColor if self.active_filter == 'ignore' else ((app.theme_cls.onPrimaryColor if root.custom_font_color==None else root.custom_font_color) if self.active_filter == 'include' else (app.theme_cls.onErrorContainerColor if self.active_filter == 'exclude' else 'white'))
+    # font_color: app.custom.toggle_colors(theme_cls=app.theme_cls,custom_color={'include':root.custom_color},kind="text")
+    font_color: app.custom.colors[self.active_filter+'_text'] if self.active_filter != 'include' or root.custom_font_color==None else root.custom_font_color
     role: 'medium'
     font_style: 'Label'
-    style: "tonal"  
+    style: "elevated"  
 
 <IconTextToggleButton>: #ToggleButton
     icon_size: sp(9)
@@ -29,8 +33,8 @@
         # padding: root.padding+20,root.padding,20,root.padding
         padding: root.padding*2,root.padding,root.padding,root.padding
         font_size: self.font_size if root.icon_size==None else root.icon_size
-        theme_text_color: 'Custom'
-        text_color: root.font_color
+        theme_icon_color: 'Custom'
+        icon_color: root.font_color
     MDButtonText: 
         id: label
         text: root.text
@@ -71,13 +75,19 @@
     role: 'large'
     icon_size: None
     padding: 30
+    theme_bg_color: "Custom"
+    md_bg_color: app.custom.colors['button_bg']
+    font_color: app.custom.colors['button_fg']
 
     MDButtonIcon: 
         pos_hint: {'x': 0,'center_y': 0.5}
         id: icon
         icon: root.icon
         padding: root.padding+20,root.padding,20,root.padding
+        theme_font_size: "Primary" if root.icon_size==None else "Custom"
         font_size: self.font_size if root.icon_size==None else root.icon_size
+        theme_icon_color: "Custom"
+        text_color: root.font_color
     MDButtonText: 
         id: label
         text: root.text
@@ -85,6 +95,8 @@
         padding: 0,root.padding,root.padding+20,root.padding
         font_style: root.font_style
         role: root.role
+        theme_text_color: "Custom"
+        text_color: root.font_color
     
 <RigidIconTextButton>: #MyIconTextButton
     theme_width: "Custom"
@@ -114,6 +126,9 @@
 <MyTextButton>: #MDButton
     radius: 20
     height: self.ids.label.texture_size[1]
+    theme_bg_color: "Custom"
+    md_bg_color: app.custom.colors['button_bg']
+    font_color: app.custom.colors['button_fg']
     MDButtonText:
         id: label
         text: root.text
@@ -122,6 +137,8 @@
         padding: root.padding
         font_style: root.font_style
         role: root.role
+        theme_text_color: "Custom"
+        text_color: root.font_color
 
 <RigidTextButton>: #MyTextButton
     theme_width: "Custom"
@@ -139,8 +156,14 @@
     size: self.size
     radius: 20
     pos_hint: {'center_x': 0.5,'center_y': 0.5}
+    icon_color: [0,0,0,0]
+    theme_bg_color: "Custom" 
+    md_bg_color: app.custom.colors['button_bg']
+    font_color: app.custom.colors['button_fg']
     MDButtonIcon:
         icon: root.icon
         pos_hint: {'center_x': 0.5,'center_y': 0.5}
         theme_font_size: 'Custom'
         font_size: sorted(root.size)[0] - 20
+        theme_icon_color: "Custom"
+        icon_color: root.font_color

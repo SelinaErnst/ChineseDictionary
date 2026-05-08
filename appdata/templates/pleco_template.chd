@@ -16,7 +16,7 @@
 <H:[b|grey|available]:CHARACTER>
 <INDENT>{
 <H:[nb|grey|available]:STROKES: ><(><I:[n|none|normal]:strokes_count><)><T:[n|none|normal]:strokes><E>
-<H:[nb|grey|available]:COMPONENTS: ><L:[point|nl|normal]:components><E>
+<H:[nb|grey|available]:COMPONENTS: ><N><L:[point|nl|normal]:components><E>
 <H:[nb|grey|available]:MNEMONICS: ><L:[point|l|normal]:mnemonics><E>
 <H:[nb|grey|available]:MEANING AS COMPONENT: ><L:[point|l|normal]:usage><E>
 <H:[nb|grey|available]:ORIGINS: ><T:[n|none|normal]:origin><E>

@@ -1,6 +1,7 @@
 from kivymd.uix.label import MDLabel
 from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivy.uix.behaviors import ButtonBehavior
 
 from kivy.properties import (
     StringProperty, 
@@ -16,6 +17,8 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 Builder.load_file(current_dir+'/labels.kv')
 
 class ChLabel(MDLabel):
+    pass
+class ClickableLabel(ButtonBehavior,MDLabel):
     pass
 
 # class AnchoredLabel(MDAnchorLayout):

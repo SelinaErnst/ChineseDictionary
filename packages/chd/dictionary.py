@@ -1,12 +1,9 @@
-# import pandas as pd
 import json
 import os
-# from .loader import read_plecotxt
 from .character import Character
 import re
 from .convert_pleco_txt import encode_pinyin, decode_pinyin
 from .convert_pleco_txt import Loader
-from .unicode_characters import chinese_char
 from typing import Literal, TypeAlias
 # from typeguard import typechecked
 
@@ -32,25 +29,47 @@ def make_subset(matching_characters, dictionary_name:str, force_dictionary:bool=
         return Dictionary(name=dictionary_name,characters=matching_characters)
     else:
         return None
-
     
+
+
 class Dictionary():
     
-    def __init__(self,name:str|None=None,characters:list|Character|None=None,sorting_key:_SORT_OPT='pronunciation'):
+    def __init__(self,
+                 name:str|None=None,
+                 characters:list|Character|None=None,
+                 grammar:list|None=None,
+                 sorting_key:_SORT_OPT='pronunciation'):
         self.name = name if isinstance(name,str) else ""
-        if characters != None and isinstance(characters,list):
-            characters = set(characters)
-            self.characters=[c for c in characters if not c.is_empty()]
-        elif isinstance(characters,Character) and not characters.is_empty():
-            self.characters=[characters]
-        else:
-            self.characters=[]
+        self.__init_characters(characters=characters)
+        self.__init_grammar(grammar=grammar)
         self._sorting_key=sorting_key
         self.sort()
         
+    def __init_characters(self,characters):
+        if isinstance(characters,list): 
+            self.characters=[c for c in set(characters) if isinstance(c,Character) and not c.is_empty()]
+        elif isinstance(characters,Dictionary):
+            self.characters=characters.characters.copy()
+        elif isinstance(characters,Character) and not characters.is_empty():  
+            self.characters=[characters]
+        else:
+            self.characters=[]
+            
+    def __init_grammar(self,grammar):
+        from .grammar import Grammar
+        if isinstance(grammar,list):
+            self.grammar = [g for g in set(grammar)]
+        elif isinstance(grammar,Grammar):
+            self.grammar = [grammar]
+        else:
+            self.grammar = []
+                
     def copy(self):
         characters = [c.copy() for c in self.characters]
         return Dictionary(name=self.name,characters=characters,sorting_key=self.sorting_key)
+    
+    def empty(self):
+        self.characters=[]
     
     # = ============================================================== = #
     # =                         GET PROPERTIES                         = #
@@ -181,7 +200,7 @@ class Dictionary():
     # def _get_sorted_characters(self,sorting_key=None):
         # sorting_key = self.sorting_key if sorting_key == None else sorting_key
     
-    def sort(self,sorting_key=None):
+    def sort(self,sorting_key=None,sorting_function=None):
         sorting_key = self.sorting_key if sorting_key == None else sorting_key
         def get_next_key(char,sorting_key):
             # determine priorities (what happens when property is None/"")
@@ -192,13 +211,11 @@ class Dictionary():
                 # other_keys = ['traditional','simple','pronunciation']
             elif sorting_key == "pronunciation":
                 other_keys = ['pronunciation','simple','traditional']
-            # print(other_keys)
             values = [char[key] for key in other_keys if char[key] not in [None,'']]
             value = values[0] if len(values)>=1 else ""
             return value
-            
-        self.characters.sort(key=lambda x: encode_pinyin(get_next_key(char=x,sorting_key=sorting_key)))
-        
+        if self.sorting_key in ['simple','traditional','pronunciation']:
+            self.characters.sort(key=lambda x: encode_pinyin(get_next_key(char=x,sorting_key=sorting_key)))
         return self
     
     def search(self,text:str="",exact:bool=False,search_prompt:bool=False):
@@ -306,6 +323,7 @@ class Dictionary():
         filename = filename+'.jsonl' if filename == self.name else filename
         with open(directory+filename,'w') as outfile:
             for c in self.characters:
+                # print(c.to_dict())
                 json.dump(c.to_dict(), outfile, indent=None, ensure_ascii=False)
                 outfile.write('\n')
     

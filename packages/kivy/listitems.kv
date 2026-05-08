@@ -24,9 +24,9 @@
 <CustomListItem>: #MDAnchorLayout
     radius: 20
     padding: 20,20,20,20
+    md_bg_color: app.custom.colors['list_element_bg']
 
 <MyListItem>: #CustomListItem
-    md_bg_color: self.theme_cls.surfaceContainerLowColor
     anchor_x: 'center'
     size_hint_y: None
     height: 150
@@ -40,8 +40,9 @@
         style: 'Label'
         role: 'medium'
 
+
+
 <MyMultiLineItem>: #CustomListItem
-    md_bg_color: self.theme_cls.surfaceContainerLowColor
     anchor_y: 'center'
     size_hint_y: None
     height: label.height+40
@@ -56,8 +57,6 @@
         role: 'medium'
 
 <PaletteItem>: #CustomListItem
-    md_bg_color: self.theme_cls.surfaceContainerLowColor
-    # md_bg_color: self.update_color(root.text, app.theme_cls.theme_style)
     padding: 20,0,20,0
     radius: 20
     on_release: 
@@ -118,40 +117,49 @@
     theme_bg_color: "Custom" 
 
 <GrammarItem>: #CustomListItem
+
+    on_release: app.wm.current_screen.select_grammar(root.grammar)
+
     # height: max(288, min(title.height+subtitle.height+structure.height+2*self.padding[0], 404))
-    height: 404
+    # height: 404
+    height: 450
     padding: 30
     
     level: ""
     title: ""
     subtitle: ""
     
-    md_bg_color: self.theme_cls.surfaceContainerLowColor
     level_color: app.theme_cls.onPrimaryColor
     
     MDBoxLayout:
-        spacing: root.padding[0]
-        MDAnchorLayout:
-            size_hint_x: None
-            width: level.width
-            anchor_y: 'top'
+        orientation: 'vertical'
+
+        MDBoxLayout:
+            size_hint: 1,None
+            height: level.height
+            orientation: 'horizontal'
+            spacing: root.padding[0]
             MDAnchorLayout:
                 id: level
                 md_bg_color: app.custom.colors['level'+root.level]
                 size_hint: None,None
-                size: 2*[120]
+                size: 2*[100]
                 radius: 20
                 MDLabel:
                     text: root.level
                     font_style: 'Title'
-                    role: 'large'
+                    role: 'small'
                     adaptive_width: True
                     adaptive_height: True
                     # theme_text_color: 'Custom'
                     text_color: app.custom.colors['text_level'+root.level]
+            MDStackLayout:
+                id: tags
+                spacing: 10
 
         MDStackLayout:
             id: infobox
+            padding: 0,20,0,0
             MDBoxLayout:
                 adaptive_height: True
                 orientation: 'vertical'
@@ -171,7 +179,7 @@
                     font_style: 'Label'
                     role: 'small'
                     adaptive_height: True
-                    max_lines: 3
+                    max_lines: 2
                     padding: 0,0,0,15
                     valign: 'top'
                     halign: 'left'
@@ -184,15 +192,29 @@
                     font_style: 'Label'
                     role: 'small'
                     adaptive_height: True
-                    max_lines: 1
+                    shorten: True
+                    shorten_from: 'right'
                     padding: 0,15,0,0
                     valign: 'top'
                     halign: 'left'
 
+<Tag>:
+    size_hint: None,None
+    width: tag_label.width + 20
+    height: tag_label.height + 10
+    md_bg_color: app.custom.colors['button_bg']
+    radius: 5
+    MDLabel:
+        id: tag_label
+        text: root.text
+        text_color: app.custom.colors['button_fg']
+        theme_font_size: 'Custom'
+        font_size: sp(7)
+        adaptive_height: True
+        adaptive_width: True
 
 <DictionaryItem>: #CustomListItem
     radius: 20
-    md_bg_color: app.theme_cls.surfaceContainerColor
     on_release: app.wm.current_screen.show_char(self.character)
 
     size_hint_y: None
@@ -275,7 +297,7 @@
                 size: 2*[root.image_size]
                 radius: 20
                 size_hint: None, None
-                md_bg_color: app.theme_cls.surfaceColor
+                md_bg_color: app.custom.colors['bg']
                 MDGridLayout:
                     cols:2
                     EntryType:
@@ -303,5 +325,194 @@
     ripple_effect: False
 
 
-<CategoryItem>: #CustomListItem
+<CategoryItem>: #MDBoxLayout
+    content: content
+    md_bg_color: app.custom.colors['list_head_bg']
+    size_hint_y: None
+    height: 2*root.padding[0]+(max(head.height,content.height) if grid.cols==2 else head.height+10+content.height)+2*10
+    radius: 20
+    padding: 5
 
+    MDAnchorLayout:
+        md_bg_color: app.custom.colors['list_element_bg']
+        padding: 10
+        radius: 20
+
+        MDGridLayout:
+            id: grid
+            cols: root.cols
+
+            rows: 0 if root.cols==2 else 2
+            MDBoxLayout:
+                adaptive_width: True
+                adaptive_height: False if root.cols==2 else True
+                MDAnchorLayout:
+                    size_hint_x: None
+                    width: head.width
+                    size_hint_y: 1 if root.cols==2 else None
+                    height: head.label.height+20+10
+                    anchor_x: 'left'
+                    anchor_y: 'top'
+                    CategoryHead:
+                        id: head
+                        max_width: grid.width 
+                        min_width: root.head_width
+                        horizontal: root.cols==2
+                        title: root.title_text
+                        category: root.category
+
+            MDAnchorLayout:
+                anchor_y: 'top' 
+                MDStackLayout:
+                    id: content
+                    adaptive_height: True
+
+<CategoryHead>: #MDAnchorLayout ...
+    label: label
+    title: ""
+    category: ""
+    md_bg_color: app.custom.colors['list_head_bg']
+    radius: 20
+    horizontal: True
+    size_hint: None,None
+    height: label.height+20
+    max_width: 1000
+    min_width: None
+    variable_width: label.width+2*20
+    width: ((root.min_width if root.min_width!=None else root.variable_width) if root.horizontal else (root.min_width if root.min_width!=None else root.max_width))
+
+    on_release: app.wm.current_screen.edit_category(root.category)
+
+    MDLabel:
+        id: label
+        text: root.title
+        font_style: 'Label'
+        role: 'small'
+        adaptive_height: True
+        adaptive_width: True
+
+<CategoryLine>: #MDBoxLayout
+    n: 20
+    size_hint_y: None
+    height: values.height+root.n
+    size_hint_x: 1 if not root.small else None
+    text: ""
+
+    MDFloatLayout:
+        size_hint_x: None
+        width: bullet.width+root.n*2
+        MDAnchorLayout:
+            pos_hint: {'center_x': 0.5,'top': 1}
+            size_hint: None, None
+            size: [bullet.width,52] # 52 because of Label,small
+            padding: 0,root.n,0,0
+            MDBoxLayout:
+                id: bullet
+                md_bg_color: app.custom.colors['bullet']
+                size_hint: None, None
+                size: 20,20
+
+    MDFloatLayout:
+        ClickableLabel:
+            id: values
+            pos_hint: {'center_x': 0.5,'center_y': 0.5}
+            text: root.text
+            font_style: 'Label'
+            role: 'small'
+            adaptive_height: True
+            allow_copy: True
+            on_release: app.open_url(root.text)
+            on_copy: app.test(self.text)
+                
+<CategoryText>: #MDBoxLayout
+    n: 20
+    size_hint_y: None
+    height: values.height+root.n
+    size_hint_x: 1 if not root.small else None
+    text: ""
+
+    MDFloatLayout:
+        ClickableLabel:
+            padding: 25,0,25,0
+            id: values
+            pos_hint: {'center_x': 0.5,'center_y': 0.5}
+            text: root.text
+            font_style: 'Label'
+            role: 'small'
+            adaptive_height: True
+            allow_copy: True
+            on_release: app.open_url(root.text)
+            on_copy: app.test(self.text)
+
+<RemovableCategoryLine>: #MDBoxLayout
+    n: 20*2
+    size_hint_y: None
+    height: values.height+root.n
+    size_hint_x: 1
+    text: ""
+
+    MDFloatLayout:
+        size_hint_x: None
+        width: bullet.width+40
+        MDAnchorLayout:
+            pos_hint: {'center_x': 0.5,'top': 1}
+            size_hint: None, None
+            size: [bullet.width,52] # 52 because of Label,small
+            padding: 0,root.n,0,0
+            MDBoxLayout:
+                id: bullet
+                md_bg_color: app.custom.colors['bullet']
+                size_hint: None, None
+                size: 20,20
+
+    MDFloatLayout:
+        ClickableLabel:
+            id: values
+            pos_hint: {'center_x': 0.5,'center_y': 0.5}
+            text: root.text
+            font_style: 'Label'
+            role: 'small'
+            adaptive_height: True
+            allow_copy: True
+            on_release: app.open_url(root.text)
+            on_copy: app.test(self.text)
+    
+    MDFloatLayout:
+        size_hint_x: None
+        width: button.width+80+20
+        # md_bg_color: 'red'
+        MDBoxLayout:
+            pos_hint: {'right': 1,'top': 1}
+            padding: 0,root.n/2,0,0
+            # md_bg_color: 'black'
+            adaptive_width: True
+            adaptive_height: True
+            spacing: 30
+            orientation: 'horizontal'
+            MyIconButton:
+                id: button
+                icon: 'pencil'
+                size_hint: None, None
+                size: 70,70
+                on_release: root.edit_line()
+            MyIconButton:
+                icon: 'minus'
+                size_hint: None, None
+                size: button.size
+                on_release: root.remove_line()
+
+    # MDFloatLayout:
+    #     size_hint_x: None
+    #     width: bullet.width+40
+    #     MDAnchorLayout:
+    #         pos_hint: {'center_x': 0.5,'top': 1}
+    #         size_hint: None, None
+    #         size:[button.width,52]
+    #         padding: 0,root.n,0,0
+    #         md_bg_color: 'red'
+    #         MyIconButton:
+    #             id: button
+    #             icon: 'minus'
+    #             size_hint: None, None
+    #             size: 60,60
+    #             on_release: root.remove_line()

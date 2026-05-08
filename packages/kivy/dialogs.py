@@ -2,11 +2,13 @@ from kivymd.uix.dialog.dialog import MDDialog, MDDialogButtonContainer
 from kivy.utils import platform
 from packages.chd import Dictionary
 from packages.chd import convert_to_dtype, convert_pronunciations
-from packages.chd import dump_json, load_json
+from packages.chd import load_json
 import re
 from .snackbars import ErrorMsg, AttentionMsg
 from .layouts import BlockingFloatLayout
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.anchorlayout import MDAnchorLayout
+from kivy.uix.textinput import TextInput
 
 if platform == 'android':
     from jnius import cast
@@ -50,7 +52,7 @@ def grant_permissions_external_storage():
         Uri = autoclass("android.net.Uri")
         if api_version > 29: 
             if Environment.isExternalStorageManager():
-                msg="Storage access was already granted. No need to grant it again."
+                msg="Storage access was already granted."
             else:
                 try:
                     activity = mActivity.getApplicationContext()
@@ -70,7 +72,7 @@ def grant_permissions_external_storage():
                     currentActivity.startActivityForResult(intent, 101)
                     msg="I don't know what happened."
         else:
-            msg=f'This action is only for android api versions greater than 29. This device is at {api_version}.'
+            msg=f'This action is only for android api versions 30 and higher. This device is at {api_version}.'
     else:
         msg=f"This action is only for android devices. This device is working with {platform}."
     return msg
@@ -125,15 +127,29 @@ class FileContent(MDBoxLayout):
             file_path,ext = os.path.splitext(self.file_path)
             if ext!="": self.file_format=ext
                 
+# from kivy.uix.scrollview import ScrollView
+class DictOptions(MDBoxLayout):
+    max_h = NumericProperty(1000)
+    min_h = NumericProperty(300)
+    def __init__(self,data={},**kwargs):
+        super().__init__(**kwargs)
+        self.set_list_items(data=data)
+        
+    def set_list_items(self,data):
+        for k,v in data.items():
+            element=DictElement(key=k,value=v)
+            self.scroll.ids[k]=element
+            self.scroll.add_widget(element)
+            
 class Options(MDBoxLayout):
     itemclass = StringProperty()
     options = ListProperty()
     icons = ListProperty()
-    max_h = NumericProperty(1000)
+    max_h = NumericProperty(1200)
     min_h = NumericProperty(0)
-    def __init__(self,func=None, *args, **kwargs):
+    def __init__(self,func=None,data=None,*args,**kwargs):
         super().__init__(*args, **kwargs)
-        if self.options != []: self.set_list_items(func=func)
+        if self.options != []: self.set_list_items(func=func,data=data)
     
     def set_options(self,options:list):
         self.options=options
@@ -205,6 +221,23 @@ class PaletteOptions(Options):
         from kivy.utils import hex_colormap
         return [palette.capitalize() for palette in hex_colormap.keys()]
     
+
+class DictElement(MDBoxLayout):
+    key=StringProperty()
+    value=StringProperty()
+    
+class AddOption(MDBoxLayout):
+
+    def __init__(self, add_option=None, *args, **kwargs):
+        if add_option!=None: self.add_option=add_option
+        super().__init__(*args, **kwargs)
+    
+    def add_option(self,text):
+        pass
+class ElementInput(TextInput):
+    max_h=NumericProperty(1000)
+    min_h=NumericProperty(300)
+    
 # = ============================================================== = #
 # =                             DIALOGS                            = #
 # = ============================================================== = #
@@ -232,37 +265,119 @@ class CustomDialog(BlockingFloatLayout):
         from main import ChD
         app = ChD.get_running_app()
         app.dismiss_widget()
-
-class ConfirmFileChoice(CustomDialog):
-    def __init__(self,deny_func=None,accept_func=None,*args,**kwargs):
-        super().__init__(*args)
-        decision=MakeSimpleDecision(deny_func=deny_func,accept_func=accept_func)
-        self.decision.add_widget(decision)
-        content=FileContent(**kwargs)
-        content.load_file()
-        self.content.add_widget(content)
-
-class GrantAccess(CustomDialog):
-    deny_text=StringProperty('Return')
-    confirm_text=StringProperty('Accept')
-    
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        decision=MakeDecision(button_width=365,
-            confirm_text=self.confirm_text,deny_text=self.deny_text,
-            deny_func=self.deny_func,accept_func=self.accept_func)
-        self.decision.add_widget(decision)
         
+class ConfirmDecision(CustomDialog):
+    name=StringProperty()
+    direction=StringProperty('left')
+    confirm_text=StringProperty('Yes')
+    deny_text=StringProperty('No')
+    support_text=StringProperty('')
+    
+    def __init__(self,what=None,do_choice=True,accept_func=None,deny_func=None,*args,**kwargs):
+        if not do_choice: 
+            self.confirm_text=""
+            self.deny_text=""
+            
+        super().__init__(*args,**kwargs)
+        decision_map={
+            'delete_dictionary':[self.delete_dictionary,self.do_nothing],
+            'delete_character':[self.delete_character,self.do_nothing],
+            'export_character':[self.export_character,self.do_nothing],
+            'save_dict_edit':[self.save_dict_changes,self.continue_to_next_screen],
+            'save_gram_edit':[self.save_gram_changes,self.continue_to_next_screen],
+            'access':[self.permissions_external_storage,self.permission_denied],
+        }
+        
+        if what!=None and what in decision_map: 
+            self.accept_func=decision_map[what][0]
+            self.deny_func=decision_map[what][1]
+        if accept_func != None: self.accept_func = accept_func
+        if deny_func != None: self.deny_func = deny_func
+        
+        if do_choice:
+            decision=MakeDecision(button_width=365,
+                confirm_text=self.confirm_text,deny_text=self.deny_text,
+                deny_func=self.deny_func,accept_func=self.accept_func)
+        else:
+            decision=SimpleClose()
+        self.decision.add_widget(decision)
+    
+    def set_attrs(_self, **kwargs):
+        for k,v in kwargs.items():
+            setattr(_self, k, v)
+
+    def do_nothing(self):
+        pass
+    
+    # = ––––––––––––––––––––––––––– delete ––––––––––––––––––––––––––– = #
+    
+    def delete_dictionary(self):
+        from main import ChD
+        app=ChD .get_running_app()
+        file = self.name
+        dict_directory = app.get_setting('dict_directory')
+        if os.path.isdir(dict_directory):
+            if file in os.listdir(dict_directory):
+                import shutil
+                shutil.rmtree(dict_directory+file)        
+                app.previous_screen()
+                if hasattr(app.wm.current_screen,'set_files'):
+                    app.wm.current_screen.set_files()
+                
+    def delete_character(self):
+        from main import ChD
+        app=ChD.get_running_app()
+        character = app.wm.current_screen.character
+        app.switch_screen("view_dict",'right')
+        current_screen = app.wm.current_screen
+        if character in current_screen.dictionary:
+            current_screen.edited = True
+            current_screen.dictionary = current_screen.dictionary - character
+            current_screen.set_list_items(update_images=False)
+            
+    # = ––––––––––––––––––––––––– export/save –––––––––––––––––––––––– = #
+            
+    def export_character(self):
+        from main import ChD
+        app = ChD.get_running_app()
+        path_to_template = app.get_setting('dictionary_template')
+        
+        current_screen = app.wm.current_screen
+        file=current_screen.character.unicode_unique_string
+        d=Dictionary(name=file,characters=[current_screen.character])
+        dict_directory = app.get_setting('dict_directory')
+        directory=dict_directory+f'{current_screen.parent_dictionary.name}/'
+        d.write(directory=directory,filename=f'{file}.txt',file_format='pleco',template=path_to_template)
+        # AttentionMsg(attention='File was created',msg=f'The character {current_screen.character} was stored in {directory}{file}.txt').open()
+    
+    # = –––––––––––––––––––––––––– save_edit ––––––––––––––––––––––––– = #
+    
+    def save_gram_changes(self):
+        from main import ChD
+        app = ChD.get_running_app()
+        app.wm.current_screen.save_grammar()
+        self.continue_to_next_screen()
+        
+    def save_dict_changes(self):
+        from main import ChD
+        app = ChD.get_running_app()
+        app.wm.current_screen.save_dictionary(output='all',make_msg=False)
+        self.continue_to_next_screen()
+        
+    def continue_to_next_screen(self):
+        from main import ChD
+        app = ChD.get_running_app()
+        app.wm.current_screen.edited=False
+        app.switch_screen(screen_name=self.screen_name, direction=self.direction, remember=self.remember,force=True)
+
+    # = ––––––––––––––––––––––––––– access ––––––––––––––––––––––––––– = #
+
     def permissions_external_storage(self):  
         from main import ChD
-        grant_permissions_external_storage()
+        msg=grant_permissions_external_storage()
         app=ChD.get_running_app()
-        # settings = app.settings
-        # settings['access_granted']=True
-        # app.wm.get_screen('settings').update_settings()
-        # self.dismiss()
         app._MyApp__decide_on_app_directory()
-        # return msg
+        print(msg)
     
     def permission_denied(self):
         from main import ChD
@@ -272,7 +387,26 @@ class GrantAccess(CustomDialog):
         settings['import_directory']=str(app.root_folder)+'appdata/examples/'
         app.save_default_settings(settings)
         app.wm.get_screen('settings').update_settings()
-        # self.dismiss()
+
+class ConfirmExport(ConfirmDecision):
+    pass
+class ConfirmDelete(ConfirmDecision):
+    pass
+class ConfirmUnsaved(ConfirmDecision):
+    pass
+class GrantAccess(ConfirmDecision):
+    pass
+    # deny_text=StringProperty('Return')
+    # confirm_text=StringProperty('Accept')
+    
+    # def __init__(self,*args,**kwargs):
+    #     super().__init__(*args,**kwargs)
+    #     decision=MakeDecision(button_width=365,
+    #         confirm_text=self.confirm_text,deny_text=self.deny_text,
+    #         deny_func=self.deny_func,accept_func=self.accept_func)
+    #     self.decision.add_widget(decision)
+        
+
 
 class ChooseAppDirectory(CustomDialog):
     
@@ -320,7 +454,7 @@ class ShowPaletteOptions(CustomDialog):
 
 class ShowOptions(CustomDialog):
     
-    def __init__(self,title="",support_text="",*args,**kwargs):
+    def __init__(self,title="",support_text="",allow_add=False,*args,**kwargs):
         self.title=title
         self.support_text=support_text
         super().__init__(title=title,support_text=support_text)
@@ -328,49 +462,61 @@ class ShowOptions(CustomDialog):
         content=Options(**kwargs)
         self.decision.add_widget(decision)
         self.content.add_widget(content)    
-                
-class ConfirmUnsaved(CustomDialog):
-    direction=StringProperty('left')
-    remember=BooleanProperty(True)
-    screen_name=StringProperty('home')
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        decision=MakeDecision(button_width=365,
-            deny_func=self.deny_func,accept_func=self.accept_func)
-        self.decision.add_widget(decision)
+        self.content.ids['options']=content
+        if allow_add: self.content.add_widget(AddOption(add_option=self.add_option))
+        
+    def add_option(self,text):
+        options = self.content.ids['options']
+        if text!="" and text not in options.options: 
+            options.set_options(options.options+[text])
+            options.set_list_items()
 
-    def save_changes(self):
-        from main import ChD
-        app = ChD.get_running_app()
-        app.wm.current_screen.save_dictionary(output='all',make_msg=False)
-        self.continue_to_next_screen()
-        
-    def continue_to_next_screen(self):
-        from main import ChD
-        app = ChD.get_running_app()
-        app.wm.current_screen.edited=False
-        app.switch_screen(screen_name=self.screen_name, direction=self.direction, remember=self.remember,force=True)
-        
-class AddElement(CustomDialog):
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        from kivy.uix.textinput import TextInput
-        
-        content=TextInput(font_name="CH",size_hint_y=None,height=400)
-        decision=MakeSimpleDecision(deny_func=None,accept_func=self.confirm_edit)
-        self.content.ids['input']=content
-        self.input=content
-        
-        self.content.add_widget(content)
+class ConfirmFileChoice(CustomDialog):
+    def __init__(self,deny_func=None,accept_func=None,*args,**kwargs):
+        super().__init__(*args)
+        decision=MakeSimpleDecision(deny_func=deny_func,accept_func=accept_func)
         self.decision.add_widget(decision)
+        content=FileContent(**kwargs)
+        content.load_file()
+        self.content.add_widget(content)                
+
+
+
+class EditElement(CustomDialog):
+    allow_multiple=BooleanProperty()
+    dtype=ObjectProperty()
+    original=ObjectProperty()
+    
+    def __init__(self,style='normal',**kwargs):
+        super().__init__(**kwargs)
+        from main import ChD
+        # ChD.get_running_app().theme_cls.custom.colors
+        if style=="normal": 
+            content=ElementInput()
+            self.content.ids['input']=content
+            self.content.add_widget(content)
+            
+        decision=MakeSimpleDecision(deny_func=None,accept_func=self.confirm_edit)
+        self.decision.add_widget(decision)
+    
+    def __list_dict(self,entry):
+        options = DictOptions(data=entry)
+        self.content.add_widget(options)
+        self.content.ids['options'] = options
         
     def set_entry(self,entry):
         if isinstance(entry,list): self.content.ids.input.text='- '+'\n- '.join(entry)
+        elif isinstance(entry,dict): self.__list_dict(entry)
+        elif isinstance(entry,str): self.content.ids.input.text = re.sub(r'[■|●|□|○|◼]','■',entry)
         else: self.content.ids.input.text=str(entry) if entry!=None else ""
+        
+    def get_dict(self):
+        entry = {k:element.input.text.strip(" ") for k,element in self.content.ids['options'].scroll.ids.items()}
+        entry = {k:v for k,v in entry.items() if v!=""}
+        entry = "" if entry == {} else entry
+        return entry
     
-    def get_new_entry(self,category, convert_pronunciation=True,new_line_important=True):
+    def get_input(self,category, convert_pronunciation=True,new_line=True):
         from main import ChD
         app=ChD.get_running_app()
         dict_categories = app.get_setting('categories')
@@ -383,24 +529,28 @@ class AddElement(CustomDialog):
                 if dict_categories[category]==list: return True
                 else: return False
             elif category == 'new_character': return True
+            elif self.allow_multiple: return True
             else: return False
             
         def get_default_dtype():
             if category in dict_categories: return dict_categories[category]
             elif category == 'new_character': return list
+            elif self.dtype != None: return self.dtype
             else: return str
         
         if allows_multiple():
             # only new point when new line
             # relevant if text contains '-'
-            if new_line_important==True: 
+            if new_line==True: 
                 text = text.lstrip('-').split('\n-')
                 new_entry = [e.replace('\n',' ').strip(' ') for e in text if e != '']
-            else:
+            elif new_line==False:
                 text = text.replace('\n',' ').lstrip('-').split('-')
                 new_entry = [e.strip(' ') for e in text if e != '']
         else:
-            new_entry = text.lstrip('-').strip(' ').replace('\n',' ')
+            new_entry = text.lstrip('-').strip(' ')
+            if new_line==False:
+                new_line.replace('\n',' ')
             new_entry=convert_to_dtype(new_entry)
             
         if new_entry not in ["",[""],[]]:
@@ -417,104 +567,34 @@ class AddElement(CustomDialog):
     def confirm_edit(self):
         from main import ChD
         app=ChD.get_running_app()
-        current_screen=app.wm.current_screen #possible: ViewDict, ShowCharacter
-
-        if self.title != 'Character':
-            category=self.title.lower().replace(' ','_')
-            new_entry = self.get_new_entry(category,convert_pronunciation=True,new_line_important=True)
-            if category == 'dictionary_name': current_screen.rename_dict(new_entry)
-            else:
-                if new_entry == None:
-                    pass
-                elif new_entry != None: 
-                    if new_entry == "": new_entry = None
-                    current_screen.update_category(category=category,entry=new_entry)
-                
-        elif self.title == 'Character':
-            categories=['simple','traditional','pronunciation']
-            category='new_character'
-            new_entry = self.get_new_entry(category,convert_pronunciation=False,new_line_important=False)
-            
-            if len(new_entry) == 3:
-                # entries={k:v if k!='pronunciation' else encode_pinyin(v) for k,v in zip(categories,new_entry)}
-                entries={k:v for k,v in zip(categories,new_entry)}
-                # print(entries)
-                if current_screen.name == 'view_dict':
-                    current_screen.add_character(entries=entries)
-                else:
-                    current_screen.update_character(entries=entries)
+        self.screen=app.wm.current_screen #possible: ViewDict, ShowCharacter
+        
+        if self.title != 'Character': self.__category_edit()
+        elif self.title == 'Character': self.__character_edit()
                     
-class ConfirmExport(CustomDialog):
-    name=StringProperty()
-    
-    def __init__(self,what=None,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        del_map={
-            # 'dictionary':self.delete_dictionary,
-            'character':self.export_character
-        }
-        if what!=None and what in del_map: self.accept_func=del_map[what]
-        decision=MakeDecision(button_width=365,
-            deny_func=self.deny_func,accept_func=self.accept_func)
-        self.decision.add_widget(decision)
+    def __character_edit(self):
+        categories=['simple','traditional','pronunciation']
+        category='new_character'
+        new_entry = self.get_input(category,convert_pronunciation=False,new_line=False)
         
-    def do_nothing(self):
-        pass
-    
-    def export_character(self):
-        from main import ChD
-        app = ChD.get_running_app()
-        path_to_template = app.get_setting('pleco_template')
+        if len(new_entry) == 3:
+            # entries={k:v if k!='pronunciation' else encode_pinyin(v) for k,v in zip(categories,new_entry)}
+            entries={k:v for k,v in zip(categories,new_entry)}
+            if self.screen.name == 'view_dict':
+                self.screen.add_character(entries=entries)
+            elif self.screen.name.startswith('C'):
+                self.screen.update_character(entries=entries)
+                
+    def __category_edit(self):
+        category=self.title.lower().replace(' ','_')
+        if 'input' in self.content.ids: new_entry = self.get_input(category,convert_pronunciation=True,new_line=True)
+        else: new_entry=self.get_dict()
         
-        current_screen = app.wm.current_screen
-        file=current_screen.character.unicode_unique_string
-        d=Dictionary(name=file,characters=[current_screen.character])
-        dict_directory = app.get_setting('dict_directory')
-        directory=dict_directory+f'{current_screen.parent_dictionary.name}/'
-        d.write(directory=directory,filename=f'{file}.txt',file_format='pleco',template=path_to_template)
-        # AttentionMsg(attention='File was created',msg=f'The character {current_screen.character} was stored in {directory}{file}.txt').open()
-         
-class ConfirmDelete(CustomDialog):
-    name=StringProperty()
-    
-    def __init__(self,what=None,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        del_map={
-            'dictionary':self.delete_dictionary,
-            'character':self.delete_character
-        }
-
-        if what!=None and what in del_map: self.accept_func=del_map[what]
-        decision=MakeDecision(button_width=365,
-            deny_func=self.deny_func,accept_func=self.accept_func)
-        self.decision.add_widget(decision)
-                
-    def do_nothing(self):
-        pass
+        if category == 'dictionary_name': self.screen.rename_dict(new_entry)
+        else:
+            if new_entry == None:
+                pass
+            elif new_entry != None: 
+                if new_entry == "": new_entry = None
+                self.screen.update_category(category=category,entry=new_entry,original=self.original)
         
-    def delete_dictionary(self):
-        from main import ChD
-        app=ChD .get_running_app()
-        file = self.name
-        dict_directory = app.get_setting('dict_directory')
-        if os.path.isdir(dict_directory):
-            if file in os.listdir(dict_directory):
-                import shutil
-                shutil.rmtree(dict_directory+file)        
-                app.previous_screen()
-                if hasattr(app.wm.current_screen,'set_files'):
-                    app.wm.current_screen.set_files()
-            else:
-                print('file')
-                
-    def delete_character(self):
-        from main import ChD
-        app=ChD.get_running_app()
-        character = app.wm.current_screen.character
-        app.switch_screen('view_dict','right')
-        current_screen = app.wm.current_screen
-        if character in current_screen.dictionary:
-            current_screen.edited = True
-            current_screen.dictionary = current_screen.dictionary - character
-            current_screen.set_list_items()
-                

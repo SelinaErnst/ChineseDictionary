@@ -1,18 +1,21 @@
 <ShowCharacter>:
     bottom_nav: bottom_nav
+    scroll: scroll
 
     MDStackLayout:
         padding: 0,0,0,200
         MDBoxLayout:
+            id: head
             adaptive_height: True
             orientation: 'horizontal'
-            # md_bg_color: app.theme_cls.surfaceBrightColor
-            md_bg_color: app.theme_cls.surfaceContainerColor
+            md_bg_color: app.custom.colors['head']
             padding: 20,20,20,20
             spacing: 20
+            text_color: app.custom.colors['head_text']
+            text_bg_color: app.custom.colors['head_content']
+
             MDStackLayout:
                 adaptive_height: True
-                # md_bg_color: 'green'
                 MDBoxLayout:
                     orientation: 'horizontal'
                     adaptive_height: True
@@ -23,17 +26,16 @@
                         role: 'medium'
                         font_style: "Title"
                         label_height: root.default_height
-                        label_bg_color: app.theme_cls.surfaceBrightColor
-                        # label_bg_color: app.theme_cls.primaryContainerColor
-                        # text_color: app.theme_cls.onPrimaryContainerColor
+                        label_bg_color: head.text_bg_color
+                        text_color: head.text_color 
                     MultiLineLabel:
                         id: traditional
                         text: root.get_category('traditional')
                         role: 'medium'
                         font_style: "Title"
                         label_height: root.default_height
-                        label_bg_color: app.theme_cls.surfaceBrightColor
-                        # text_color: app.theme_cls.onPrimaryContainerColor
+                        label_bg_color: head.text_bg_color
+                        text_color: head.text_color 
                 Separator:
                 MDBoxLayout:
                     orientation: 'horizontal'
@@ -44,12 +46,12 @@
                     MultiLineLabel:
                         id: pronunciation
                         text: root.character.pinyin
-                        role: 'medium'
+                        role: 'small'
                         font_style: "Label"
                         label_padding: 20,12,0,12
                         label_height: root.default_height
-                        label_bg_color: app.theme_cls.surfaceBrightColor
-                        # text_color: app.theme_cls.onPrimaryContainerColor
+                        label_bg_color: head.text_bg_color
+                        text_color: head.text_color 
             MDAnchorLayout:
                 anchor_y: 'bottom'
                 anchor_x: 'right'
@@ -71,24 +73,25 @@
                         icon: 'plus'
                         style: 'text'
                         on_release: root.new_category()
-                        
+
         ScrollView:
             MDStackLayout:
                 id: scroll
                 size_hint: 1, None
                 height: self.minimum_height+(66+2*10)*2
-                padding: 20
+                padding: 10
                 spacing: 20
                 
                 
     MDBottomSheet:
         id: bottom_nav
-        size_hint_y: None
-        height: 170
         radius: 0
+        size_hint: None,None
+        height: 170
+        width: Window.width 
         sheet_type: "standard"
         # sheet_type: "modal"
-        md_bg_color: app.theme_cls.surfaceContainerColor
+        md_bg_color: app.custom.colors['bottom']
 
         BottomSheetDragHandleContainer:
             padding: 20
@@ -109,39 +112,39 @@
                         icon: 'delete'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: 
-                            # current_screen = app.switch_screen('view_dict','right')
                             root.del_character()
-                            # bottom_nav.set_state("toggle")
                     MyIconButton:
                         text: 'Replace'
                         icon: 'auto-upload'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: 
                             root.replace_character()
-                            # bottom_nav.set_state("toggle")
                     MyIconButton:
                         text: 'Upload Image'
-                        icon: 'image-search'
+                        icon: 'image-plus-outline'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: 
                             root.add_image()
-                            # bottom_nav.set_state("toggle")
                     MyIconButton:
                         text: 'Export'
                         icon: 'content-save'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release:
                             root.export_character()
-                            # bottom_nav.set_state("toggle")
                     MyIconButton:
                         text: 'Previous Character'
                         icon: 'arrow-left'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: 
                             root.show_previous()
                     MyIconButton:
@@ -149,36 +152,6 @@
                         icon: 'arrow-right'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: 
                             root.show_next()
-<MyList>:
-    orientation: 'horizontal'
-    adaptive_height: True
-<Head>:
-    role: 'small'
-    label_bg_color: self.theme_cls.surfaceContainerLowColor
-    font_name: "Roboto"
-    # bold: True
-    on_release: app.wm.current_screen.edit_category(root.text)
-<Bullets>:
-    adaptive_height: True          
-<ListElement>:
-    width: 300
-    label_padding: 25,10,20,10
-    label_width: self.width-35
-    anchor_x: 'right'
-    anchor_y: 'top'
-    # md_bg_color: 'red'
-    role: 'small'
-    label_bg_color: app.theme_cls.surfaceDimColor
-    MDAnchorLayout:
-        md_bg_color:[0,0,0,0]
-        padding: 23,20,0,0
-        anchor_x: 'left'
-        anchor_y: 'top'
-        MDRelativeLayout:
-            # md_bg_color: app.theme_cls.onPrimaryContainerColor
-            md_bg_color: app.theme_cls.primaryColor
-            size_hint: None,None
-            size: 20,20
-            

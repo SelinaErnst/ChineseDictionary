@@ -2,16 +2,11 @@ from .entry import Entry
 # from .printentry import plecoprinter, plecoformat, link_pronunciations, decode_pinyin, encode_pinyin
 import re
 
-default_keys={
-    'simple':str, #not list
-    'traditional':str, #not list
-    'pronunciation':str, #not list
-}
-    
 class Character():
     def __init__(self,needed_categories:dict|None=None,**kwargs):
         # defines every category that is included from the start
         # also: ORDER
+        default_keys={'simple':str,'traditional':str,'pronunciation':str}
         if needed_categories!=None: default_keys.update(needed_categories)
         needed_categories = default_keys
         self.__default_info_categories=needed_categories
@@ -168,7 +163,7 @@ class Character():
         w.add_uniq()
         w.link_pronunciations()
         formatted_text = w.text
-        return formatted_text
+        return formatted_text.replace('\n\n',' ').replace('\n',' ').replace('  ',' ')
     
     def update(self,update_dict={},get_dtype_warning=False,**kwargs):
         update_dict={k : v for k,v in update_dict.items() if k in self.__default_info_categories.keys()}

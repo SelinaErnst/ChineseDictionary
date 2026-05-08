@@ -3,7 +3,8 @@
   "theme_style": "Dark",
   "palette": "Lavender",
   "chinese_font_file": "Source Han Sans CN Normal.otf",
-  "pleco_template":"pleco_template.chd",
+  "dictionary_template":"pleco_template.chd",
+  "grammar_template":"grammar_template.chd",
   "hidden_categories":["ancient","images","image_urls"],
   "app_directory": "",
   "import_directory": ""

@@ -5,7 +5,7 @@
     MDTopAppBar:
         type: 'small'
         theme_bg_color: "Custom"
-        md_bg_color: app.theme_cls.onPrimaryColor
+        md_bg_color: app.custom.colors['app']
         size_hint_y: None
         height: 150
         MDTopAppBarLeadingButtonContainer:
@@ -14,11 +14,15 @@
                 size_hint: None, None
                 size: 120, 120
                 on_release: nav_drawer.set_state("toggle")
-                
+                theme_icon_color: 'Custom'
+                icon_color: "white"
+
         MDTopAppBarTitle:
             text: "ChD"
             halign: "center"
             role: 'medium'
+            theme_text_color: "Custom"
+            text_color: "white"
             
         MDTopAppBarTrailingButtonContainer:
             MDActionTopAppBarButton:
@@ -26,6 +30,8 @@
                 size_hint: None, None
                 size: 120, 120
                 on_release: app.wm.current_screen.bottom_nav.set_state("toggle") if hasattr(app.wm.current_screen,'bottom_nav') else None
+                theme_icon_color: 'Custom'
+                icon_color: "white"
 
     MDNavigationLayout:
         WindowManager:

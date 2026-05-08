@@ -43,7 +43,7 @@ class ToggleButton(MDButton):
         
     def toggle_off(self):
         self.active_filter = 'ignore'
-        self.style = 'tonal'
+        self.style = 'elevated'
         if self.text in self.parent.include: self.parent.include.remove(self.text)
         
     def toggle_two(self,only_one=True):
@@ -66,12 +66,12 @@ class ToggleButton(MDButton):
             self.parent.include.append(self.text)
         elif self.active_filter == 'include':
             self.active_filter = 'exclude'
-            self.style = 'tonal'
+            self.style = 'elevated'
             self.parent.include.remove(self.text)
             self.parent.exclude.append(self.text)
         elif self.active_filter == 'exclude':
             self.active_filter = 'ignore'
-            self.style = 'tonal'
+            self.style = 'elevated'
             self.parent.exclude.remove(self.text)
             
         from main import ChD

@@ -15,7 +15,8 @@
                 width: self.parent.width
                 on_release: 
                     app.switch_screen("gram_list","left")
-                    app.wm.current_screen.set_list_items()
+                    app.wm.current_screen.set_up_screen()
+
             MDGridLayout:
                 id: dictionaries
                 rows:1

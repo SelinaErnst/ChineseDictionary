@@ -26,7 +26,7 @@ class EntryField(MDTextField):
     
     def _get_has_error(self) -> bool:
         has_error = super()._get_has_error()
-        has_error = (has_error or not self.is_correct())
+        if self.is_correct!=None: has_error = (has_error or not self.is_correct())
         return has_error
     
     def set_text(self, instance, text):
@@ -66,9 +66,6 @@ class EntryField(MDTextField):
 
         set_text()
     
-class Property(EntryField):
-    standard_height=NumericProperty(100)
-
 # = ============================================================== = #
 # =                       TEXTFIELD AND ICON                       = #
 # = ============================================================== = #

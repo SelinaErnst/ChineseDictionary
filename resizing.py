@@ -30,7 +30,7 @@ def window_size(device=None,orientation=None):
         else:
             Window.maximize()
         
-        if orientation in ['portrait','p'] or orientation==None:
+        if orientation in ['portrait','p']:
             Window.size = sorted(size)
         elif orientation in ['landscape','l']:
             Window.size = sorted(size,reverse=True)

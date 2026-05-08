@@ -9,20 +9,21 @@ cjk_ext_a = "\u3400-\u4DBF"
 # CJK Unified Ideographs
 cjk_uni_ideogr = "\u4E00-\u9FFF"
 
-
 # Extensions B-F
-# ext_b_f = "\U00020000-\U0002EBEF"
 ext_b_f = "\U00020000-\U0002EBEF"
 # Extensions G-J
 ext_g_h = "\U00030000-\U0003347F"
 ext_i = "\U0002EBF0-\U0002EE5F"
 
+
 all_ext = f"{ext_b_f}|{ext_g_h}|{ext_i}"
-
 pleco_char = "\ueaaa-\uefff"
-
 chinese_char = f'{cjk_rad_supl}|{kangxi_rad}|{cjk_strokes}|{cjk_ext_a}|{cjk_uni_ideogr}|{all_ext}'
 not_chinese_char = f'^{cjk_rad_supl}{kangxi_rad}{cjk_strokes}{cjk_ext_a}{cjk_uni_ideogr}{all_ext}'
+unassigned_extensions = (
+    r'\U00040000-\U0010FFFF' # unassigned extensions (Plane 4 to the end)
+)
+
 
 PinyinToneMark = {
     0: "aoeiuv\u00fc", 
@@ -42,15 +43,15 @@ def decode_pinyin(s):
     result = []
     for s  in words:
         if s!=None and re.search(r'\d', s):
+            if re.findall(r'[?|!|.|？|。|,]$',s)!=[]:
+                end=re.findall(r'[?|!|.|？|。|,]$',s)[0]
+            else: end=""
             s = s.lower()
             r = ""
             t = ""
             for c in s:
                 if c >= 'a' and c <= 'z':
                     t += c
-                elif c == ':':
-                    assert t[-1] == 'u'
-                    t = t[:-1] + "\u00fc"
                 else:
                     if c >= '0' and c <= '5':
                         tone = int(c) % 5 # tone 5 -> 0
@@ -73,57 +74,17 @@ def decode_pinyin(s):
                                     t = t.replace("u", PinyinToneMark[tone][4])
                                 else:
                                     t += "!"
-                        else:
+                        elif tone == 0:
                             t = t.replace('v','ü')
                     r += t
                     t = ""
             r += t
+            r += end
             result+=[r]
         else:
             s=s.replace('v','ü')
             result+=[s]
     return ' '.join(result)
-
-# def encode_pinyin(pinyin: str) -> str:
-
-#     if not pinyin:
-#         return ""
-
-#     tone_map = {
-#         'ā': ('a', '1'), 'á': ('a', '2'), 'ǎ': ('a', '3'), 'à': ('a', '4'),
-#         'ē': ('e', '1'), 'é': ('e', '2'), 'ě': ('e', '3'), 'è': ('e', '4'),
-#         'ī': ('i', '1'), 'í': ('i', '2'), 'ǐ': ('i', '3'), 'ì': ('i', '4'),
-#         'ō': ('o', '1'), 'ó': ('o', '2'), 'ǒ': ('o', '3'), 'ò': ('o', '4'),
-#         'ū': ('u', '1'), 'ú': ('u', '2'), 'ǔ': ('u', '3'), 'ù': ('u', '4'),
-#         'ǖ': ('v', '1'), 'ǘ': ('v', '2'), 'ǚ': ('v', '3'), 'ǜ': ('v', '4'),
-#         'ü': ('v', '0'),
-#     }
-
-#     result = ""
-#     current_tone = ""
-
-#     for char in pinyin:
-#         if char in tone_map:
-#             # If we already have a tone stored from a previous syllable,
-#             # append it before starting the next one.
-#             if current_tone:
-#                 result += current_tone
-            
-#             base, tone = tone_map[char]
-#             result += base
-#             current_tone = tone
-#         else:
-#             result += char
-#             # If we hit a space, append the tone to the word that just ended
-#             if char == ' ' and current_tone:
-#                 result = result[:-1] + current_tone + ' '
-#                 current_tone = ""
-
-#     # Append the final tone digit
-#     if current_tone:
-#         result += current_tone
-
-#     return result
 
 def encode_pinyin(pinyin: str) -> str:
     # bā -> ba1

@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 from pathlib import Path
@@ -7,21 +8,33 @@ from kivymd.app import MDApp
 from kivy.metrics import Metrics, dp, sp, inch, dpi2px
 from kivy.resources import resource_add_path
 from pathlib import Path
-from .dialogs import GrantAccess, ChooseAppDirectory
+from .dialogs import ConfirmDecision, GrantAccess, ChooseAppDirectory, CustomDialog
 from .colors import CustomColors
 
 APP_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent.parent
 
 def access_granted():
-    if platform == 'android':
+    
+    if platform == 'android': 
         from android import api_version
         from jnius import autoclass
         if api_version > 29:
             Environment = autoclass("android.os.Environment")
             return Environment.isExternalStorageManager()
         else: return False
+    
     else: return True
     
+def get_project_root():
+    # if getattr(sys, 'frozen', False): root_directory=os.path.dirname(sys.executable)
+    # else: 
+    root_directory=str(Path(os.path.abspath(__file__)).parent.parent.parent)
+    if not root_directory.endswith('/'): root_directory = root_directory+'/'
+    return root_directory
+
+def get_config():
+    if platform == 'linux':
+        pass
 
 class MyApp(MDApp):
     platform=platform
@@ -33,8 +46,7 @@ class MyApp(MDApp):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        root_folder = Path(self.directory)
-        self.root_folder = self.directory+'/'
+        self.root_folder = get_project_root()
         self.__appdata = self.root_folder+"appdata/"
         self.__config = self.root_folder+".config/"
         os.makedirs(self.__appdata,exist_ok=True)
@@ -46,15 +58,19 @@ class MyApp(MDApp):
     
     def build(self):
         self.theme_cls.bind(theme_style=self.sync_custom_colors)
+        self.theme_cls.bind(primary_palette=self.sync_custom_colors)
         self.sync_custom_colors()
     
     def on_start(self):
-        if not access_granted():
-            self.__show_validation_dialog()
-        else:
-            # self.has_access = True
-            if self.get_setting('app_directory')=="":
-                self.__decide_on_app_directory()
+
+        # dialog = CustomDialog(support_text=get_project_root())
+        dialog = CustomDialog(support_text=f'{self.root_folder}\n{self.user_data_dir}')
+        dialog.open()
+        # if not access_granted():
+        #     self.__show_validation_dialog()
+        # else:
+        #     if self.get_setting('app_directory')=="":
+        #         self.__decide_on_app_directory()
 
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
@@ -73,7 +89,7 @@ class MyApp(MDApp):
         with open(path, "w") as f:
             json.dump(data, f, indent=4,ensure_ascii=False)
         return True
-       
+    
     # = ============================================================== = #
     # =                            SETTINGS                            = #
     # = ============================================================== = #
@@ -130,21 +146,20 @@ class MyApp(MDApp):
             Environment = autoclass("android.os.Environment")
             if not Environment.isExternalStorageManager():
                 support_text="To access files on the phone it is required to grant the app access to the storage."
-                deny_text='No'
+                do_choice=True
             else:
-                done=True
                 support_text="Storage access was already granted."
-                deny_text='Return'
+                do_choice=False
         elif self.platform == "linux":
-            done=True
             support_text=f"For {self.platform} no further storage access needs to be granted."
-            deny_text='Return'
+            do_choice=False
         else:
             support_text=f'Access for {self.platform} might be necessary.'
-            deny_text='No'
+            do_choice=True
             
-        self.show_permission_popup = GrantAccess(
-            support_text=support_text, deny_text=deny_text, done=done)
+        self.show_permission_popup = GrantAccess(what='access',
+            support_text=support_text, do_choice=do_choice)
+        
         self.show_permission_popup.open()
         
     def __decide_on_app_directory(self):
@@ -177,7 +192,7 @@ class MyApp(MDApp):
     # = ============================================================== = #
     
     def sync_custom_colors(self,*args):
-        self.custom.update_colors(self.theme_cls.theme_style)
+        self.custom.update_colors(self.theme_cls)
     
     # = ============================================================== = #
     # =                         SCREEN MANAGER                         = #
@@ -270,6 +285,8 @@ class MyApp(MDApp):
         previous_screen_name = self.wm.current
         previous_direction = self.wm.transition.direction
         previous_screen = self.wm.current_screen
+        # print(previous_screen_name,screen_name)
+        # print(self.wm.previous_screen_names)
         if screen_name != previous_screen_name \
             and screen_name in self.wm.screen_names:
                 if self.wm.previous_screen_names != []\
@@ -304,6 +321,9 @@ class MyApp(MDApp):
             elif previous_direction in ['up','down']:
                 direction = 'up' if previous_direction == 'down' else 'up'
             self.switch_screen(previous_screen_name,direction,remember=False)
+            if self.wm.current!=previous_screen_name:
+                self.wm.previous_screen_names.append(previous_screen_name)
+                self.wm.previous_transition_directions.append(previous_direction)
             return True
         else:
             return False
@@ -317,8 +337,15 @@ class MyApp(MDApp):
                 return all([result.scheme, result.netloc])
             except ValueError:
                 return False
+            
+        go_to_url=lambda: webbrowser.open(url)
         if is_url(url):
-            webbrowser.open(url)
+            dialog=ConfirmDecision(
+                title="Open Browser",
+                support_text=f"Do you want to follow this link?\n{url}",
+                accept_func=go_to_url,
+                )
+            dialog.open()
                 
     # = ============================================================== = #
     # =                             METRICS                            = #

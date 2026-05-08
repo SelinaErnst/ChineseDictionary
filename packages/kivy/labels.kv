@@ -2,6 +2,10 @@
     theme_font_name: "Custom"
     font_name:"CH"
 
+<ClickableLabel>:
+    theme_font_name: "Custom"
+    font_name:"CH"
+
 # <AnchoredLabel>: #MDAnchorLayout
 #     label:label
 #     theme_bg_color: 'Custom'
@@ -42,7 +46,6 @@
 
 <MultiLineLabel>: #MDAnchorLayout
     label:label
-    padding: 0,0,0,0
     size_hint: 1, None
     height: label.height
 
@@ -58,7 +61,7 @@
     label_bg_color: None
     label_width: None
     label_height: 0
-    label_padding: 20,0,20,0
+    label_padding: 20,5,20,0
 
     MDLabel:
         id:label
@@ -71,8 +74,9 @@
         font_size: sp(root.font_size)
         theme_font_name: "Custom"
         font_name: root.font_name
-        text_color: self.text_color if root.text_color == None else root.text_color
-        
+        # theme_text_color: "Custom" if root.text_color != None else "Primary"
+        # text_color: self.text_color if root.text_color == None else root.text_color
+
         halign: root.halign
         md_bg_color: app.theme_cls.transparentColor if root.label_bg_color == None else root.label_bg_color
 
@@ -81,11 +85,11 @@
         size_hint_x: 1 if root.label_width == None else None
         width: self.width if root.label_width == None else root.label_width
         padding: root.label_padding
+        theme_text_color: "Primary" if root.text_color==None else "Custom"
+        text_color: root.text_color
 
         radius: 20
 
         allow_copy: True
         # on_copy: app.test(root.text+str(self.size))
-        on_copy: 
-            app.test(root.label.text)
-            app.open_url(root.label.text)
+        on_copy: app.test((root.label.text,root.label.height))

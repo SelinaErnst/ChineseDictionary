@@ -1,14 +1,14 @@
 {
-  "application": "ChD",
-  "theme_style": "Dark",
-  "palette": "Lavender",
-  "chinese_font_file": "Source Han Sans CN Normal.otf",
-  "pleco_template": "pleco_template.chd",
-  "hidden_categories": [
-    "ancient",
-    "images",
-    "image_urls"
-  ],
-  "app_directory": "/home/selina/Applications/MyApps/ChineseDictionary/",
-  "import_directory": "/home/selina/Applications/MyApps/ChineseDictionary/appdata/examples/"
+    "application": "ChD",
+    "theme_style": "Dark",
+    "palette": "Lavender",
+    "chinese_font_file": "Source Han Sans CN Normal.otf",
+    "dictionary_template": "pleco_template.chd",
+    "grammar_template": "grammar_template.chd",
+    "hidden_categories": [
+        "ancient",
+        "image_urls"
+    ],
+    "app_directory": "/media/selina/SHARE/MyProjects/ChD/",
+    "import_directory": "/home/selina/Applications/MyApps/ChineseDictionary/appdata/examples/"
 }

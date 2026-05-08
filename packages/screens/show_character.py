@@ -1,10 +1,10 @@
 import os
 from functools import partial
 from packages.chd import Dictionary, Character
-from kivy.properties import ObjectProperty, ListProperty, StringProperty
+from kivy.properties import NumericProperty, ObjectProperty, ListProperty, StringProperty,BooleanProperty
 from packages.kivy import (
     MyScreen,
-    AddElement,
+    EditElement,
     ConfirmDelete,
     ConfirmExport,
     ShowOptions,
@@ -16,7 +16,8 @@ from packages.kivy import (
     MDAnchorLayout,
     MultiLineLabel,
     ButtonBehavior,
-    ImageDisplay
+    ImageDisplay,
+    CategoryItem
 )
 
 from kivy.metrics import Metrics, dp
@@ -24,6 +25,9 @@ from kivy.metrics import Metrics, dp
 def create_char_string(character:Character):
     char_string = f'C_{character.entry.simple}_{character.entry.traditional}_{character.entry.pronunciation}'
     return char_string
+
+
+                
 class ShowCharacter(MyScreen):
     parent_dictionary=ObjectProperty(Dictionary())
     character=ObjectProperty()
@@ -59,7 +63,7 @@ class ShowCharacter(MyScreen):
         new_categories = [cat for cat in categories if cat not in self.character.entry.to_dict()]
         # categories with values but not shown (part of not_listed_categories)
         hidden_categories=[cat for cat in self.character.filled if cat in self.not_listed_categories]
-        
+
         return [cat for cat in missing_categories+new_categories+hidden_categories if cat not in self.categories]
     
     def get_category(self,cat):
@@ -83,31 +87,33 @@ class ShowCharacter(MyScreen):
                 if category == 'pronunciation': text=self.character.pinyin
                 else: text=self.character[category]
                 self.ids[category].label.text = text
-                
-        if self.dict_screen != None:
-            self.dict_screen.set_list_items()
+        
+        # self.dict_screen.get_character_image(character=self.character)
             
     def update_image_display(self,image_type,path):
         self.dict_screen.edited = True
         kwargs={image_type:path}
         self.character.update_images(kwargs)
+        if 'images' in self.categories:
+            self.update_category(category='images',entry=self.character.image_files)
         if 'image_display' in self.ids.scroll.ids.keys():
             self.ids.scroll.ids['image_display'].display_image(image_type=image_type,file=path)
         else:
             self.clean_scroll()
             self.build_scroll()
             
-    def update_category(self,category,entry):
+    def update_category(self,category,entry,original_data=None):
         # update categories from scroll list
         self.dict_screen.edited = True
         if entry != None:
+            # new_entry = new_entry.replace('/n',' ')
             self.character.update({category:entry},get_dtype_warning=False)
             if category not in self.categories:
-                self.list_translations(category)
+                self.list_category_content(category,entry)
             
-            entry=entry if isinstance(entry,list) else [entry]
-            self.ids.scroll.ids[category].bullets.remove_bullets()
-            self.ids.scroll.ids[category].bullets.create_bullets(results=entry)
+            # entry=entry if isinstance(entry,list) else [entry]
+            self.ids.scroll.ids[category].remove_content()
+            self.ids.scroll.ids[category].list_category(values=entry)
         else:
             self.character.remove(category)
             self.remove_translations(category)
@@ -116,30 +122,48 @@ class ShowCharacter(MyScreen):
     
     def build_scroll(self):
         self.list_images(image_files=self.character.image_files)
-        for category in self.character.filled:
-            if category not in self.not_listed_categories \
-                and category not in self.head_categories:
-                    self.list_translations(category)
+        def is_info_category(cat):
+            listed = cat not in self.not_listed_categories
+            not_header = cat not in self.head_categories
+            return (not_header and listed)
+        categories = [cat for cat in self.character.filled if is_info_category(cat)]
+        for category in categories:
+            values = self.get_category(category)
+            self.list_category_content(category,values)
+        pass
+
         
     def clean_scroll(self):
         for c in [c for c in self.ids.scroll.children]:
             c.clear_widgets()
     
     def list_images(self,image_files):
+        
         l=ImageDisplay(image_files=image_files)
         self.ids.scroll.add_widget(l)
         self.ids.scroll.ids['image_display']=l
                 
-    def list_translations(self,cat,translations=None):
-        translations=self.get_category(cat) if translations==None else translations
-        if  translations != None and cat not in self.categories:
-            self.categories.append(cat)
-            translations=translations if isinstance(translations,list) else [translations]
-            l=MyList(category=cat,translations=translations)
+    def list_category_content(self,category,content):
+        small_bullets=['variants','relatives','words','others','dict_entries']
+        long_text=['origin','components','english','german','mnemonics','usage','images','link']
+    #     translations=self.get_category(cat) if translations==None else translations
+        if  content != None and category not in self.categories:
+            self.categories.append(category)
+            if category in small_bullets:
+                l=CategoryItem(
+                    category=category,values=content,
+                    cols=2,small=True,line_width=330,head_width=325)
+            elif category in long_text:
+                l=CategoryItem(
+                    category=category,values=content,
+                    cols=1,small=False,head_width=None)
+            else:
+                l=CategoryItem(
+                    category=category,values=content,
+                    cols=2,small=False,head_width=325)
+                
             self.ids.scroll.add_widget(l)
-            self.ids.scroll.ids[cat]=l
-        else:
-            pass
+            self.scroll.ids[category]=l
         
     def remove_translations(self,cat):
         if cat in self.ids.scroll.ids:
@@ -173,7 +197,6 @@ class ShowCharacter(MyScreen):
         app = ChD.get_running_app()
         repeat,repeat_exact = app.check_character_for_multiple(self.character)
         count_normal,count_exact=len(repeat),len(repeat_exact)
-                
         support_text='This character will be exported in a format fitting of the Pleco Dictionary App (txt).'
 
         if count_normal == count_exact: 
@@ -188,12 +211,12 @@ class ShowCharacter(MyScreen):
         else: support_text+='.'
         
         name = str(self.character)
-        dialog = ConfirmExport(name=name,support_text=support_text,what='character')
+        dialog = ConfirmExport(name=name,support_text=support_text,what='export_character')
         dialog.open()
 
     def del_character(self):
         name = str(self.character)
-        dialog = ConfirmDelete(name=name,what='character')
+        dialog = ConfirmDelete(name=name,what='delete_character')
         dialog.open()
     
     # = ============================================================== = #
@@ -223,7 +246,7 @@ class ShowCharacter(MyScreen):
         entries=[]
         for category in self.head_categories:
             entries += [self.character[category]]
-        dialog = AddElement(**kwargs)
+        dialog = EditElement(**kwargs)
         dialog.content.ids.input.text='- '+'\n- '.join([e if e!=None else "" for e in entries])
         dialog.open()
     
@@ -239,8 +262,9 @@ class ShowCharacter(MyScreen):
             "support_text":support_text,
         }
         entry = self.character[category]
+        if isinstance(entry,dict): dialog = EditElement(style="dict",**kwargs)
+        else: dialog = EditElement(style="normal",**kwargs)
         if hasattr(self,'dialog'): self.dialog.dismiss()
-        dialog = AddElement(**kwargs)
         dialog.set_entry(entry=entry)
         dialog.open()
         
@@ -260,32 +284,24 @@ class ShowCharacter(MyScreen):
     
     def add_image(self):
         
-        def import_file(src_path, dest_dir, new_name):
-            dest_path = os.path.join(str(dest_dir), new_name)
-            try:
-                import shutil
-                shutil.copyfile(src_path, dest_path)
-                # AttentionMsg(attention='File was imported',msg=f'Copied from {src_path} to {dest_path}').open()
-                return True
-            except Exception as err:
-                ErrorMsg(error='File was not imported',msg=str(err)).open()
-                return False
-        
         def select_image_path(path,image_type):
             self.file_manager.close()
             image_directory = self.get_setting('image_directory')
-            image_type=image_type.replace(' ',"_")
-            do_import = False if 'other' in image_type else True
-            use_og_file_name = True if 'other' in image_type else False
-            file_name = os.path.basename(path)
-            if use_og_file_name and do_import: file_name = f'{self.character.entry.pronunciation}_{file_name}'
-            elif do_import: file_name = f'{self.character.unicode_unique_string}_{image_type}.png'
+            image_type=image_type.lower().replace(' ',"_")
+            
+            image_name = self.character.unicode_unique_string
+            image_directory = os.path.join(image_directory,image_name)
+            file_name = f'{image_name}_{image_type}.png'
+            
+            self.remove_file(os.path.join(image_directory,file_name))
+            
+            do_import = True if image_type in ['ancient_character','shuowen_jiezi'] else False
             if do_import:
                 os.makedirs(image_directory, exist_ok=True)
-                imported = import_file(src_path=path,dest_dir=image_directory,new_name=file_name)
-                filepath = os.path.join(str(image_directory), file_name)
+                imported = self.import_file(src_path=path,dest_dir=image_directory,new_name=file_name,inform=False)
+                filepath = os.path.join(image_directory,file_name)
                 if imported: self.update_image_display(image_type=image_type,path=filepath)
-            elif os.path.isfile(path): 
+            elif os.path.isfile(path):
                 self.update_image_display(image_type=image_type,path=path)
             
         def choose_png_file(image_type):
@@ -297,52 +313,17 @@ class ShowCharacter(MyScreen):
             self.file_manager.show(path=None,use_root_folder=True)
             
         def choose_image_type():
+            # options=list(set(['ancient_character','shuowen_jiezi']) | set(self.character.image_files.keys()))
+            options = list(dict.fromkeys(['ancient_character','shuowen_jiezi'] + list(self.character.image_files.keys())))
+            options=[o.replace('_',' ').title() for o in options]
             kwargs={
                 "title":"Image Type",
-                'support_text':"The categories shown here will contain information about the character. By selecting one of them, a new entry can be given.",
-                "options":['ancient character','shuowen jiezi','other image'],
+                'support_text':"Images in relation to the character can be selected here. There are some predefined options which give a general description of the image content.",    
+                "options":options,
                 "itemclass":"MyListItem",
                 "func":choose_png_file,
             }
-            dialog = ShowOptions(**kwargs) 
+            dialog = ShowOptions(allow_add=True,**kwargs) 
             dialog.open()
         
         choose_image_type()
-        
-class ListElement(MultiLineLabel):
-    pass
-class Head(ButtonBehavior, MultiLineLabel):
-    pass
-
-class Bullets(MDStackLayout):
-
-    def create_bullets(self,results,font_name='CH',use_both_directions=False):
-        if use_both_directions: 
-            size_hint = [None,None]
-        else:
-            size_hint = [1,None]
-        for r in results:
-            label=ListElement(text=str(r), font_name=font_name, size_hint=size_hint)
-            self.add_widget(label)
-    
-    def remove_bullets(self):
-        self.clear_widgets()
-
-class MyList(MDBoxLayout):
-    category=StringProperty()
-    translations=ListProperty()
-    bullets=ObjectProperty()
-    # small_bullets=ListProperty()
-    small_bullets=['variants','relatives','words','others']
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
-        head_text=self.category.replace('_',' ').capitalize()
-        head_label=Head(text=head_text)
-        head = MDAnchorLayout(anchor_y='top', anchor_x="left", size_hint_x=None, width=330)
-        head.add_widget(head_label)
-        self.add_widget(head)
-        
-        self.bullets=Bullets()
-        use_both_directions = True if self.category.lower() in self.small_bullets else False
-        self.bullets.create_bullets(results=self.translations,use_both_directions=use_both_directions)
-        self.add_widget(self.bullets)

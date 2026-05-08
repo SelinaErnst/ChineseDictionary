@@ -4,12 +4,12 @@
 <MARK>{
 <L:[none|nl|normal]:structures><E>
 <N><N><E>
-<H:[n|none|available]:Opposite :><N><L:[none|nl|normal]:opposite_structures><E>
+<H:[n|none|available]:Opposite form: ><N><L:[none|nl|normal]:opposite_structures><E>
 }<E>
 <T:[n|none|normal]:explanation><E><N><N>
 <MARKLINE>{
 <L:[none|nl|normal]:sentences><E>
 }<E>
-<RIGHT>{
+<LEFT>{
 <H:[n|none|available]:For more see:  ><L_LINK:[d|l|normal]:all_other_char><E>
 }<E>

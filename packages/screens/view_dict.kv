@@ -16,66 +16,74 @@
     sorter_box: sorter_box
     sorter_button: header.sorter_button
 
-    MDAnchorLayout:
-        padding: 25,50,25,0
+    # MDAnchorLayout:
+    MDBoxLayout:
+        orientation: 'vertical'
         MDBoxLayout:
+            adaptive_height: True
             orientation: 'vertical'
+            md_bg_color: app.custom.colors['head']
+            padding: 20,0,20,0
+            DictNameWithButtons:
+                id: header
+                left_text: root.dict_name
+                right_text: str(root.entry_count)
+                padding: 0,20,20,20
+                not_filter: filter.include == [] and filter.exclude == []
+                not_search: search_entry.text == ""
+
             MDBoxLayout:
-                adaptive_height: True
-                orientation: 'vertical'
-                DictNameWithButtons:
-                    id: header
-                    left_text: root.dict_name
-                    right_text: str(root.entry_count)
-                MDBoxLayout:
-                    id: sorter_box
-                    size_hint_y: None
-                    height: sorter.height
-                    # md_bg_color: 'blue'
-                    Sorter:
-                        id: sorter
-                MDBoxLayout:
-                    id: search_filter
-                    size_hint_y: None
-                    height: search_entry.height
-                    orientation: 'vertical'
+                id: sorter_box
+                size_hint_y: None
+                height: sorter.height
+                Sorter:
+                    id: sorter
                     padding: 0,0,0,10
-                    MDTextField:
-                        id: search_entry
-                        theme_font_name: "Custom"
-                        font_name:"CH"
-                        on_text: root.set_list_items(self.text,True)
-                MDBoxLayout:
-                    id: filter_box
-                    size_hint_y: None
-                    height: filter.height
-                    # md_bg_color: 'red'
-                    Filter:
-                        id: filter
-                        # md_bg_color: 'blue'
-            MDRecycleView:
-                id: rv_scroll
-                scroll_type: ['bars', 'content']
-                effect_cls: "ScrollEffect"
-                viewclass: 'DictionaryItem'
-                RecycleBoxLayout:
-                    id: grid
-                    padding: 0,0,0,300
-                    orientation: "vertical"
-                    spacing: 10
-                    size_hint: 1, None
-                    height: self.minimum_height
-                    default_size_hint: 1, None
-                    # default_height: 300
-                    default_height: None
+            MDAnchorLayout:
+                id: search_filter
+                size_hint_y: None
+                height: search_entry.height+20
+                anchor_y: 'top'
+                orientation: 'vertical'
+                padding: 0,0,0,0
+                EntryField:
+                    id: search_entry
+                    theme_font_name: "Custom"
+                    font_name:"CH"
+                    allow_empty: True
+                    color_focus: app.custom.colors['textfield_search']
+                    color_normal: app.custom.colors['textfield_search']
+                    on_text: root.set_list_items(search_text=self.text)
+            MDBoxLayout:
+                id: filter_box
+                size_hint_y: None
+                height: filter.height
+                Filter:
+                    id: filter
+                    padding: 0,0,0,10
+        MDRecycleView:
+            id: rv_scroll
+            viewclass: 'DictionaryItem'
+            RecycleBoxLayout:
+                id: grid
+                padding: 10,10,10,300
+                orientation: "vertical"
+                spacing: 10
+                size_hint: 1, None
+                height: self.minimum_height
+                default_size_hint: 1, None
+                # default_height: 300
+                default_height: None
 
     MDBottomSheet:
         id: bottom_nav
-        size_hint_y: None
+        radius: 0
+        size_hint: None,None
         height: 170
+        width: Window.width 
         sheet_type: "standard"
-        radius:0
-        md_bg_color: app.theme_cls.surfaceDimColor
+        md_bg_color: app.custom.colors['bottom']
+
 
         BottomSheetDragHandleContainer:
             padding: 20
@@ -95,24 +103,28 @@
                         icon: 'delete'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: root.del_dictionary()
                     MyIconButton:
                         text: 'Add'
                         icon: 'plus'
                         size: self.parent.height, self.parent.height
                         style: 'text'
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: root.add_character()
                     MyIconButton:
                         text: 'Export'
                         icon: 'download'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: root.export()
                     MyIconButton:
                         text: 'Save'
                         icon: 'content-save'
                         style: 'text'
                         size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
                         on_release: root.save_dictionary(make_msg=False)
 
 <DictNameWithButtons@MDBoxLayout>: #MDBoxLayout
@@ -125,12 +137,14 @@
     anchor_x: "left"
 
     theme_bg_color: 'Custom'
-    md_bg_color: app.theme_cls.surfaceDimColor
     radius: 20
-    padding: 0,20,20,20
     spacing: 20
     orientation: 'horizontal'
     adaptive_height: True
+
+    not_filter: False
+    not_search: False
+
 
     MDAnchorLayout:
         size_hint_x: None
@@ -144,17 +158,17 @@
                 padding: 50,0,50,0
                 style: 'text'
                 on_release: app.wm.current_screen.edit_name()
-
-    MDLabel:
+    MultiLineLabel:
+        id: name
         text: root.left_text
-        halign: 'left'
-        adaptive_height: True
         font_style: 'Title'
         role: 'medium'
+        text_color: app.custom.colors['button_fg']
 
     MDAnchorLayout:
         size_hint_x: None
         width: 3*(80)+2*(20)
+        anchor_y: 'top'
         MDBoxLayout:
             adaptive_height: True
             spacing: 20
@@ -164,8 +178,6 @@
                 size: 80,80
                 padding: 50,0,50,0
                 style: 'elevated'
-                # on_release: app.wm.current_screen.get_sorting_key()
-                # on_release: app.wm.current_screen.toggle_sorter()
                 on_release: app.wm.current_screen.toggle_filter(app.wm.current_screen.sorter_box,app.wm.current_screen.sorter)
             MyIconButton:
                 id: search_button
@@ -174,22 +186,33 @@
                 padding: 50,0,50,0
                 style: 'elevated'
                 on_release: app.wm.current_screen.toggle_search_bar()
+                md_bg_color:  app.custom.colors['head'] if root.not_search else app.custom.colors['app']
             MyIconButton:
                 id: filter_button
                 icon: 'filter'
                 size: 80,80
                 padding: 50,0,50,0
                 style: 'elevated'
+                md_bg_color:  app.custom.colors['head'] if root.not_filter else app.custom.colors['app']
                 on_release: app.wm.current_screen.toggle_filter(app.wm.current_screen.filter_box,app.wm.current_screen.filter)
-    MDLabel:
-        text: root.right_text
-        halign: 'right'
-        adaptive_width: True
-        font_style: 'Title'
-        role: 'medium'
+    MDAnchorLayout:
+        size_hint: None, 1
+        width: count.width
+        anchor_y: 'top'
+        MDLabel:
+            id: count
+            font_name: "CH"
+            text: root.right_text
+            halign: 'right'
+            adaptive_width: True
+            adaptive_height: True
+            padding: 20,0,20,0
+            font_style: 'Title'
+            role: 'medium'
+            theme_text_color: 'Custom'
+            text_color: app.custom.colors['button_fg']
 
 <Filter@Toggle>: #MDStackLayout
-    padding: 0,0,0,10
     IconTextToggleButton: 
         text: "translated"
         icon: "translate"
@@ -208,7 +231,6 @@
         on_release: self.toggle_three()
 
 <Sorter@Toggle>:
-    padding: 0,0,0,10
     TextToggleButton: 
         id: simple
         text: "simple"

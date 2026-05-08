@@ -6,12 +6,12 @@
             text: f"Create New Dictionary"
         MDBoxLayout:
             radius: 20
+            padding: 40
+            spacing: 40
             md_bg_color: app.theme_cls.surfaceContainerColor
             orientation: 'vertical'
             size_hint_x: 1
             adaptive_height: True
-            padding: 20,20,20,20
-            spacing: 50
             EntryField:
                 id: name_entry
                 hint: "Choose a name"
@@ -25,5 +25,5 @@
                 MyIconTextButton:
                     text: "Add"
                     icon: "plus"    
-                    style: "elevated"
+                    style: "tonal"
                     on_press: root.create()

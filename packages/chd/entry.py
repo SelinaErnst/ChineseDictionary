@@ -58,8 +58,10 @@ class Entry():
                     compare_all = compare_non+compare_are_dict+compare_are_list
                     result = all(compare_all)
                     
-                    if not result: print('\n'*5,len(compare_all),[(a[k],b[k]) for k in all_categories if a[k]!=b[k]])
-                    
+                    # if not result: 
+                    #     print('Result Comparison of entries: not equal')
+                    #     print('clashes: \n\n'+'\n\n'.join([str(a[k])+'\n'+str(b[k]) for k in all_categories if a[k]!=b[k]]))
+                    #     print('='*20)
                     return all(compare_all)
                 else: return a==b
             

@@ -13,7 +13,7 @@ from packages.kivy import (
     MyScreen,
     AttentionMsg, # snackbar
     ErrorMsg,
-    AddElement,
+    EditElement,
     ConfirmDelete,
     ShowOptions,
     MyFileManager,
@@ -28,14 +28,14 @@ class ViewDict(MyScreen):
     dict_file=StringProperty()
     dict_name=StringProperty('Dictionary Name')
     entry_count=NumericProperty()
-    dictionary=ObjectProperty()
+    dictionary=ObjectProperty(Dictionary())
     file_format=StringProperty()
     filtered_characters=ListProperty()
     edited=BooleanProperty(False)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-    
+            
     # = ============================================================== = #
     # =                             SCREEN                             = #
     # = ============================================================== = #
@@ -46,14 +46,13 @@ class ViewDict(MyScreen):
         self.toggle_filter(self.sorter_box,self.sorter,toggle=False,turn_off=True)
         self.dict_name = dict_name
         self.dict_file = dict_file
-        # self.search_entry.text = ""
         self.file_format = file_format
         
         if dict_file != "":
             return self.__read_dict_file(file_format=self.file_format,dict_file=self.dict_file,add=False)
         else:
             self.__empty_dict()
-            self.set_list_items()
+            self.set_list_items(update_images=False)
             return False
         
     def show_char(self,character:Character):
@@ -65,11 +64,10 @@ class ViewDict(MyScreen):
     # =                           LIST ITEMS                           = #
     # = ============================================================== = #
     
-    def set_list_items(self,search_text="",search=False):
+    def set_list_items(self,search_text="", update_images=False):
         self.rv_scroll.data = []
         
-        def apply_search(search_text,search):
-            if not search: search_text=""
+        def apply_search(search_text):
             search_text = self.search_entry.text if search_text=="" else search_text
             if search_text!="": 
                 search_dictionary = self.dictionary.search(text=search_text,exact=True,search_prompt=False)
@@ -101,28 +99,28 @@ class ViewDict(MyScreen):
             if len(fit) == len(include+exclude): return True
             else: return False
 
-        search_dictionary=apply_search(search_text=search_text,search=search)
+        search_dictionary=apply_search(search_text=search_text)
         apply_sorting_key()
         counter = 0
         self.filtered_characters = []
         for character in search_dictionary.sort():
-            dataitem=self.__create_dataitem(character)
+            dataitem=self.__create_dataitem(character, update_images=update_images)
             if apply_filter(dataitem):
                 self.filtered_characters.append(dataitem['character'].uniq)
                 self.__add_list_item(dataitem)
                 counter += 1
         self.entry_count = counter 
         
-    def __create_dataitem(self,character:Character):
+    def __create_dataitem(self,character:Character, update_images=False):
         char_simp, char_trad = character.uniq[:2]
         char_pron = character.pinyin
         translation = character.entry.english[0] if character.has_translation() else ""
-        image_directory = self.get_setting('image_directory')
-        self.__get_character_image(character=character,directory=image_directory,image_type='ancient character')
-        self.__get_character_image(character=character,directory=image_directory,image_type='shuowen jiezi')
+        if update_images: self.get_character_image(character=character)
         images=character['images']
         preview_image = 'ancient_character'
-        preview_image = images[preview_image] if images!=None and preview_image in images.keys() else None
+        if images!=None and preview_image in images.keys():
+            preview_image = images[preview_image] if images[preview_image] != None else ""
+        else: preview_image = ""
 
         dataitem={
             'character': character,
@@ -134,7 +132,7 @@ class ViewDict(MyScreen):
             'is_grammatical': character.is_grammatical(),
             'has_translation': character.has_translation(),
             'translation': translation,
-            'preview_image': "" if preview_image==None else preview_image,
+            'preview_image': preview_image,
             }
         return dataitem 
     
@@ -153,12 +151,12 @@ class ViewDict(MyScreen):
         else: self.edited = True
 
         categories=self.get_setting('categories')
-        template=self.get_setting('pleco_template')
+        template=self.get_setting('dictionary_template')
         
         can_read = self.dictionary.read(
             dict_file,file_format=file_format,add=add,categories=categories,template=template)
         if can_read:
-            self.set_list_items()
+            self.set_list_items(update_images=True)
             return True
         else:
             self.set_list_items()
@@ -170,19 +168,20 @@ class ViewDict(MyScreen):
     def __empty_dict(self):
         # dictionary is created
         # method used upon first creation of dictionary
-        self.dictionary=Dictionary(self.dict_name)
+        self.dictionary.empty()
+        self.dictionary.rename(self.dict_name)
         self.entry_count=0
     
     def del_dictionary(self):
         name = self.dict_name
-        dialog = ConfirmDelete(name=name,what='dictionary')
+        dialog = ConfirmDelete(name=name,what='delete_dictionary')
         dialog.open()
         
     # = –––––––––––––––––––––––––––– save –––––––––––––––––––––––––––– = #
         
     def save_dictionary(self, output='all',make_msg=True,directory='',use_filtered=False,use_tag=False):
 
-        path_to_template=self.get_setting('pleco_template')
+        path_to_template=self.get_setting('dictionary_template')
         
         if directory == "":
             app_directory = self.get_setting('app_directory')
@@ -257,7 +256,8 @@ class ViewDict(MyScreen):
             character.update(entries)
             self.dictionary = self.dictionary + character
             self.edited = True
-            self.set_list_items()
+            self.get_character_image(character=character)
+            self.set_list_items(update_images=False)
             self.show_char(character=character)
             
         def choose_char_file(path):
@@ -298,7 +298,7 @@ class ViewDict(MyScreen):
                     "title":'Character',
                     "support_text":f"Enter the chinese characters (simplified & traditional language) amd pronunciation in pinyin.",
                 }
-                dialog = AddElement(**kwargs)
+                dialog = EditElement(**kwargs)
                 dialog.open()
                 
             elif 'import' in mode.lower(): # Load character file
@@ -322,34 +322,42 @@ class ViewDict(MyScreen):
             "support_text":"Edit the name of the dictionary. This is also the name of the directory under which the files will be saved.",
         }
         
-        dialog = AddElement(**kwargs)
+        dialog = EditElement(**kwargs)
         dialog.allow_multiple = False
         dialog.content.ids.input.text = self.dict_name
         dialog.open()
         
     # = –––––––––––––––––––––––––– character ––––––––––––––––––––––––– = #
     
-    def __get_character_image(self,character:Character,directory,image_type):
+    def get_character_image(self,character:Character):
         # this method is there to get image paths from certain predetermined directories
         # basically if the image is there, I want to know 
         # if another image is already given, this method should not overwrite the path
-        image_type = image_type.replace(' ','_')
-        possible_image_types = ['ancient character', 'shuowen jiezi','other image']
-        possible_image_types = [s.replace(' ','_') for s in possible_image_types]
+        # HOWEVER: images with different path are still copied to image directory 
         
-        if image_type in possible_image_types:
-            test1 = f'{image_type}/{character.unicode_unique_string}.png'
+        directory = self.get_setting('image_directory')
+        if not os.path.isdir(directory):
+            return None
+
+        # possible_image_types = ['ancient character', 'shuowen jiezi']
+        # possible_image_types = [s.replace(' ','_') for s in possible_image_types]
+        possible_image_types = character.image_files.keys()
+        
+        for image_type in possible_image_types:
+            test1 = f'{image_type}/{character.unicode_unique_string}_{image_type}.png'
             test2 = f'{character.unicode_unique_string}_{image_type}.png'
-            test3 = f'{character.unicode_unique_string}/{image_type}.png'
-            file_exists = False
-            if os.path.isfile(directory+test1):
-                file = directory+test1
+            test3 = f'{character.unicode_unique_string}/{character.unicode_unique_string}_{image_type}.png'
+            file_exists,move = False,False
+            if os.path.isfile(os.path.join(directory+test1)):
+                file = os.path.join(directory+test1)
                 file_exists = True
-            if os.path.isfile(directory+test2):
-                file = directory+test2
+                move_file,move=file,True
+            if os.path.isfile(os.path.join(directory,test2)):
+                file = os.path.join(directory,test2)
                 file_exists = True
-            if os.path.isfile(directory+test3):
-                file = directory+test3
+                move_file,move=file,True
+            if os.path.isfile(os.path.join(directory,test3)):
+                file = os.path.join(directory,test3)
                 file_exists = True
             
             image_dict = character['images']
@@ -357,17 +365,54 @@ class ViewDict(MyScreen):
             
             if is_dict:
                 image_dict = {k:v for k,v in image_dict.items() if os.path.isfile(v)}
-                if image_dict=={}: image_dict, is_dict = None, False
-
-            # image_type only in image_dict if path leads to file
-            path_correct = image_type in image_dict if is_dict else False
+                if image_dict=={}: image_dict, path_correct = None, False
+                else: path_correct = image_type in image_dict 
+            else: path_correct = False
             
-            # only change when image file exists and path is incorrect
-            # incorrect: no path given or file behind path not existent
+            def copy_img_file(src_path,update_character=False):
+                dest_path = os.path.join(directory,test3)
+                dest_dir=os.path.dirname(dest_path)
+                dest_name=os.path.basename(dest_path)
+                os.makedirs(dest_dir,exist_ok=True)
+                self.import_file(src_path=src_path,dest_dir=dest_dir,new_name=dest_name)
+                if update_character: character.update_images({image_type:dest_path})
+            
             if file_exists and not path_correct:
+                # change when image file exists (in image directory) and path is incorrect
+                # incorrect means no path given or file behind given path not existent
+                if move: print(character)
                 kwargs={image_type:file}
                 character.update_images(kwargs)
-
+            
+            elif file_exists and path_correct:
+                # i mostly don't want to overwrite path 
+                if move and image_dict[image_type]==move_file: 
+                    # image moved when image in image directory
+                    # priority has image outside of character folder
+                    copy_img_file(move_file,update_character=True) 
+                    self.remove_file(move_file)
+                elif move and image_dict[image_type]!=move_file:
+                    # image in image directory that is not used
+                    self.remove_file(move_file)
+                elif not move and image_dict[image_type]!=file:
+                    # don't overwrite !!! (keep path as it is)
+                    # situation: path points to image not in image directory
+                    pass
+                elif not move and image_dict[image_type]==file:
+                    # not necessary to overwrite
+                    pass
+                    
+            elif not file_exists:
+                # file does not exist in image directory
+                # copy from former directory to image directory (if it exists)
+                if path_correct: 
+                    src_path = image_dict[image_type]
+                    overwrite = False
+                elif not path_correct: 
+                    src_path = os.path.join(self.root_folder,'.images',test2)
+                    overwrite = True
+                if os.path.isfile(src_path): copy_img_file(src_path,update_character=overwrite)
+                    
     # = ============================================================== = #
     # =                             FILTER                             = #
     # = ============================================================== = #
