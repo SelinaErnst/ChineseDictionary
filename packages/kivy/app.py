@@ -64,7 +64,7 @@ class MyApp(MDApp):
     def on_start(self):
 
         # dialog = CustomDialog(support_text=get_project_root())
-        dialog = CustomDialog(support_text=f'{self.root_folder}\n{self.user_data_dir}')
+        dialog = CustomDialog(support_text=f'{self.root_folder}\n{self.user_data_dir}\n')
         dialog.open()
         # if not access_granted():
         #     self.__show_validation_dialog()
