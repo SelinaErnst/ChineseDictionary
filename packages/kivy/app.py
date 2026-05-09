@@ -48,7 +48,9 @@ class MyApp(MDApp):
         super().__init__(*args, **kwargs)
         self.root_folder = get_project_root()
         self.__appdata = self.root_folder+"appdata/"
-        self.__config = self.root_folder+".config/"
+        # self.__config = self.root_folder+".config/"
+        self.__config = self.user_data_dir+"/"
+        
         os.makedirs(self.__appdata,exist_ok=True)
         os.makedirs(self.__config,exist_ok=True)
         for folder in ['defaults','colors','fonts','templates']:
@@ -63,14 +65,14 @@ class MyApp(MDApp):
     
     def on_start(self):
 
-        # dialog = CustomDialog(support_text=get_project_root())
-        dialog = CustomDialog(support_text=f'{self.root_folder}\n{self.user_data_dir}\n')
-        dialog.open()
-        # if not access_granted():
-        #     self.__show_validation_dialog()
-        # else:
-        #     if self.get_setting('app_directory')=="":
-        #         self.__decide_on_app_directory()
+        if not access_granted():
+            self.__show_validation_dialog()
+        else:
+            if self.get_setting('app_directory')=="":
+                self.__decide_on_app_directory()
+
+        # dialog = CustomDialog(support_text=f'{self.root_folder}\n{self.user_data_dir}\n')
+        # dialog.open()
 
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
@@ -119,7 +121,7 @@ class MyApp(MDApp):
             # getting default settings from specified default_settings_file (under .config)
             default_settings = self.load_json(self.default_settings_file)
         else:
-            #  get default settings from appdata folder defaults (only necessary first time)
+            # get default settings from appdata folder defaults (only necessary first time)
             default_settings=self.load_appdata('default_settings.json','defaults')
             default_settings={k:v if not isinstance(v,dict) else v[platform] for k,v in default_settings.items()}
             self.save_default_settings(default_settings)
