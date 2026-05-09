@@ -18,6 +18,7 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
+          rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/venv
           buildozer android debug
         env:
           # This helps avoid some permission issues in CI

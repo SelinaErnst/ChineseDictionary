@@ -1,0 +1,147 @@
+White
+# # Darkgray
+# # Darkgrey
+# # Dimgray
+# # Dimgrey
+# # Lightgray
+# # Lightgrey
+# # Gray 
+# # Grey
+# # Gainsboro
+# # Silver
+# # Whitesmoke
+# Powderblue
+# Azure
+# # Cadetblue
+# Lightcyan
+# # Darkturquoise
+Teal
+# # Cyan
+# # Darkcyan
+# # Aqua
+# Paleturquoise
+# Darkslategray
+# # Darkslategrey
+# Mediumturquoise
+# Lightseagreen
+# Turquoise
+Mintcream
+Aquamarine
+# # Mediumaquamarine
+Seagreen
+# # Mediumspringgreen
+# Mediumseagreen
+Honeydew
+# Springgreen
+# Darkseagreen
+Palegreen
+# # Lightgreen
+Green
+# # Darkgreen
+# # Lime
+# Forestgreen
+# # Limegreen
+Lawngreen
+# # Chartreuse
+Greenyellow
+# Darkolivegreen
+Yellowgreen
+# # Olivedrab
+Ivory
+Beige
+Lightyellow
+Yellow
+# # Olive
+# Lightgoldenrodyellow
+# Lemonchiffon
+# Darkkhaki
+# # Palegoldenrod
+Khaki
+# Floralwhite
+Cornsilk
+Gold
+# Oldlace
+Wheat
+# Papayawhip
+# Goldenrod
+# Moccasin
+Linen
+# Antiquewhite
+# Blanchedalmond
+# Darkgoldenrod
+# # Navajowhite
+Tan
+# Bisque
+# Burlywood
+# Orange
+# Seashell
+Peru
+# Peachpuff
+Darkorange
+# Sandybrown
+Chocolate
+# Saddlebrown
+Sienna
+# Lightsalmon
+Coral
+# Darksalmon
+# Orangered
+Red
+# Tomato
+# Maroon
+# # Darkred
+# Mistyrose
+# Salmon
+# Brown
+# Firebrick
+Crimson
+# # Rosybrown
+# Indianred
+# Lightcoral
+Lightpink
+Pink
+# Palevioletred
+Black
+# Deeppink
+Hotpink
+# Mediumvioletred
+Lavenderblush
+Magenta
+# # Darkmagenta
+# # Fuchsia
+# # Purple
+# Violet
+# Orchid
+Plum
+Thistle
+# # Mediumorchid
+Snow
+Darkviolet
+# Darkorchid
+Indigo
+Blueviolet
+Mediumpurple
+Slateblue
+# Mediumslateblue
+# Darkslateblue
+Navy
+# # Darkblue
+# # Mediumblue
+# Blue
+# Midnightblue
+Lavender
+# Royalblue
+Cornflowerblue
+# Dodgerblue
+# Ghostwhite
+Steelblue
+# Lightsteelblue
+# Slategray
+# # Slategrey
+# Lightslategray
+# # Lightslategrey
+Aliceblue
+# # Deepskyblue
+# Lightskyblue
+Skyblue
+Lightblue

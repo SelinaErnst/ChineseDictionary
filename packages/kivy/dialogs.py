@@ -218,9 +218,12 @@ class PaletteOptions(Options):
         return self.palette_colors[self.theme_cls.theme_style][name.capitalize()][color_name]
     
     def get_palettes(self):
-        from kivy.utils import hex_colormap
-        return [palette.capitalize() for palette in hex_colormap.keys()]
-    
+        # from kivy.utils import hex_colormap
+        from main import APP_DIR
+        with open(APP_DIR/'appdata'/'colors'/'palette_colors.txt','r') as f:
+            colors=[l.strip('\n') for l in f.readlines()]
+        colors = [c for c in colors if '#' not in c]
+        return colors
 
 class DictElement(MDBoxLayout):
     key=StringProperty()

@@ -43,7 +43,7 @@ from packages.kivy import (
     ObjectProperty,
 )
 
-SCRIPT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
+APP_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 DTYPE_MAP = {
     "list": list,
