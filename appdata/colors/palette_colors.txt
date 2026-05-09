@@ -1,16 +1,3 @@
-White
-# # Darkgray
-# # Darkgrey
-# # Dimgray
-# # Dimgrey
-# # Lightgray
-# # Lightgrey
-# # Gray 
-# # Grey
-# # Gainsboro
-# # Silver
-# # Whitesmoke
-# Powderblue
 # Azure
 # # Cadetblue
 # Lightcyan
@@ -145,3 +132,16 @@ Aliceblue
 # Lightskyblue
 Skyblue
 Lightblue
+White
+# # Darkgray
+# # Darkgrey
+# # Dimgray
+# # Dimgrey
+# # Lightgray
+# # Lightgrey
+# # Gray 
+# # Grey
+# # Gainsboro
+# # Silver
+# # Whitesmoke
+# Powderblue

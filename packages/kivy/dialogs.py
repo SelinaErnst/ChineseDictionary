@@ -218,6 +218,8 @@ class PaletteOptions(Options):
         return self.palette_colors[self.theme_cls.theme_style][name.capitalize()][color_name]
     
     def get_palettes(self):
+        from kivy.utils import hex_colormap
+        all_colors=[palette.capitalize() for palette in hex_colormap.keys()]
         # from kivy.utils import hex_colormap
         from main import APP_DIR
         with open(APP_DIR/'appdata'/'colors'/'palette_colors.txt','r') as f:
