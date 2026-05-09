@@ -40,8 +40,8 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-# requirements = python3, kivy==2.3.1, https://github.com/kivymd/KivyMD/archive/master.zip, exceptiongroup, asynckivy, asyncgui, materialyoucolor, android
-requirements = python3==3.11.1, hostpython3==3.11.1, kivy==2.3.1, plyer==2.1.0, requests, pillow, pyjnius, exceptiongroup, asynckivy, asyncgui, materialyoucolor, android, typeguard, typing_extensions, https://github.com/kivymd/KivyMD/archive/master.zip
+# requirements = python3==3.11.1, hostpython3==3.11.1, kivy==2.3.1, plyer==2.1.0, requests, pillow, pyjnius, exceptiongroup, asynckivy, asyncgui, materialyoucolor, android, typeguard, typing_extensions, https://github.com/kivymd/KivyMD/archive/master.zip
+requirements = python3==3.11.1, hostpython3==3.11.1, kivy==2.3.1, plyer==2.1.0, requests, pillow, pyjnius, android, https://github.com/kivymd/KivyMD/archive/master.zip
 
 
 # (str) Custom source folders for requirements

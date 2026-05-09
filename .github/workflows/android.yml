@@ -18,15 +18,11 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # 1. Kill the corrupted internal directory entirely
           rm -rf .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/build/venv
-          # 2. Run buildozer with a flag to stop it from trying to upgrade pip internally
-          # We use 'p4a.branch = master' to get the latest fixes for Python 3.11
-          buildozer android debug
+          buildozer -v android debug
         env:
-          # Tell python-for-android to stop the internal pip upgrade cycle
           P4A_PIP_UPGRADE: "0"
-          BUILDOZER_ALLOW_KIVY_USER: 0
+          PIP_NO_CACHE_DIR: "1"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
