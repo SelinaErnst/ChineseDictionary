@@ -33,6 +33,7 @@ from packages.kivy import (
     MDBoxLayout,
     ScreenManager,
     ConfirmUnsaved,
+    ShowOptions,
     CategoryItem,
     EditElement,
     print_class,
@@ -170,7 +171,7 @@ KV="""
     font_style: 'Title'
     role: 'medium'
     width: self.height
-    on_release: self.toggle_two(only_one=False)
+    kind: 'select_multiple'
     custom_color: app.custom.colors['level'+self.text]
     custom_font_color: app.custom.colors['text_level'+self.text]
                 
@@ -221,6 +222,7 @@ KV="""
 
 class ShowGrammar(MyScreen):
     # edited=BooleanProperty(False)
+    editable=BooleanProperty(True)
     grammar = ObjectProperty()
     parent_screen = ObjectProperty()
     
@@ -233,7 +235,6 @@ class ShowGrammar(MyScreen):
             self.list_content(category=category,content=self.grammar[category])
             
     def clean_scroll(self):
-        
         # for c in [c for c in self.ids.scroll.children]:
             # c.clear_widgets()
         self.ids.scroll.clear_widgets()
@@ -246,51 +247,58 @@ class ShowGrammar(MyScreen):
         if category in small_text:
             l=CategoryItem(
                 category=category,values=content,
-                cols=2,small=False,line_width=330,head_width=200)
+                cols=2,small=False,line_width=330,head_width=200,editable=self.editable)
         elif category in long_text:
             l=CategoryItem(
                 category=category,values=content,
-                cols=1,small=False,head_width=None)
+                cols=1,small=False,head_width=None,editable=self.editable)
         else:
             l=CategoryItem(
                 category=category,values=content,
-                cols=2,small=True,line_width=330,head_width=200)
+                cols=2,small=True,line_width=330,head_width=200,editable=self.editable)
             
-        self.ids.scroll.add_widget(l)
-        self.scroll.ids[category]=l
+        if not self.editable and isinstance(self.grammar[category],Dictionary): 
+            if len(self.grammar[category])==0: return None
+        if self.editable or self.grammar[category] not in [[],"",None]:
+            self.ids.scroll.add_widget(l)
+            self.scroll.ids[category]=l
         
     def empty_grammar(self):
-        self.grammar.clear()
-        self.parent_screen.set_list_items()
-        self.clean_scroll()
-        self.build_scroll()
-        self.parent_screen.edited = True
+        if self.editable:
+            self.grammar.clear()
+            self.parent_screen.set_list_items()
+            self.clean_scroll()
+            self.build_scroll()
+            self.parent_screen.edited = True
     
     def edit_category(self,category):
-        title=category.replace('_',' ').title()
-        category=category.lower().replace(' ','_')
-        content = self.grammar[category]
-        dialog = None
-        
-        if category == "characters":
-            content={'simple':'','traditional':'','pronunciation':''}
-            title="Add Character"
-        if category == "opposite_characters":
-            content={'simple':'','traditional':'','pronunciation':''}
-            title="Add Opposite Character"
-        elif category=="sentences": 
-            content={'text':'','pronunciation':'','translation':''}
-            title="Add Sentence"
-        
-        if isinstance(content,str):
-            dialog = EditElement(style="normal",allow_multiple=False,dtype=str,title=title)
-        elif isinstance(content,list) and (len(content)>0 and isinstance(content[0],str) or len(content)==0):
-            dialog = EditElement(style="normal",allow_multiple=True,dtype=list,title=title)
-        elif isinstance(content,dict): 
-            dialog = EditElement(style="dict",title=title)
-        if dialog != None:
-            dialog.set_entry(entry=content)
-            dialog.open()
+        if self.editable:
+            title=category.replace('_',' ').title()
+            category=category.lower().replace(' ','_')
+            content = self.grammar[category]
+            dialog = None
+            
+            if category == "characters":
+                content={'simple':'','traditional':'','pronunciation':''}
+                title="Add Character"
+            if category == "opposite_characters":
+                content={'simple':'','traditional':'','pronunciation':''}
+                title="Add Opposite Character"
+            elif category=="sentences": 
+                content={'text':'','pronunciation':'','translation':''}
+                title="Add Sentence"
+            
+            if category == "tags":
+                dialog = EditElement(style="custom",allow_multiple=True,dtype=list,title=title,options=self.grammar.valid_tags)
+            elif isinstance(content,str):
+                dialog = EditElement(style="normal",allow_multiple=False,dtype=str,title=title)
+            elif isinstance(content,list) and (len(content)>0 and isinstance(content[0],str) or len(content)==0):
+                dialog = EditElement(style="normal",allow_multiple=True,dtype=list,title=title)
+            elif isinstance(content,dict): 
+                dialog = EditElement(style="dict",title=title)
+            if dialog != None:
+                dialog.set_entry(entry=content)
+                dialog.open()
             
     def update_category(self,category,entry,original=None):
         self.parent_screen.edited = True
@@ -436,8 +444,10 @@ class GrammarList(MyScreen):
             search_entry = self.search.text
             title = dataitem['grammar'].title.lower()
             subtitle = dataitem['grammar'].subtitle.lower()
+            tags = dataitem['grammar'].tags
             if search_entry.lower() in title: return True
             elif search_entry.lower() in subtitle: return True
+            elif any([search_entry.lower() in tag.lower() for tag in tags]): return True
             else: return False
         
         for gr in self.grammar_list:
@@ -635,8 +645,26 @@ class ChD(MyApp):
     # = ============================================================== = #
     
     def switch_screen(self, screen_name, direction, remember=True, home='home',force=False):
+        
+        def remove_duplications(screen_name):
+            all_screen_names = [screen.name for screen in self.wm.screens]
+            # print(all_screen_names)
+            if screen_name.startswith('C') and sum([name.startswith('C') for name in all_screen_names])>1:
+                for name in [name for name in all_screen_names if name.startswith('C')]:
+                    if name != screen_name:
+                        self.wm.remove_widget(self.wm.get_screen(name))
+                    if name in self.wm.previous_screen_names:
+                        self.wm.previous_screen_names.remove(name)
+            elif screen_name.startswith('G') and sum([name.startswith('G') for name in all_screen_names])>1:
+                for name in [name for name in all_screen_names if name.startswith('G')]:
+                    if name != screen_name:
+                        self.wm.remove_widget(self.wm.get_screen(name))
+                    if name in self.wm.previous_screen_names:
+                        self.wm.previous_screen_names.remove(name)
+        
+        remove_duplications(screen_name=screen_name)
+        
         # double check before switch if dictionary has unsaved changes
-        switched=None
         current_screen = self.wm.current_screen
         if hasattr(current_screen,'edited') and self.wm.current_screen.edited and not force:
             if self.wm.current  == 'view_dict' and not screen_name.startswith('C'):
@@ -650,30 +678,15 @@ class ChD(MyApp):
                 dialog.set_attrs(direction=direction,remember=remember,screen_name=screen_name)
                 dialog.open()
             else:
-                switched = super().switch_screen(screen_name, direction, remember, home)
+                super().switch_screen(screen_name, direction, remember, home)
         else:
-            switched = super().switch_screen(screen_name, direction, remember, home)
-        # screens are only switched if the new_screen_name differs from old one
-        # and the new_screen_name is part of available screen_names
-        if switched != None: 
-            # when switched:  some screens are removed from memory
-            previous_screen_name = switched['previous']['screen_name']
-            previous_screen = switched['previous']['screen']
+            super().switch_screen(screen_name, direction, remember, home)
             
-            if previous_screen_name.startswith('C'):
-                if previous_screen_name in self.wm.previous_screen_names:
-                    self.wm.previous_screen_names.remove(previous_screen_name)
-                self.wm.remove_widget(previous_screen)
-            elif previous_screen_name.startswith('G'):
-                if previous_screen_name in self.wm.previous_screen_names:
-                    self.wm.previous_screen_names.remove(previous_screen_name)
-                self.wm.remove_widget(previous_screen)
-            
-            try:
-                self.wm.current_screen.set_list_items()
-            except:
-                pass
-                        
+        try:
+            self.wm.current_screen.set_list_items()
+        except:
+            pass
+        # print('P',self.wm.previous_screen_names)
         return self.wm.current_screen
     
     # = ============================================================== = #
@@ -697,6 +710,51 @@ class ChD(MyApp):
         # returns list of dictionaries where (exact) character is present
         return repeat,repeat_exact
     
+    def show_grammar(self,grammar=None,entry=None):
+        screen = self.wm.current_screen
+        if screen.name.startswith('C') and entry!=None:
+            links = screen.parent_dictionary.get_linked_grammar(screen.character)
+            if entry in links:
+                grammar=links[entry]
+        if grammar!=None:
+            new_screen = ShowGrammar(name='G',grammar=grammar,parent_screen=self.wm.get_screen('gram_list'),editable=False)
+            self.add_screen(screen=new_screen,direction='left')
+            
+    def show_character(self,character):
+        screen = ShowCharacter(character=character, dict_screen=self.wm.get_screen('gram_list'))
+        self.add_screen(screen=screen,direction='left')
+        
+    def find_character(self,gram_link:Character):
+        dict_directory=self.get_setting('dict_directory')
+        linked_characters={}
+        
+        for some_dict in os.listdir(dict_directory):
+            d_path = f'{dict_directory}/{some_dict}/{some_dict}.jsonl'
+            if os.path.isfile(d_path):
+                some_dict = Dictionary(name=some_dict)
+                some_dict.read(d_path,file_format='jsonl',add=False,categories=self.get_setting('categories'))
+                some_dict.set_grammar(self.wm.get_screen('gram_list').grammar_list)
+                links = some_dict.get_linked_character(grammar_link=gram_link)
+                linked_characters[some_dict.name]={'characters':links,'dictionary':some_dict}
+                
+        options={f'{dict_name}: {str(c)}':(c,links['dictionary']) for dict_name,links in linked_characters.items() for c in links['characters']}
+        
+        def func(text):
+            char, d = options[text]
+            screen = ShowCharacter(character=char, editable=False)
+            self.add_screen(screen=screen,direction='left')
+        
+        if len(options) > 0:
+            kwargs={
+                "title":"Characters with Grammar Entry",
+                'support_text':"",
+                "options":options.keys(),
+                "itemclass":"LeftListItem",
+                "func":func,
+            }
+            dialog = ShowOptions(**kwargs)
+            dialog.open()
+
 if __name__=="__main__":
     ChD().run()
 

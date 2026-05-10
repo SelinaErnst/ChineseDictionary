@@ -35,6 +35,7 @@ class ShowCharacter(MyScreen):
     categories=ListProperty()
     head_categories=['simple','traditional','pronunciation']
     default_height=dp(81/float(Metrics.density)) #based on font size
+    editable=BooleanProperty(True)
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -102,7 +103,7 @@ class ShowCharacter(MyScreen):
             self.clean_scroll()
             self.build_scroll()
             
-    def update_category(self,category,entry,original_data=None):
+    def update_category(self,category,entry,original=None):
         # update categories from scroll list
         self.dict_screen.edited = True
         if entry != None:
@@ -130,8 +131,6 @@ class ShowCharacter(MyScreen):
         for category in categories:
             values = self.get_category(category)
             self.list_category_content(category,values)
-        pass
-
         
     def clean_scroll(self):
         for c in [c for c in self.ids.scroll.children]:
@@ -173,18 +172,20 @@ class ShowCharacter(MyScreen):
     # = ––––––––––––––––––––––––––– switch ––––––––––––––––––––––––––– = #
             
     def show_next(self):
-        i = self.parent_dictionary.index(self.character)+1
-        if i == len(self.parent_dictionary): i=0
-        self.__show_other(i,direction='left')
+        if self.character in self.parent_dictionary:
+            i = self.parent_dictionary.index(self.character)+1
+            if i == len(self.parent_dictionary): i=0
+            self.__show_other(i,direction='left')
     
     def show_previous(self):
-        i = self.parent_dictionary.index(self.character)-1
-        self.__show_other(i,direction='right')
+        if self.character in self.parent_dictionary:
+            i = self.parent_dictionary.index(self.character)-1
+            self.__show_other(i,direction='right')
         
     def __show_other(self,i,direction):
         self.bottom_nav.set_state('toggle')
         screen = ShowCharacter(character=self.parent_dictionary[i], dict_screen=self.dict_screen, parent_dictionary=self.parent_dictionary)
-        self.add_screen(screen=screen,direction=direction)
+        self.add_screen(screen=screen,direction=direction,remember=False)
         screen.bottom_nav.set_state('toggle')
         
         
@@ -215,10 +216,11 @@ class ShowCharacter(MyScreen):
         dialog.open()
 
     def del_character(self):
-        name = str(self.character)
-        dialog = ConfirmDelete(name=name,what='delete_character')
-        dialog.open()
-    
+        if self.editable:
+            name = str(self.character)
+            dialog = ConfirmDelete(name=name,what='delete_character')
+            dialog.open()
+        
     # = ============================================================== = #
     # =                       EDIT CHARACTER INFO                      = #
     # = ============================================================== = #
@@ -239,34 +241,36 @@ class ShowCharacter(MyScreen):
     # = –––––––––––––––––––––––––––– head –––––––––––––––––––––––––––– = #
     
     def edit_character(self):
-        kwargs={
-            "title":'Character',
-            "support_text":f"Edit the chinese characters (simplified & traditional language) amd pronunciation in pinyin.",
-        }
-        entries=[]
-        for category in self.head_categories:
-            entries += [self.character[category]]
-        dialog = EditElement(**kwargs)
-        dialog.content.ids.input.text='- '+'\n- '.join([e if e!=None else "" for e in entries])
-        dialog.open()
+        if self.editable:
+            kwargs={
+                "title":'Character',
+                "support_text":f"Edit the chinese characters (simplified & traditional language) amd pronunciation in pinyin.",
+            }
+            entries=[]
+            for category in self.head_categories:
+                entries += [self.character[category]]
+            dialog = EditElement(**kwargs)
+            dialog.content.ids.input.text='- '+'\n- '.join([e if e!=None else "" for e in entries])
+            dialog.open()
     
     # = –––––––––––––––––––––––––– category –––––––––––––––––––––––––– = #
     
     def edit_category(self,category):
-        title=category.replace('_',' ').title()
-        category=category.lower().replace(' ','_')
-        
-        support_text="Information about the character can be edited here."
-        kwargs={
-            "title":title,
-            "support_text":support_text,
-        }
-        entry = self.character[category]
-        if isinstance(entry,dict): dialog = EditElement(style="dict",**kwargs)
-        else: dialog = EditElement(style="normal",**kwargs)
-        if hasattr(self,'dialog'): self.dialog.dismiss()
-        dialog.set_entry(entry=entry)
-        dialog.open()
+        if self.editable:
+            title=category.replace('_',' ').title()
+            category=category.lower().replace(' ','_')
+            
+            support_text="Information about the character can be edited here."
+            kwargs={
+                "title":title,
+                "support_text":support_text,
+            }
+            entry = self.character[category]
+            if isinstance(entry,dict): dialog = EditElement(style="dict",**kwargs)
+            else: dialog = EditElement(style="normal",**kwargs)
+            if hasattr(self,'dialog'): self.dialog.dismiss()
+            dialog.set_entry(entry=entry)
+            dialog.open()
         
     def new_category(self):
         categories=[cat.replace('_',' ') for cat in self.unused_categories]
@@ -326,4 +330,5 @@ class ShowCharacter(MyScreen):
             dialog = ShowOptions(allow_add=True,**kwargs) 
             dialog.open()
         
-        choose_image_type()
+        if self.editable:
+            choose_image_type()

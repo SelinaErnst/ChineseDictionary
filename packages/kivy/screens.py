@@ -23,6 +23,11 @@ class MyScreen(MDScreen):
         app = ChD.get_running_app()
         return app.get_setting(*args,**kwargs)
     
+    def get_screen(self,name):
+        from main import ChD
+        app = ChD.get_running_app()
+        return app.wm.get_screen(name)
+    
     def switch_screen(self,*args,**kwargs):
         from main import ChD
         app=ChD.get_running_app()

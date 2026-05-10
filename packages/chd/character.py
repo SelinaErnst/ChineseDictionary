@@ -19,6 +19,28 @@ class Character():
         from .convert_pleco_txt import encode_pinyin
         self.entry.pronunciation = encode_pinyin(self.entry.pronunciation)
         
+    def copy(self):
+        kwargs = self.to_dict()
+        c = Character(needed_categories=self.__default_info_categories,**kwargs)
+        return c
+    
+    def info(self, keep_empty:bool=True):
+        if keep_empty: return str(self.entry)
+        else:
+            filled_lines=[]
+            for line in str(self.entry).split('\n'):
+                for cat in self.filled:
+                    head=f'|{cat.upper()}'
+                    if line.startswith(head): filled_lines.append(line)
+            return '\n'.join(filled_lines)
+    
+    def remove(self,category):
+        self.entry.remove(category)
+        
+    # = ============================================================== = #
+    # =                          MAGIC METHODS                         = #
+    # = ============================================================== = #
+        
     def __repr__(self):
         s = str(self)
         s=f'{s}\n'
@@ -51,6 +73,10 @@ class Character():
     def __getitem__(self, key:str):
         return self.__get_category(category=key)
     
+    # = ============================================================== = #
+    # =                           PROPERTIES                           = #
+    # = ============================================================== = #
+    
     @property
     def categories(self):
         return self.entry.categories
@@ -58,13 +84,6 @@ class Character():
     @property
     def uniq(self):
         return (self.entry.simple,self.entry.traditional,self.pinyin_numeric)
-    
-    @uniq.setter
-    def uniq(self,uniq):
-        from .convert_pleco_txt import encode_pinyin
-        simple,traditional=uniq[0],uniq[1]
-        pronunciation=encode_pinyin(uniq[2])
-        self.update(simple=simple,traditional=traditional,pronunciation=pronunciation)
     
     @property
     def pinyin(self):
@@ -118,14 +137,51 @@ class Character():
     def valid(self):
         return [cat for cat in self.__default_info_categories.keys()]
     
+    # = ============================================================== = #
+    # =                           GET AND SET                          = #
+    # = ============================================================== = #
+    
+    def __get_category(self,category:str):
+        if category in self.entry.categories:
+            return self.entry.__dict__[category]
+        
+    def get_dtype(self,category):
+        if category in self.__default_info_categories:
+            return self.__default_info_categories[category]
+        
+    @uniq.setter
+    def uniq(self,uniq):
+        from .convert_pleco_txt import encode_pinyin
+        simple,traditional=uniq[0],uniq[1]
+        pronunciation=encode_pinyin(uniq[2])
+        self.update(simple=simple,traditional=traditional,pronunciation=pronunciation)
+    
     def update_valid_categories(self,updater:dict={},**kwargs):
         updater.update(**kwargs)
         self.__default_info_categories.update(updater)
-    
-    def copy(self):
-        kwargs = self.to_dict()
-        c = Character(needed_categories=self.__default_info_categories,**kwargs)
-        return c
+        
+    def update(self,update_dict={},get_dtype_warning=False,**kwargs):
+        update_dict={k : v for k,v in update_dict.items() if k in self.__default_info_categories.keys()}
+        kwargs={k : v for k,v in kwargs.items() if k in self.__default_info_categories.keys()}
+        kwargs.update(update_dict)
+        self.entry.update(**kwargs)
+        if get_dtype_warning: self.check_dtype()
+        return self
+              
+    def update_images(self,kwargs=None):
+        if isinstance(kwargs,dict):
+            if not hasattr(self.entry,'images') or self.entry.__dict__['images']==None:
+                self.entry.__dict__['images']={}
+                image_dict={}
+            else:
+                image_dict=self.entry.__dict__['images']
+            image_dict.update(kwargs)
+        elif kwargs==None: image_dict=kwargs
+        self.entry.__dict__['images']=image_dict
+        
+    # = ============================================================== = #
+    # =                             CHECKS                             = #
+    # = ============================================================== = #
     
     def is_radical(self):
         valid_category_names = ['radical']
@@ -143,36 +199,6 @@ class Character():
         if self.uniq == (None,None,None): return True
         return False
     
-    def __get_category(self,category:str):
-        if category in self.entry.categories:
-            return self.entry.__dict__[category]
-        
-    def remove(self,category):
-        self.entry.remove(category)
-        
-    def get_dtype(self,category):
-        if category in self.__default_info_categories:
-            return self.__default_info_categories[category]
-    
-    def to_dict(self):
-        return self.entry.to_dict()
-    
-    def to_pleco_entry(self,template):
-        from .convert_pleco_txt import Writer
-        w = Writer(template=template,character=self)
-        w.add_uniq()
-        w.link_pronunciations()
-        formatted_text = w.text
-        return formatted_text.replace('\n\n',' ').replace('\n',' ').replace('  ',' ')
-    
-    def update(self,update_dict={},get_dtype_warning=False,**kwargs):
-        update_dict={k : v for k,v in update_dict.items() if k in self.__default_info_categories.keys()}
-        kwargs={k : v for k,v in kwargs.items() if k in self.__default_info_categories.keys()}
-        kwargs.update(update_dict)
-        self.entry.update(**kwargs)
-        if get_dtype_warning: self.check_dtype()
-        return self
-        
     def check_dtype(self,category:str=None):
         dtypes = self.entry.dtypes
         wrong_dtypes=[]
@@ -189,18 +215,25 @@ class Character():
         # for given category
         elif category in self.__default_info_categories:
             return self.__default_info_categories[category] == dtypes[category]
-        
-    def update_images(self,kwargs=None):
-        if isinstance(kwargs,dict):
-            if not hasattr(self.entry,'images') or self.entry.__dict__['images']==None:
-                self.entry.__dict__['images']={}
-                image_dict={}
-            else:
-                image_dict=self.entry.__dict__['images']
-            image_dict.update(kwargs)
-        elif kwargs==None: image_dict=kwargs
-        self.entry.__dict__['images']=image_dict
     
+    # = ============================================================== = #
+    # =                              WRITE                             = #
+    # = ============================================================== = #
+    
+    def to_dict(self):
+        return self.entry.to_dict()
+    
+    def to_pleco_entry(self,template):
+        from .convert_pleco_txt import Writer
+        w = Writer(template=template,character=self)
+        w.add_uniq()
+        w.link_pronunciations()
+        formatted_text = w.text
+        return formatted_text.replace('\n\n',' ').replace('\n',' ').replace('  ',' ')
+        
+    # = ============================================================== = #
+    # =                             HELPERS                            = #
+    # = ============================================================== = #
         
     def download_svg_from_url(self,url,path,dpi=300,scale=1):
         from kivy.utils import platform
@@ -216,6 +249,10 @@ class Character():
             for e in symbol:
                 if isinstance(e,str) and len(e)>0: unicode+=[f'U+{ord(e):04X}']
         return unicode
+    
+    # = ============================================================== = #
+    # =                             MERGER                             = #
+    # = ============================================================== = #
     
     def merge(self,character,overwrite_all=False,get_warning=False):
         updates = self.find_differences_to(character)
@@ -253,13 +290,3 @@ class Character():
                     dif_values = {'current': self.__get_category(cat), 'incoming':character.__get_category(cat)}
                     updates[cat]=dif_values
         return updates
-    
-    def info(self, keep_empty:bool=True):
-        if keep_empty: return str(self.entry)
-        else:
-            filled_lines=[]
-            for line in str(self.entry).split('\n'):
-                for cat in self.filled:
-                    head=f'|{cat.upper()}'
-                    if line.startswith(head): filled_lines.append(line)
-            return '\n'.join(filled_lines)

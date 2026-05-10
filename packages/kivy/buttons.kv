@@ -10,11 +10,7 @@
     theme_bg_color: 'Custom'
     custom_color: None
     custom_font_color: None
-    # md_bg_color: app.theme_cls.surfaceContainerLowColor if self.active_filter == 'ignore' else ((app.theme_cls.surfaceTintColor if root.custom_color==None else root.custom_color) if self.active_filter == 'include' else (app.theme_cls.errorContainerColor if self.active_filter == 'exclude' else 'white'))
-    # md_bg_color: app.custom.toggle_colors(theme_cls=app.theme_cls,custom_color={'include':root.custom_color},kind="bg")
     md_bg_color: app.custom.colors[self.active_filter+'_bg'] if self.active_filter != 'include' or root.custom_font_color==None else root.custom_color
-    # font_color: app.theme_cls.onSurfaceVariantColor if self.active_filter == 'ignore' else ((app.theme_cls.onPrimaryColor if root.custom_font_color==None else root.custom_font_color) if self.active_filter == 'include' else (app.theme_cls.onErrorContainerColor if self.active_filter == 'exclude' else 'white'))
-    # font_color: app.custom.toggle_colors(theme_cls=app.theme_cls,custom_color={'include':root.custom_color},kind="text")
     font_color: app.custom.colors[self.active_filter+'_text'] if self.active_filter != 'include' or root.custom_font_color==None else root.custom_font_color
     role: 'medium'
     font_style: 'Label'
@@ -158,7 +154,7 @@
     pos_hint: {'center_x': 0.5,'center_y': 0.5}
     icon_color: [0,0,0,0]
     theme_bg_color: "Custom" 
-    md_bg_color: app.custom.colors['button_bg']
+    md_bg_color: app.custom.colors['button_bg'] if not root.disabled else app.custom.colors['list_head_bg']
     font_color: app.custom.colors['button_fg']
     MDButtonIcon:
         icon: root.icon

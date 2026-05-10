@@ -216,30 +216,30 @@
     IconTextToggleButton: 
         text: "translated"
         icon: "translate"
-        on_release: self.toggle_three()
+        kind: 'filter'
     IconTextToggleButton: 
         text: "radical"
         icon: "alpha-r-box"
-        on_release: self.toggle_three()
+        kind: 'filter'
     IconTextToggleButton: 
         text: "measure word"
         icon: "scale-unbalanced"
-        on_release: self.toggle_three()
+        kind: 'filter'
     IconTextToggleButton: 
         text: "grammatical"
         icon: "bookshelf"
-        on_release: self.toggle_three()
+        kind: 'filter'
 
 <Sorter@Toggle>:
     TextToggleButton: 
         id: simple
         text: "simple"
-        on_release: self.toggle_two(only_one=True)
+        kind: 'select_one'
     TextToggleButton: 
         id: traditional
         text: "traditional"
-        on_release: self.toggle_two(only_one=True)
+        kind: 'select_one'
     TextToggleButton: 
         id: pronunciation
         text: "pronunciation"
-        on_release: self.toggle_two(only_one=True)
+        kind: 'select_one'

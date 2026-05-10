@@ -39,8 +39,11 @@
         adaptive_width: True
         style: 'Label'
         role: 'medium'
+        theme_font_name: "Custom"
+        font_name: 'CH'
 
-
+<LeftListItem@MyListItem>:
+    anchor_x: 'left'
 
 <MyMultiLineItem>: #CustomListItem
     anchor_y: 'center'
@@ -422,7 +425,9 @@
             role: 'small'
             adaptive_height: True
             allow_copy: True
-            on_release: app.open_url(root.text)
+            on_release: 
+                app.open_url(root.text)
+                app.show_grammar(entry=root.text)
             on_copy: app.test(self.text)
                 
 <CategoryText>: #MDBoxLayout
@@ -475,7 +480,9 @@
             role: 'small'
             adaptive_height: True
             allow_copy: True
-            on_release: app.open_url(root.text)
+            on_release: 
+                app.open_url(root.text)
+                app.find_character(root.data)
             on_copy: app.test(self.text)
     
     MDFloatLayout:
@@ -496,24 +503,10 @@
                 size_hint: None, None
                 size: 70,70
                 on_release: root.edit_line()
+                disabled: not root.editable
             MyIconButton:
                 icon: 'minus'
                 size_hint: None, None
                 size: button.size
                 on_release: root.remove_line()
-
-    # MDFloatLayout:
-    #     size_hint_x: None
-    #     width: bullet.width+40
-    #     MDAnchorLayout:
-    #         pos_hint: {'center_x': 0.5,'top': 1}
-    #         size_hint: None, None
-    #         size:[button.width,52]
-    #         padding: 0,root.n,0,0
-    #         md_bg_color: 'red'
-    #         MyIconButton:
-    #             id: button
-    #             icon: 'minus'
-    #             size_hint: None, None
-    #             size: 60,60
-    #             on_release: root.remove_line()
+                disabled: not root.editable

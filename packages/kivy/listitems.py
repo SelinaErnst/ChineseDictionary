@@ -122,6 +122,7 @@ class RemovableCategoryLine(MDBoxLayout):
     text=StringProperty()
     content=ObjectProperty()
     category=StringProperty()
+    editable=BooleanProperty(True)
     
     def remove_line(self):
         from packages.chd import Character,Sentence
@@ -156,6 +157,7 @@ class RemovableCategoryLine(MDBoxLayout):
         dialog.open()
         
 class CategoryItem(MDBoxLayout):
+    editable=BooleanProperty(False)
     
     def __init__(self, category, values, 
                  cols=1,small=True,line_width=330,head_width=325,*args, **kwargs):
@@ -182,7 +184,7 @@ class CategoryItem(MDBoxLayout):
                 if isinstance(values,dict): values = [f'{k}: {v}' for k,v in values.items()]
                 for v in values:
                     if type(v) in [Sentence, Character]:
-                        line=RemovableCategoryLine(text=str(v),data=v,content=self.content,category=self.category)
+                        line=RemovableCategoryLine(text=str(v),data=v,content=self.content,category=self.category,editable=self.editable)
                     else:
                         line=CategoryLine(text=str(v),small=small,width=width)
                     self.content.add_widget(line)
@@ -192,4 +194,4 @@ class CategoryItem(MDBoxLayout):
 
     def remove_content(self):
         self.content.clear_widgets()
-        
+

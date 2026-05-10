@@ -170,6 +170,7 @@ class ViewDict(MyScreen):
         # method used upon first creation of dictionary
         self.dictionary.empty()
         self.dictionary.rename(self.dict_name)
+        self.dictionary.set_grammar(self.get_screen('gram_list').grammar_list)
         self.entry_count=0
     
     def del_dictionary(self):
@@ -196,10 +197,13 @@ class ViewDict(MyScreen):
             if use_tag: name_tag = f'_{str(len(dictionary))}'
             else: name_tag = ""
             
-            if output in ['jsonl','all']:
+            from packages.chd import _VALID_EXT
+            if output in _VALID_EXT['.jsonl']:
                 dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.jsonl',file_format='jsonl')
-            if output in ['pleco','all']:
+            if output in _VALID_EXT['.txt']:
                 dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.txt',file_format='pleco',template=path_to_template)
+            if output in _VALID_EXT['.db']:
+                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.db',file_format='db')
             if make_msg: AttentionMsg(attention='File was created',msg=f'The dictionary {dictionary.name} was stored in {directory}').open()
 
             self.get_screen('select_dict').set_files()
@@ -456,57 +460,3 @@ class ViewDict(MyScreen):
             # unhide widget when it is turned on              
             else: 
                 hide_toggle(box,fil,do_hide=False)
-                
-
-
-                
-                
-# class FilterOption(MyIconTextButton):
-#     active_filter=StringProperty('ignore')
-    
-#     def toggle_on(self):
-#         self.active_filter = 'include'
-#         self.style = 'filled'
-#         self.parent.include.append(self.text)
-        
-#     def toggle_off(self):
-#         self.active_filter = 'ignore'
-#         self.style = 'tonal'
-#         if self.text in self.parent.include: self.parent.include.remove(self.text)
-        
-#     def toggle_two(self,only_one=True):
-#         from main import ChD
-#         app = ChD.get_running_app()
-#         if only_one:
-#             self.parent.switch(self)
-#         else:
-#             if self.active_filter == 'ignore':
-#                 self.toggle_on()
-#             elif self.active_filter == 'include':
-#                 self.toggle_off()
-#         app.wm.current_screen.set_list_items()
-
-#     def toggle_three(self):
-
-#         if self.active_filter == 'ignore':
-#             self.active_filter = 'include'
-#             self.style = 'filled'
-#             self.parent.include.append(self.text)
-#         elif self.active_filter == 'include':
-#             self.active_filter = 'exclude'
-#             self.style = 'tonal'
-#             self.parent.include.remove(self.text)
-#             self.parent.exclude.append(self.text)
-#         elif self.active_filter == 'exclude':
-#             self.active_filter = 'ignore'
-#             self.style = 'tonal'
-#             self.parent.exclude.remove(self.text)
-            
-#         from main import ChD
-#         app = ChD.get_running_app()
-#         app.wm.current_screen.set_list_items()
-
-#         if self.parent.include != [] or self.parent.exclude != []:
-#             app.wm.current_screen.filter_button.style = 'filled'
-#         elif self.parent.include == [] and self.parent.exclude == []:
-#             app.wm.current_screen.filter_button.style = 'elevated'

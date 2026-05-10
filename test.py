@@ -24,14 +24,16 @@ from packages.chd.unicode_characters import chinese_char, not_chinese_char, plec
 # --------------------------------------
 # template='/home/selina/Applications/MyApps/ChineseDictionary/appdata/templates/dictionary_template.chd'
 # categories=load_json('dictionary_categories.json','/home/selina/Applications/MyApps/ChineseDictionary/appdata/defaults')
-# d=Dictionary('Test')
+# d=Dictionary('DBTest')
 # d.read('/media/selina/SHARE/MyProjects/Pleco/dictionaries/MCD/MCD.jsonl',file_format='jsonl',categories=categories)
+# # print(d)
+# d.to_db(directory='/media/selina/SHARE/MyProjects/ChD/',src_file='/media/selina/SHARE/MyProjects/Pleco/dictionaries/MCD/MCD.jsonl')
 # print(d[0].to_pleco_entry(template=template))
 # --------------------------------------
 
-gr_path='/media/selina/SHARE/MyProjects/ChD/grammar/grammar.jsonl'
-template='/home/selina/Applications/MyApps/ChineseDictionary/appdata/templates/grammar_template.chd'
-grammar_list=[]
+# gr_path='/media/selina/SHARE/MyProjects/ChD/grammar/grammar.jsonl'
+# template='/home/selina/Applications/MyApps/ChineseDictionary/appdata/templates/grammar_template.chd'
+# grammar_list=[]
 
 # def read_grammar_jsonl(path):
 #     with open(path,'r') as file:
@@ -139,5 +141,9 @@ grammar_list=[]
 # ■ □ ● ○
 
 # print(os.path.dirname(os.path.abspath(__file__)))
-print(os.path.join('/home/','selina','test/'))
-print(Path('/home/')/'test/'/'best')
+# print(os.path.join('/home/','selina','test/'))
+# print(Path('/home/')/'test/'/'best')
+# from kivy.utils import hex_colormap
+# print([palette.capitalize() for palette in hex_colormap.keys()])
+
+test="Repetition of Past Action with 又"

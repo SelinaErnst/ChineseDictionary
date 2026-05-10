@@ -4,9 +4,13 @@ from .convert_pleco_txt import Writer, convert_to_pleco_syntax
 import re
 from .unicode_characters import chinese_char, decode_pinyin
 
+def sort_f(x,item_list):
+    if hasattr(x,'uniq') and x.uniq in item_list: return item_list.index(x.uniq)
+    else: return 0
 class Sentence():
     def __init__(self,text:str='',pronunciation:str='',translation:str='',content:tuple=None):
         self.__text=text
+        self.clean_text()
         self.__pronunciation=pronunciation
         self.translation=translation
 
@@ -19,14 +23,21 @@ class Sentence():
     
     @property
     def text(self):
-        self.__text = self.__text.replace('.','。').replace(',','，').replace('!',"！").replace('?','？')
+        self.clean_text()
         return self.__text
+
+    def clean_text(self):
+        a=convert_to_pleco_syntax('link')[0]
+        b=convert_to_pleco_syntax('link')[1]
+        self.__text = self.__text.replace(a,'').replace(b,'')
+        self.__text = self.__text.replace('.','。').replace(',','，').replace('!',"！").replace('?','？')
 
     def __repr__(self):
         return f'Sentence: {self.text}'
 
     def __str__(self):
-        result=[t for t in [self.marked_text,self.pronunciation,self.translation] if t!=""]
+        # result=[t for t in [self.marked_text,self.pronunciation,self.translation] if t!=""]
+        result=[t for t in [self.text,self.pronunciation,self.translation] if t!=""]
         return f"\n".join(result)
     
     def to_txt(self):
@@ -141,6 +152,32 @@ class Grammar():
         self.opposite_characters = Dictionary(name='grammar_opp_characters',sorting_key='')
         self.add_character(characters)
         self.add_opp_character(opposite_characters)
+        
+    def clear(self):
+        self.level = ""
+        self.title = ""
+        self.subtitle = ""
+        self.explanation = ""
+        self.__tags = []
+        self.sentences = []
+        self.structures = []
+        self.opposite_structures = []
+        self.characters = []
+        self.opposite_characters = []
+        
+    def is_empty(self):
+        return all([v in [[],"",None] for v in self.to_dict().values()])
+        
+    def opp(self,level="",title="",subtitle="",explanation=""):
+        opp_grammar = Grammar(level=level,title=title,subtitle=subtitle,
+                              structures=self.opposite_structures,opposite_structures=self.structures,
+                              explanation=explanation,sentences=self.sentences)
+        opp_grammar.add_character(self.opposite_characters)
+        opp_grammar.add_opp_character(self.characters)
+        return opp_grammar
+    # = ============================================================== = #
+    # =                          MAGIC METHODS                         = #
+    # = ============================================================== = #
              
     def __repr__(self):
         return str(self)
@@ -176,6 +213,10 @@ class Grammar():
         # elif key == 'references': return self.references
         # elif key == 'tags': return self.tags
         elif key == 'all_characters': return self.__all_characters
+    
+    # = ============================================================== = #
+    # =                           PROPERTIES                           = #
+    # = ============================================================== = #
         
     @property
     def categories(self):
@@ -194,34 +235,16 @@ class Grammar():
         sorter = self.characters.character_index
         sorter += self.opposite_characters.character_index
         all_characters = self.characters+self.opposite_characters
-        
-        def sort_f(x):
-            if x.uniq in sorter: return sorter.index(x.uniq)
-            else: return 0
-        all_characters.characters.sort(key=lambda x: sort_f(x))
+        all_characters.characters.sort(key=lambda x: sort_f(x,sorter))
         return all_characters
     
     @property
     def level(self):
         return self.__level
-    
-    @level.setter
-    def level(self,level:str):
-        if level in ['A1','A2','A1','B1','B2','C1','C2']:
-            self.__level = level
-        else:
-            if level in [None,""]: self.__level=''
-            else: print(f"WARNING: grammar level '{level}' is not accepted")
             
     @property
     def tags(self):
         return self.__tags
-    
-    @tags.setter
-    def tags(self,tags:list):
-        valid_tags = [tag.lower() for tag in self.valid_tags]
-        tags = [t.lower().title() for t in tags if t.lower() in valid_tags]
-        self.__tags = tags
     
     @property
     def valid_tags(self):
@@ -232,7 +255,31 @@ class Grammar():
             'Past','Future','Present','Negative','Positive',
         ]
         return valid_tags
+
+    @property
+    def unique_string(self):
+        title = ''.join([w[0] for w in self.title.split(' ') if w != ""])
+        subtitle = ''.join([w[0] for w in self.subtitle.split(' ') if w != ""])
+        return f'{self.level}_{title}_{subtitle}'
     
+    # = ============================================================== = #
+    # =                         SET AND UPDATE                         = #
+    # = ============================================================== = #
+        
+    @level.setter
+    def level(self,level:str):
+        if level in ['A1','A2','A1','B1','B2','C1','C2']:
+            self.__level = level
+        else:
+            if level in [None,""]: self.__level=''
+            else: print(f"WARNING: grammar level '{level}' is not accepted")
+    
+    @tags.setter
+    def tags(self,tags:list):
+        valid_tags = [tag.lower() for tag in self.valid_tags]
+        tags = [t.lower().title() for t in tags if t.lower() in valid_tags]
+        self.__tags = tags
+        
     def add_tag(self,tag):
         valid_tags = [tag.lower() for tag in self.valid_tags]
         if tag.lower() in valid_tags and tag not in self.__tags:
@@ -244,22 +291,6 @@ class Grammar():
         chars =[c['simple'].replace('…','＿') for c in self.__all_characters.characters if c!=char]
         return chars
     
-    def __updater(self,char=None):
-        for s in self.sentences:
-            s.mark_all_char(self.__all_characters)
-        # print(self.__all_characters)
-        kwargs={
-            'level':self.level,
-            'title':self.title,
-            'subtitle':self.subtitle,
-            'structures':self.structures.copy(),
-            'opposite_structures':self.opposite_structures.copy(),
-            'explanation':self.explanation,
-            'sentences':[s.to_txt()+convert_to_pleco_syntax('newline') for s in self.sentences],
-            'all_other_char': self.__reference_other_characters(char=char)
-        }
-        return kwargs
-                    
     def update(self,**kwargs):
         if 'level' in kwargs: self.level=kwargs.pop('level')
         if 'structures' in kwargs: self.add_structure(kwargs.pop('structures'))
@@ -267,7 +298,9 @@ class Grammar():
         if 'sentences' in kwargs: self.add_sentence(kwargs.pop('sentences'))
         for k,v in kwargs.items():
             if k in self.__dict__: self.__dict__[k]=v
-        
+            
+    # = ––––––––––––––––––––––––– characters ––––––––––––––––––––––––– = #
+
     def add_character(self,char):
         old_uniq_list=[]
         new_uniq_list=[]
@@ -286,10 +319,7 @@ class Grammar():
                 pronunciation=uniq[2])
             self.characters+=new_char
         uniq_list = old_uniq_list+[tuple(e) for e in new_uniq_list]
-        def sort_f(x):
-            if x.uniq in uniq_list: return uniq_list.index(x.uniq)
-            else: return 0
-        self.characters.characters.sort(key=lambda x: sort_f(x))
+        self.characters.characters.sort(key=lambda x: sort_f(x,uniq_list))
     
     def add_opp_character(self,char):
         old_uniq_list=[]
@@ -307,19 +337,10 @@ class Grammar():
             self.opposite_characters+=new_char
         
         uniq_list = old_uniq_list+[tuple(e) for e in new_uniq_list]
-        def sort_f(x):
-            if x.uniq in uniq_list: return uniq_list.index(x.uniq)
-            else: return 0
-        self.opposite_characters.characters.sort(key=lambda x: sort_f(x))
+        self.opposite_characters.characters.sort(key=lambda x: sort_f(x,uniq_list))
         
-    def opp(self):
-        opp_grammar = Grammar(level=self.level,title=self.title,subtitle=self.subtitle,
-                              structures=self.opposite_structures,opposite_structures=self.structures,
-                              explanation=self.explanation,sentences=self.sentences)
-        opp_grammar.add_character(self.opposite_characters)
-        opp_grammar.add_opp_character(self.characters)
-        return opp_grammar
-            
+    # = ––––––––––––––––––––––––– structures ––––––––––––––––––––––––– = #
+        
     def add_structure(self,element):
         if not isinstance(element,list): element=[element]
         for e in element: self.structures.append(e) # e is str
@@ -327,6 +348,16 @@ class Grammar():
     def add_opp_structure(self,element):
         if not isinstance(element,list): element=[element]
         for e in element: self.opposite_structures.append(e) # e is str
+        
+    def remove_structure(self,element):
+        if isinstance(element,list): element=[element]
+        for e in element:
+            if e in self.structures:
+                self.structures.remove(e)
+            elif e in self.opposite_structures:
+                self.opposite_structures.remove(e)
+                
+    # = –––––––––––––––––––––––––– sentences ––––––––––––––––––––––––– = #
         
     def add_sentence(self,element=None,**kwargs):
         if element==None:
@@ -352,23 +383,35 @@ class Grammar():
             if e in self.sentences:
                 self.sentences.remove(e)
                 
-    def remove_structure(self,element):
-        if isinstance(element,list): element=[element]
-        for e in element:
-            if e in self.structures:
-                self.structures.remove(e)
-            elif e in self.opposite_structures:
-                self.opposite_structures.remove(e)
-        
+    # = ============================================================== = #
+    # =                              WRITE                             = #
+    # = ============================================================== = #
+    
+    def __txt_updater(self,char=None):
+        from .convert_pleco_txt import link_pronunciations
+        for s in self.sentences:
+            s.mark_all_char(self.__all_characters)
+        # print(self.__all_characters)
+        kwargs={
+            'level':self.level,
+            'title':self.title,
+            'subtitle':self.subtitle,
+            'structures':self.structures.copy(),
+            'opposite_structures':self.opposite_structures.copy(),
+            'explanation':link_pronunciations(self.explanation),
+            'sentences':[s.to_txt()+convert_to_pleco_syntax('newline') for s in self.sentences],
+            'all_other_char': self.__reference_other_characters(char=char)
+        }
+        return kwargs
+                    
     def to_text(self,template):
         complete_text=[]
         if len(self.characters)==0: print('WARNING: No characters listed, cannot write grammar to txt')
         for c in self.characters:
             if isinstance(c,Character):
-                char=c.copy().update(self.__updater(c))
+                char=c.copy().update(self.__txt_updater(c))
                 w=Writer(template=template,character=char)
                 w.add_uniq()
-                w.link_pronunciations()
                 newline=convert_to_pleco_syntax('newline')
                 text = w.text.replace('\n\n',f'{newline} {newline}')
                 text = text.replace('\n',newline)
@@ -392,18 +435,5 @@ class Grammar():
         }
         return grammar_dict
     
-    def is_empty(self):
-        return all([v in [[],"",None] for v in self.to_dict().values()])
-    
-    def clear(self):
-        self.level = ""
-        self.title = ""
-        self.subtitle = ""
-        self.explanation = ""
-        self.__tags = []
-        self.sentences = []
-        self.structures = []
-        self.opposite_structures = []
-        self.characters = []
-        self.opposite_characters = []
+
         

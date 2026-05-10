@@ -212,6 +212,9 @@ class MyApp(MDApp):
         self.wm = wm    
     
     def add_screen(self,screen,*args,**kwargs):
+        all_screen_names = [screen.name for screen in self.wm.screens]
+        if screen.name in all_screen_names:
+            self.wm.remove_widget(self.wm.get_screen(screen.name))
         self.wm.add_widget(screen)
         self.switch_screen(screen_name=screen.name,*args,**kwargs)
         

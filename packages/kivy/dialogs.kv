@@ -85,22 +85,19 @@
 <ConfirmFileChoice>:
     title: 'Preview'
 
-<DictOptions>: #ScrollView
+<Options>: #MDBoxLayout
     scroll: scroll
     size_hint_y: None
-    # height: scroll.height
     height: max(root.min_h,min(root.max_h, scroll.minimum_height))
     ScrollView:
         MDStackLayout:
             id: scroll
             size_hint: 1, None
             height: self.minimum_height
-            # height: 1000
-            # padding: 10
             padding: 20,20,20,0
-            spacing: 20
+            spacing: 10
 
-<Options>: #MDBoxLayout
+<LazyOptions>: #MDBoxLayout
     rv_scroll: rv_scroll
     size_hint_y: None
     itemclass: 'MyListItem'

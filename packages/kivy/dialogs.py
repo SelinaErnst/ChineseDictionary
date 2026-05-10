@@ -6,6 +6,7 @@ from packages.chd import load_json
 import re
 from .snackbars import ErrorMsg, AttentionMsg
 from .layouts import BlockingFloatLayout
+from .buttons import MultipleToggle
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivy.uix.textinput import TextInput
@@ -126,14 +127,29 @@ class FileContent(MDBoxLayout):
             if self.file_name=="": self.file_name=os.path.basename(self.file_path)
             file_path,ext = os.path.splitext(self.file_path)
             if ext!="": self.file_format=ext
-                
-# from kivy.uix.scrollview import ScrollView
-class DictOptions(MDBoxLayout):
+
+class Options(MDBoxLayout):
     max_h = NumericProperty(1000)
     min_h = NumericProperty(300)
-    def __init__(self,data={},**kwargs):
+    
+    def __init__(self,data,**kwargs):
         super().__init__(**kwargs)
         self.set_list_items(data=data)
+        
+    def set_list_items(self,data):
+        pass
+    
+class ToggleOptions(Options):
+
+    def set_list_items(self,data):
+        self.scroll.include=[]
+        self.scroll.exclude=[]
+        for option in data:
+            element = MultipleToggle(text=option,kind='select_multiple')
+            self.scroll.ids[option]=element
+            self.scroll.add_widget(element)
+            
+class DictOptions(Options):
         
     def set_list_items(self,data):
         for k,v in data.items():
@@ -141,15 +157,15 @@ class DictOptions(MDBoxLayout):
             self.scroll.ids[k]=element
             self.scroll.add_widget(element)
             
-class Options(MDBoxLayout):
+class LazyOptions(MDBoxLayout):
     itemclass = StringProperty()
     options = ListProperty()
     icons = ListProperty()
     max_h = NumericProperty(1200)
     min_h = NumericProperty(0)
-    def __init__(self,func=None,data=None,*args,**kwargs):
+    def __init__(self,func=None,data=None,item_args={},*args,**kwargs):
         super().__init__(*args, **kwargs)
-        if self.options != []: self.set_list_items(func=func,data=data)
+        if self.options != []: self.set_list_items(func=func,data=data,**item_args)
     
     def set_options(self,options:list):
         self.options=options
@@ -158,6 +174,7 @@ class Options(MDBoxLayout):
         kwargs={k:v for k,v in kwargs.items() if v!=None}
         dataitem={'text': text,'callback':lambda x:x}
         dataitem.update(kwargs)
+        # print(dataitem.keys())
         return dataitem 
     
     def add_list_item(self,dataitem):
@@ -174,7 +191,7 @@ class Options(MDBoxLayout):
                 dataitem=self.create_dataitem(text=option,icon=icon,**kwargs)
                 self.add_list_item(dataitem)
 
-class PaletteOptions(Options):
+class PaletteOptions(LazyOptions):
     
     def __init__(self,*args,**kwargs):
         self.palette_colors = load_json('appdata/colors/palette_colors.json')
@@ -464,7 +481,7 @@ class ShowOptions(CustomDialog):
         self.support_text=support_text
         super().__init__(title=title,support_text=support_text)
         decision=SimpleClose()
-        content=Options(**kwargs)
+        content=LazyOptions(**kwargs)
         self.decision.add_widget(decision)
         self.content.add_widget(content)    
         self.content.ids['options']=content
@@ -491,13 +508,19 @@ class EditElement(CustomDialog):
     allow_multiple=BooleanProperty()
     dtype=ObjectProperty()
     original=ObjectProperty()
+    style=StringProperty()
     
-    def __init__(self,style='normal',**kwargs):
+    def __init__(self,style='normal',options=[],**kwargs):
         super().__init__(**kwargs)
-        from main import ChD
-        # ChD.get_running_app().theme_cls.custom.colors
+
+        self.style=style
         if style=="normal": 
             content=ElementInput()
+            self.content.ids['input']=content
+            self.content.add_widget(content)
+        elif style=="custom":
+            self.options=options
+            content=ToggleOptions(max_h=1210, data=options)
             self.content.ids['input']=content
             self.content.add_widget(content)
             
@@ -510,7 +533,10 @@ class EditElement(CustomDialog):
         self.content.ids['options'] = options
         
     def set_entry(self,entry):
-        if isinstance(entry,list): self.content.ids.input.text='- '+'\n- '.join(entry)
+        if self.style=="custom": 
+            for e in entry:
+                self.content.ids.input.scroll.ids[e].toggle_on()
+        elif isinstance(entry,list): self.content.ids.input.text='- '+'\n- '.join(entry)
         elif isinstance(entry,dict): self.__list_dict(entry)
         elif isinstance(entry,str): self.content.ids.input.text = re.sub(r'[■|●|□|○|◼]','■',entry)
         else: self.content.ids.input.text=str(entry) if entry!=None else ""
@@ -525,6 +551,10 @@ class EditElement(CustomDialog):
         from main import ChD
         app=ChD.get_running_app()
         dict_categories = app.get_setting('categories')
+        
+        if self.style=="custom":
+            active = self.content.ids.input.scroll.include
+            return active
         
         text = self.content.ids.input.text
         if convert_pronunciation: text = convert_pronunciations(text)
