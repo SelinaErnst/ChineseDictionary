@@ -159,8 +159,8 @@ class ViewDict(MyScreen):
             self.set_list_items(update_images=True)
             return True
         else:
+            self.__empty_dict()
             self.set_list_items()
-            ErrorMsg(error='Cannot read dictionary file',msg='Possible causes: dictionary file, template, file format').open()
             return False  
     
     # = ––––––––––––––––––––––––––– remove ––––––––––––––––––––––––––– = #
@@ -180,7 +180,7 @@ class ViewDict(MyScreen):
         
     # = –––––––––––––––––––––––––––– save –––––––––––––––––––––––––––– = #
         
-    def save_dictionary(self, output='all',make_msg=True,directory='',use_filtered=False,use_tag=False):
+    def save_dictionary(self, output='jsonl',make_msg=True,directory='',use_filtered=False,use_tag=False):
 
         path_to_template=self.get_setting('dictionary_template')
         
@@ -200,10 +200,10 @@ class ViewDict(MyScreen):
             from packages.chd import _VALID_EXT
             if output in _VALID_EXT['.jsonl']:
                 dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.jsonl',file_format='jsonl')
-            if output in _VALID_EXT['.txt']:
-                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.txt',file_format='pleco',template=path_to_template)
-            if output in _VALID_EXT['.db']:
-                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.db',file_format='db')
+            # if output in _VALID_EXT['.txt']:
+            #     dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.txt',file_format='pleco',template=path_to_template)
+            # if output in _VALID_EXT['.db']:
+            #     dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.db',file_format='db')
             if make_msg: AttentionMsg(attention='File was created',msg=f'The dictionary {dictionary.name} was stored in {directory}').open()
 
             self.get_screen('select_dict').set_files()

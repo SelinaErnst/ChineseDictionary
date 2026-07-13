@@ -1,12 +1,29 @@
+import json
+import re
 from .dictionary import Dictionary
 from .character import Character
 from .convert_pleco_txt import Writer, convert_to_pleco_syntax
-import re
 from .unicode_characters import chinese_char, decode_pinyin
 
 def sort_f(x,item_list):
     if hasattr(x,'uniq') and x.uniq in item_list: return item_list.index(x.uniq)
     else: return 0
+    
+def grammar_to_jsonl(grammar:list,path):
+    with open(path,'w') as outfile:
+        for g in grammar:
+            if not g.is_empty():
+                json.dump(g.to_dict(), outfile, indent=None, ensure_ascii=False)
+                outfile.write('\n')
+            
+def grammar_to_txt(grammar,path,template):
+    with open(path,'w') as file:
+        text=[]
+        for g in grammar:
+            if not g.is_empty():
+                text.append(g.to_text(template=template))
+        file.write('\n'.join(text))
+                
 class Sentence():
     def __init__(self,text:str='',pronunciation:str='',translation:str='',content:tuple=None):
         self.__text=text
@@ -183,8 +200,8 @@ class Grammar():
         return str(self)
     
     def __str__(self):
-        characters = ','.join([str(c) for c in self.characters.characters])
-        return f'\nLevel {self.level}: {self.title} \n{characters}\n'
+        characters = ''.join([str(c) for c in self.characters.characters])
+        return f'\nLevel {self.level}: {self.title} \t{characters}'
     
     def __hash__(self):
         return hash((self.level,self.title,self.subtitle))

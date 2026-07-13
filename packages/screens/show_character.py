@@ -34,7 +34,8 @@ class ShowCharacter(MyScreen):
     dict_screen=ObjectProperty(None)
     categories=ListProperty()
     head_categories=['simple','traditional','pronunciation']
-    default_height=dp(81/float(Metrics.density)) #based on font size
+    # default_height=dp(81/float(Metrics.density)) #based on font size
+    default_height=0
     editable=BooleanProperty(True)
     
     def __init__(self,*args,**kwargs):
@@ -88,13 +89,15 @@ class ShowCharacter(MyScreen):
                 if category == 'pronunciation': text=self.character.pinyin
                 else: text=self.character[category]
                 self.ids[category].label.text = text
+                self.ids[category].size_hint_x=1 if text!="" else None
         
         # self.dict_screen.get_character_image(character=self.character)
             
     def update_image_display(self,image_type,path):
         self.dict_screen.edited = True
-        kwargs={image_type:path}
-        self.character.update_images(kwargs)
+        if os.path.isfile(path):
+            kwargs={image_type:path}
+            self.character.update_images(kwargs)
         if 'images' in self.categories:
             self.update_category(category='images',entry=self.character.image_files)
         if 'image_display' in self.ids.scroll.ids.keys():
@@ -228,6 +231,7 @@ class ShowCharacter(MyScreen):
     def replace_character(self):
         
         def read_replacement_file(path):
+            self.file_manager.close()
             d = Dictionary(name='replacement')
             d.read(filename=path,file_format='jsonl',categories=self.possible_categories)
             print(d[self.character], isinstance(d[self.character],Character))
@@ -304,7 +308,7 @@ class ShowCharacter(MyScreen):
                 os.makedirs(image_directory, exist_ok=True)
                 imported = self.import_file(src_path=path,dest_dir=image_directory,new_name=file_name,inform=False)
                 filepath = os.path.join(image_directory,file_name)
-                if imported: self.update_image_display(image_type=image_type,path=filepath)
+                self.update_image_display(image_type=image_type,path=filepath)
             elif os.path.isfile(path):
                 self.update_image_display(image_type=image_type,path=path)
             

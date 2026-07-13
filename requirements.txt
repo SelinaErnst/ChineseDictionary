@@ -1,5 +1,0 @@
-pywin32
-kivy
-kivymd
-kivy_deps.sdl2 
-kivy_deps.glew

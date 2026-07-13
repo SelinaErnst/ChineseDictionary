@@ -38,7 +38,8 @@ from .dialogs import (
     MakeSimpleDecision,
     EditElement,
     ConfirmUnsaved,
-    ConfirmDecision
+    ConfirmDecision,
+    ShowImage
 )
 
 from .labels import (
@@ -77,7 +78,8 @@ from .textfield import (
 )
 
 from .images import (
-    ImageDisplay
+    ImageDisplay,
+    CenterImage
 )
 
 from kivy.uix.screenmanager import ScreenManager

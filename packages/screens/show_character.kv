@@ -28,6 +28,8 @@
                         label_height: root.default_height
                         label_bg_color: head.text_bg_color
                         text_color: head.text_color 
+                        size_hint_x: 1 if self.text!="" else None
+                        width: 0
                     MultiLineLabel:
                         id: traditional
                         text: root.get_category('traditional')
@@ -36,6 +38,8 @@
                         label_height: root.default_height
                         label_bg_color: head.text_bg_color
                         text_color: head.text_color 
+                        size_hint_x: 1 if self.text!="" else None
+                        width: 0
                 Separator:
                 MDBoxLayout:
                     orientation: 'horizontal'
@@ -53,7 +57,7 @@
                         label_bg_color: head.text_bg_color
                         text_color: head.text_color 
             MDAnchorLayout:
-                anchor_y: 'bottom'
+                anchor_y: 'top'
                 anchor_x: 'right'
                 size_hint_x: None
                 width: edit.size[0]
@@ -63,7 +67,7 @@
                     height: 2*edit.size[0]+20
                     MyIconButton:
                         id: edit
-                        size: root.default_height, root.default_height
+                        size: 80,80
                         icon: 'pencil'
                         style: 'text'
                         on_release:  root.edit_character()

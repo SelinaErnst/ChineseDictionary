@@ -64,6 +64,12 @@
                         nav_drawer.set_state("toggle")
                     icon: "cog-outline"
                     text: "Settings"
+                NavigationButton:
+                    on_release: 
+                        app.show_info('Metrics',app.get_metrics())
+                        nav_drawer.set_state("toggle")
+                    icon: "information"
+                    text: "Information"
                 MDNavigationDrawerDivider:
                 NavigationButton:
                     on_release: 
@@ -77,3 +83,16 @@
                         nav_drawer.set_state("toggle")
                     icon: "reload"
                     text: "Reload"
+                NavigationButton:
+                    on_release: 
+                        app.backup()
+                        nav_drawer.set_state("toggle")
+                    icon: "download"
+                    text: "Backup"
+
+                NavigationButton:
+                    on_release: 
+                        app.restore()
+                        nav_drawer.set_state("toggle")
+                    icon: "upload"
+                    text: "Restore"

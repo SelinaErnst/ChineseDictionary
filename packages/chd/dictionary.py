@@ -5,6 +5,12 @@ from .character import Character
 import re
 from .convert_pleco_txt import encode_pinyin, decode_pinyin
 from .convert_pleco_txt import Loader
+from .sql_methods import (
+    table_exists, 
+    create_table, 
+    remove_table,
+    open_db, close_db, 
+    )
 from typing import Literal, TypeAlias
 # from typeguard import typechecked
 
@@ -12,7 +18,7 @@ _EXPORT_CHOICES: TypeAlias = Literal['pleco', 'txt', 'chd', '.txt', 'jsonl', '.j
 _VALID_EXT={
     '.txt':['pleco','txt','.txt','all'],
     '.jsonl':['chd','jsonl','.jsonl','all'],
-    '.db':['db','sql','base','all'],
+    '.db':['db','.db','sql','base','all'],
 }
 _SORT_OPT: TypeAlias = Literal['simple','traditional','pronunciation']
 
@@ -305,24 +311,25 @@ class Dictionary():
     # = ============================================================== = #
     
     def read(self,filename,file_format:_EXPORT_CHOICES|None=None,add=True,categories=None,template=None):
-        filename,ext = os.path.splitext(filename)
+        file,ext = os.path.splitext(filename)
         if ext!="": file_format=ext
         file_format=choose_file_ext(file_format)
         if file_format!=None:
-            filename=filename+file_format
+            file=file+file_format
             if file_format == '.txt':
-                return self.read_pleco(filename,template=template,add=add,categories=categories)
+                return self.read_pleco(file,template=template,add=add,categories=categories)
             elif file_format == '.jsonl':
-                return self.read_jsonl(filename,add=add,categories=categories)
+                return self.read_jsonl(file,add=add,categories=categories)
+            elif file_format == '.db':
+                return self.read_db(file,add=add,categories=categories)
             else: return False
         else: return False
             
-    def read_jsonl(self,filename,add=True,categories=None):
+    def read_jsonl(self,file,add=True,categories=None):
         try:
-            with open(filename,'r') as file:
+            with open(file,'r') as file:
                 json_list = list(file)
-            if not add:
-                self.characters=[]
+            if not add: self.characters=[]
             for json_str in json_list:
                 entry=json.loads(json_str)
                 c = Character(needed_categories=categories, **entry)
@@ -339,13 +346,13 @@ class Dictionary():
         except:
             return False
         
-    def read_pleco(self,filename,template,add=True,categories=None):
+    def read_pleco(self,file,template,add=True,categories=None):
         if template!=None and os.path.isfile(template):
             l=Loader(template=template)
-            with open(filename) as f:
+            with open(file) as f:
                 character_lines=f.readlines()
             if character_lines!=None:
-                if not add: self.characters=[]  
+                if not add: self.characters=[]
                 for char_line in character_lines:
                     char_content = l.character(content=char_line)
                     c=Character(needed_categories=categories,**char_content)
@@ -360,12 +367,69 @@ class Dictionary():
                 return True
             else: return False
         else: return False
+        
+    def read_db(self,file: str,add=True,categories=None,name=None):
+        
+        if not os.path.isfile(file): return False
+        
+        conn,cursor = open_db(file)
+        
+        if name==None or not table_exists(cursor,name):
+            filename=os.path.splitext(os.path.basename(file))[0]
+            if table_exists(cursor,self.name):
+                name = self.name
+            elif table_exists(cursor,filename):
+                name = filename
+            else:
+                return False
+            
+        self.grammar = []
+        try:
+            g_rows = cursor.execute("SELECT * FROM Grammar").fetchall()
+            from packages.chd import Grammar
+            for row in g_rows:
+                data = dict(row)
+                idx = data.pop('index')
+                clean_data = {k: (json.loads(v) if isinstance(v, str) and v.startswith(('[', '{')) else v) 
+                                for k, v in data.items()}
+                g_obj = Grammar(**clean_data) 
+                self.grammar.append(g_obj)
+                read=True
+        except:
+            read=False
+
+        if not add: self.characters=[]
+        try:
+            c_rows = cursor.execute(f"SELECT * FROM {name}").fetchall()
+            from packages.chd import Character
+            for row in c_rows:
+                data = dict(row)
+                uniq = data.pop('uniq')
+                clean_data = {k: (json.loads(v) if isinstance(v, str) and v.startswith(('[', '{')) else v) 
+                            for k, v in data.items()}
+                
+                c_obj = Character(needed_categories=categories,**clean_data)
+                
+                if c_obj.uniq not in self.character_index:
+                    self.characters.append(c_obj)
+                elif c_obj.uniq in self.character_index:
+                    matching_c = [char for char in self.characters if char.uniq == c_obj.uniq][0]
+                    if c_obj.default_dtypes != matching_c.default_dtypes:
+                        self.characters.remove(matching_c)
+                        self.characters.append(c_obj)
+        except:
+            pass
+
+        close_db(conn)
+        return read
     
     # = ============================================================== = #
     # =                              WRITE                             = #
     # = ============================================================== = #
     
     def write(self,directory:str='./',filename:str|None=None,file_format:_EXPORT_CHOICES|None=None,**kwargs):
+        file,ext = os.path.splitext(filename)
+        if ext!="": file_format=ext
         filename = self.name if filename == None else filename
         file_format=choose_file_ext(file_format)
         if file_format!=None:
@@ -395,12 +459,11 @@ class Dictionary():
             file.write('\n'.join(pleco_text))
         
 
-    def to_db(self,directory:str,filename=None):
+    def to_db(self,directory:str,filename=None,clean=True):
         filename = filename+'.db' if filename == self.name else filename
         db_file = os.path.join(directory,filename)
 
-        conn = sqlite3.connect(db_file)
-        cursor = conn.cursor()
+        conn,cursor = open_db(db_file)
         
         def get_col(dtype):
             dtype_map = {
@@ -424,12 +487,9 @@ class Dictionary():
                     c_links.append((c.unicode_unique_string,result,entry))
                         
             if i == 0:
-                cols = [f'"{k}" {get_col(v)}' for k,v in c.default_dtypes.items()]
-                cols = '"uniq" TEXT UNIQUE, '+", ".join(cols)
-                cursor.execute(f"DROP TABLE IF EXISTS {self.name}")
-                cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.name} ({cols})")
-                placeholders = '?, '+", ".join(["?" for _ in c_data.keys()])
-                insert_query = f"INSERT INTO {self.name} VALUES ({placeholders})"
+                cols = ['"uniq" TEXT UNIQUE']+[f'"{k}" {get_col(v)}' for k,v in c.default_dtypes.items()]
+                remove_table(cursor,self.name)
+                insert_query = create_table(cursor,self.name,cols)
             values = [c.unicode_unique_string]+[json.dumps(v) if isinstance(v, (list, dict)) else v for v in c_data.values()]
             cursor.execute(insert_query, values)
                         
@@ -438,24 +498,17 @@ class Dictionary():
             if isinstance(g,Grammar) and not g.is_empty():
                 g_data = g.to_dict()
                 if  i == 0:
-                    cols = [f'"{k}" TEXT' for k in g_data.keys()]
-                    cols = '"index" TEXT UNIQUE, '+", ".join(cols)
-                    cursor.execute(f"DROP TABLE IF EXISTS Grammar")
-                    cursor.execute(f"CREATE TABLE IF NOT EXISTS Grammar ({cols})")
-                    placeholders = '?, '+", ".join(["?" for _ in g_data.keys()])
-                    insert_query = f"INSERT INTO Grammar VALUES ({placeholders})"
+                    cols = ['"index" TEXT UNIQUE']+[f'"{k}" TEXT' for k in g_data.keys()]
+                    remove_table(cursor,'Grammar')
+                    insert_query = create_table(cursor,'Grammar',cols)
                 values = [g.unique_string]+[json.dumps(v) if isinstance(v, (list, dict)) else v for v in g_data.values()]
                 cursor.execute(insert_query, values)
                 
         for i,links in enumerate(c_links):
             if  i == 0:
-                cols = f'"character" TEXT, "grammar" TEXT, "entry" TEXT'
-                cursor.execute(f"DROP TABLE IF EXISTS Links")
-                cursor.execute(f"CREATE TABLE IF NOT EXISTS Links ({cols})")
-                placeholders = '?, ?, ?'
-                insert_query = f"INSERT INTO Links VALUES ({placeholders})"
-            cursor.execute(insert_query, links)
+                cols = [f'"{c}" TEXT' for c in ['character','grammar','entry','dictionary']]
+                if clean: cursor.execute(f"DROP TABLE IF EXISTS Links")
+                insert_query = create_table(cursor,'Links',cols)
+            cursor.execute(insert_query, list(links)+[self.name])
             
-        conn.commit()
-        conn.close()
-        
+        close_db(conn)

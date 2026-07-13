@@ -1,10 +1,13 @@
 from kivy.properties import (
+    NumericProperty,
+    ListProperty,
     DictProperty,
     StringProperty,
     ObjectProperty,
     BooleanProperty)
 from kivymd.uix.stacklayout import MDStackLayout
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
 
 from .layouts import ClickableBoxLayout
@@ -30,7 +33,7 @@ class ImageDisplay(RecycleDataViewBehavior,MDStackLayout):
         self.clear_widgets()
         if image_files != {}:
             for k,f in image_files.items():
-                b=ImageBox(source=f, use_default=False)
+                b=ImageBox(source=f, use_default=False, image_type=k)
                 self.ids[k] = b
                 self.add_widget(b)
             self.images = image_files
@@ -41,15 +44,16 @@ class ImageDisplay(RecycleDataViewBehavior,MDStackLayout):
             if self.images[image_type] == file:
                 self.ids[image_type].use_default = True
         else:
-            b=ImageBox(source=file, use_default=False)
+            b=ImageBox(source=file, use_default=False, image_type=image_type)
             self.ids[image_type] = b
             self.images[image_type] = file
             self.add_widget(b)
                 
 class ImageBox(ClickableBoxLayout):
-# class ImageBox(MDBoxLayout):
     source=StringProperty()
     use_default=BooleanProperty(False)
+    image_type=StringProperty()
+    
     
     def imagefile(self,source):
         from main import ChD
@@ -59,3 +63,10 @@ class ImageBox(ClickableBoxLayout):
         else:
             image_file=self.source
         return image_file        
+    
+class CenterImage(MDAnchorLayout):
+    source=StringProperty()
+    max_h = NumericProperty(1000)
+    min_h = NumericProperty(300)
+    image_size = ListProperty([1000,1000])
+    

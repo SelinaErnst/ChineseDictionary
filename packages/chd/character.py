@@ -43,7 +43,7 @@ class Character():
         
     def __repr__(self):
         s = str(self)
-        s=f'{s}\n'
+        s=f'\n{s}'
         return s
     
     def __str__(self):

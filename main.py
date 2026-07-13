@@ -10,7 +10,10 @@ from resizing import change_metrics, window_size
 
 change_metrics()
 # window_size()
-window_size(device='GalaxyS24',orientation='portrait')
+# window_size(device='GalaxyS24',orientation='portrait')
+# window_size(device='Laptop')
+# print(window_size(device='Pixel6',orientation='portrait'))
+print(window_size(device='Pixel6',orientation='p'))
 
 from kivymd.icon_definitions import md_icons
 
@@ -42,6 +45,8 @@ from packages.kivy import (
     ColorProperty,
     BooleanProperty,
     ObjectProperty,
+    MyFileManager,
+    ShowImage
 )
 
 APP_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
@@ -402,20 +407,7 @@ class GrammarList(MyScreen):
         gr_path_txt=os.path.join(self.get_setting('grammar_directory'),'grammar.txt')
         template=self.get_setting('grammar_template')
         
-        def grammar_to_jsonl(grammar:list,path):
-            with open(path,'w') as outfile:
-                for g in grammar:
-                    if not g.is_empty():
-                        json.dump(g.to_dict(), outfile, indent=None, ensure_ascii=False)
-                        outfile.write('\n')
-                    
-        def grammar_to_txt(grammar,path,template):
-            with open(path,'w') as file:
-                text=[]
-                for g in grammar:
-                    if not g.is_empty():
-                        text.append(g.to_text(template=template))
-                file.write('\n'.join(text))
+        from packages.chd import grammar_to_txt, grammar_to_jsonl
 
         grammar_to_jsonl(grammar=self.grammar_list,path=gr_path_jsonl)
         grammar_to_txt(grammar=self.grammar_list,path=gr_path_txt,template=template)
@@ -471,8 +463,6 @@ class GrammarList(MyScreen):
 # = ============================================================== = #
 # =                              MAIN                              = #
 # = ============================================================== = #
-
-
 
 class ChD(MyApp):
 
@@ -565,7 +555,7 @@ class ChD(MyApp):
         elif kind == 'dict_directory':
             result = default_settings['app_directory']+'dictionaries/'
         elif kind == 'image_directory':
-            result = default_settings['app_directory']+'images/'
+            result = default_settings['app_directory']+'.images/'
         elif kind == 'config_directory':
             result = default_settings['app_directory']+'.config/'
         elif kind == 'grammar_directory':
@@ -615,20 +605,11 @@ class ChD(MyApp):
         self.dump_json(settings,user_settings_directory+"settings.json")
     
     def save_default_settings(self, settings):
-        directories = ['dictionaries/','images/','grammar/']
+        directories = ['dictionaries/','.images/','grammar/']
         for d in directories:
             os.makedirs(settings['app_directory']+d,exist_ok=True)
         super().save_default_settings(settings)
             
-    def copy_images(self,dest_dir,default=True):
-        app_directory=self.get_setting('app_directory')
-        if default: src_path=os.path.join(self.root_folder,'.images')
-        else: src_path=self.get_setting('image_directory')
-        dest_dir=os.path.join(app_directory,'images')
-        for img in os.listdir(src_path):
-            self.import_file(os.path.join(src_path,img),dest_dir,img)
-    
-    
     # = ============================================================== = #
     # =                             DESIGN                             = #
     # = ============================================================== = #
@@ -698,7 +679,7 @@ class ChD(MyApp):
         repeat_exact=[] # when EXACT character exists in dictionary
         dict_directory=self.get_setting('dict_directory')
         for some_dict in os.listdir(dict_directory):
-            d_path = f'{dict_directory}/{some_dict}/{some_dict}.jsonl'
+            d_path = os.path.join(dict_directory,some_dict,some_dict+'.jsonl')
             if os.path.isfile(d_path):
                 some_dict = Dictionary(name=some_dict)
                 some_dict.read(d_path,file_format='jsonl',add=False,categories=self.get_setting('categories'))
@@ -724,12 +705,17 @@ class ChD(MyApp):
         screen = ShowCharacter(character=character, dict_screen=self.wm.get_screen('gram_list'))
         self.add_screen(screen=screen,direction='left')
         
+    def show_image(self,image_type,file,size=[700,700]):
+        if image_type!="":
+            dialog = ShowImage(source=file,title=image_type,image_size=size)
+            dialog.open()
+        
     def find_character(self,gram_link:Character):
         dict_directory=self.get_setting('dict_directory')
         linked_characters={}
         
         for some_dict in os.listdir(dict_directory):
-            d_path = f'{dict_directory}/{some_dict}/{some_dict}.jsonl'
+            d_path = os.path.join(dict_directory,some_dict,some_dict+'.jsonl')
             if os.path.isfile(d_path):
                 some_dict = Dictionary(name=some_dict)
                 some_dict.read(d_path,file_format='jsonl',add=False,categories=self.get_setting('categories'))
@@ -754,7 +740,68 @@ class ChD(MyApp):
             }
             dialog = ShowOptions(**kwargs)
             dialog.open()
-
+            
+    def backup(self):
+        
+        def backup_to(directory):
+            self.wm.current_screen.file_manager.close()
+            dict_directory=self.get_setting('dict_directory')
+            backup_name='ChD_dictionaries_BACKUP.db'
+            backup_dir=directory
+            if os.path.isfile(os.path.join(backup_dir,backup_name)): 
+                os.remove(os.path.join(backup_dir,backup_name))
+            for some_dict in os.listdir(dict_directory):
+                d_path = os.path.join(dict_directory,some_dict,some_dict+'.jsonl')
+                if os.path.isfile(d_path):
+                    some_dict = Dictionary(name=some_dict)
+                    some_dict.read(d_path,file_format='jsonl',add=False,categories=self.get_setting('categories'))
+                    some_dict.set_grammar(self.wm.get_screen('gram_list').grammar_list)
+                    some_dict.to_db(directory=backup_dir,filename=backup_name,clean=False)
+        
+        self.wm.current_screen.file_manager = MyFileManager(
+            description='Choose directory for backup.',
+            select_path=backup_to,
+            ext=['.____nothing____'])
+        self.wm.current_screen.file_manager.show(path=None,use_root_folder=False)    
+            
+    def restore(self):
+        
+        def restore_from_backup(file):
+            from packages.chd import grammar_to_jsonl, open_db, get_table_names, close_db
+            self.wm.current_screen.file_manager.close()
+            conn,cursor = open_db(file)
+            tables = get_table_names(cursor)
+            has_grammar = 'Grammar' in tables
+            tables = [tab for tab in tables if tab not in ['Grammar','Links']]
+            categories=self.get_setting('categories')
+            dict_directory = self.get_setting('dict_directory')
+            gr_directory = self.get_setting('grammar_directory')
+            gr_path_jsonl=os.path.join(gr_directory,'grammar.jsonl')
+            
+            overwrite=True
+            for name in tables:
+                d = Dictionary(name=name)
+                d.read_db(add=False,categories=categories,name=name,file=file)
+                directory=os.path.join(dict_directory,name+'/')
+                if not os.path.isdir(directory) or overwrite:
+                    os.makedirs(directory, exist_ok=True)
+                    d.write(directory=directory,filename=f'{name}.jsonl')
+                else:
+                    d.write(directory=directory,filename=f'{name}_BACKUP.jsonl')
+            if has_grammar and (not os.path.isfile(gr_path_jsonl) or overwrite):
+                grammar_to_jsonl(grammar=d.grammar,path=gr_path_jsonl)
+            elif has_grammar:
+                gr_path_jsonl=os.path.join(gr_directory,'grammar_BACKUP.jsonl')
+                grammar_to_jsonl(grammar=d.grammar,path=gr_path_jsonl)
+                
+            close_db(conn)
+        
+        self.wm.current_screen.file_manager = MyFileManager(
+            description='Choose backup file.',
+            select_path=restore_from_backup,
+            ext=[".db"])
+        self.wm.current_screen.file_manager.show(path=None,use_root_folder=False)
+                
 if __name__=="__main__":
     ChD().run()
 

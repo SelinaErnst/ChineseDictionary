@@ -68,7 +68,6 @@ class MyFileManager(MDFileManager):
             
     def show(self, path: str=None, use_root_folder=False) -> None:
         # -----------------------------------------
-        if  isinstance(path,str) and path!="/": path = path.rstrip('/')
         
         if path == None and use_root_folder:
             path=self.root_folder
@@ -76,6 +75,8 @@ class MyFileManager(MDFileManager):
             from main import ChD
             app = ChD.get_running_app()
             path = app.get_setting('app_directory')
+            
+        if  isinstance(path,str) and path!="/": path = path.rstrip('/')
             
         # -----------------------------------------
         from kivy.clock import Clock

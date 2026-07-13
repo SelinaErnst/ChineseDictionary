@@ -10,7 +10,21 @@
     size_hint: None, None
     size: [200,200]
     md_bg_color: app.theme_cls.onSurfaceLightColor
-    on_release: app.test(root.source)
+    on_release: 
+        app.show_image(root.image_type, root.source,size=image.texture_size)
     FitImage:
+        id: image
         radius: 20
         source: root.imagefile(root.source)
+
+<CenterImage>:
+    size_hint_y: None
+    height: max(root.min_h,min(root.max_h, image.height))+60
+    ImageBox:
+        id: image
+        source: root.source
+        # size: root.image_size
+        # width: root.image_size[0]
+        # height: root.image_size[1]
+        width: max(850,min(root.width, root.image_size[0]))
+        height: max(850,min(850, root.image_size[1]))

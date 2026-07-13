@@ -1,7 +1,7 @@
 from .dictionary import Dictionary, _VALID_EXT, choose_file_ext
 from .character import Character
 from .entry import Entry
-from .grammar import Grammar, Sentence
+from .grammar import Grammar, Sentence, grammar_to_jsonl, grammar_to_txt
 from .convert_pleco_txt import (
     dump_json, load_json,
     convert_pronunciations, convert_to_pleco_syntax, create_container,
@@ -9,6 +9,7 @@ from .convert_pleco_txt import (
 from .unicode_characters import encode_pinyin, decode_pinyin
 import ast
 import json
+from .sql_methods import *
 
 def convert_to_dtype(value: str):
     # 1️⃣ Try integer

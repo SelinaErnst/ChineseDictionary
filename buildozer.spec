@@ -4,11 +4,11 @@
 title = ChD
 
 # (str) Package name
-package.name = chinesdictionary
+package.name = chinesedictionary
 
 # (str) Package domain (needed for android/ios packaging)
 # package.domain = org.novfensec
-package.domain = org.test
+package.domain = eu.seliapps
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -41,7 +41,7 @@ version = 0.1
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
 # requirements = python3==3.11.1, hostpython3==3.11.1, kivy==2.3.1, plyer==2.1.0, requests, pillow, pyjnius, exceptiongroup, asynckivy, asyncgui, materialyoucolor, android, typeguard, typing_extensions, https://github.com/kivymd/KivyMD/archive/master.zip
-requirements = python3==3.11.1, hostpython3==3.11.1, kivy==2.3.1, plyer==2.1.0, requests, pillow, pyjnius, android, sqlite3,     https://github.com/kivymd/KivyMD/archive/master.zip
+requirements = python3==3.11.1, hostpython3==3.11.1, kivy==2.3.1, materialyoucolor==2.0.10, asynckivy==0.6.4, plyer==2.1.0, requests, pillow, pyjnius, android, sqlite3, https://github.com/kivymd/KivyMD/archive/master.zip
 
 
 # (str) Custom source folders for requirements
@@ -119,10 +119,8 @@ android.minapi = 23
 #android.sdk = 18
 
 # (str) Android NDK version to use
-# android.ndk = 28c
-# android.ndk = 25
-android.ndk = 25b
-#android.ndk = 23b
+android.ndk = 28c
+# android.ndk = 25b
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 #android.ndk_api = 21

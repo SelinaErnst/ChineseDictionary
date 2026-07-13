@@ -48,8 +48,9 @@ class MyApp(MDApp):
         super().__init__(*args, **kwargs)
         self.root_folder = get_project_root()
         self.__appdata = self.root_folder+"appdata/"
-        # self.__config = self.root_folder+".config/"
+        # self.__config = self.user_data_dir+"/"
         self.__config = self.user_data_dir+"/"
+        # self.__config = '/home/selina/.config/chd/'
         
         os.makedirs(self.__appdata,exist_ok=True)
         os.makedirs(self.__config,exist_ok=True)
@@ -70,7 +71,6 @@ class MyApp(MDApp):
         else:
             if self.get_setting('app_directory')=="":
                 self.__decide_on_app_directory()
-
         # dialog = CustomDialog(support_text=f'{self.root_folder}\n{self.user_data_dir}\n')
         # dialog.open()
 
@@ -200,6 +200,11 @@ class MyApp(MDApp):
     # =                         SCREEN MANAGER                         = #
     # = ============================================================== = #
     
+    def show_info(self,title:str="Information",text:str=''):
+        dialog = CustomDialog(title=title,support_text=text,add_decision=True)
+        dialog.open()
+        # dialog_width=ObjectProperty()
+        
     def hook_keyboard(self,window,key,*largs):
         if key == 27:
             if self.dismiss_all():

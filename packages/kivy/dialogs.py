@@ -10,6 +10,7 @@ from .buttons import MultipleToggle
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivy.uix.textinput import TextInput
+from .images import ImageBox, CenterImage
 
 if platform == 'android':
     from jnius import cast
@@ -25,7 +26,6 @@ if platform == 'android':
     ActivityInfo = autoclass("android.content.pm.ActivityInfo")
     activity = PythonActivity.mActivity
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER)
-
 
 from kivy.properties import (
     ObjectProperty, 
@@ -119,9 +119,13 @@ class FileContent(MDBoxLayout):
     def load_file(self):
         if os.path.isfile(self.file_path):
             count,first_line=0,""
-            with open(self.file_path, "r") as f:
-                first_line = f.readline().strip()
-                count = sum(1 for _ in f)+1
+            try:
+                with open(self.file_path, "r") as f:
+                    first_line = f.readline().strip()
+                    count = sum(1 for _ in f)+1
+            except:
+                count=""
+                first_line=""
             self.count=str(count)
             self.first_line = first_line
             if self.file_name=="": self.file_name=os.path.basename(self.file_path)
@@ -265,13 +269,16 @@ class ElementInput(TextInput):
 # = ============================================================== = #
 
 class CustomDialog(BlockingFloatLayout):
-    add_decision=BooleanProperty(True)
+    add_decision=BooleanProperty(False)
     title=StringProperty()
     support_text=StringProperty()
     dialog_width=ObjectProperty()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
+        if self.add_decision:
+            decision=SimpleClose()
+            self.decision.add_widget(decision)
                 
     def deny_func(self):
         pass
@@ -350,7 +357,8 @@ class ConfirmDecision(CustomDialog):
         from main import ChD
         app=ChD.get_running_app()
         character = app.wm.current_screen.character
-        app.switch_screen("view_dict",'right')
+        # app.switch_screen("view_dict",'right')
+        app.previous_screen()
         current_screen = app.wm.current_screen
         if character in current_screen.dictionary:
             current_screen.edited = True
@@ -500,10 +508,18 @@ class ConfirmFileChoice(CustomDialog):
         self.decision.add_widget(decision)
         content=FileContent(**kwargs)
         content.load_file()
-        self.content.add_widget(content)                
-
-
-
+        self.content.add_widget(content)       
+        
+class ShowImage(CustomDialog):
+    
+    def __init__(self,source="",title="",image_size=[100,100],*args,**kwargs):
+        super().__init__(*args, **kwargs)
+        self.support_text=os.path.basename(source)
+        decision=SimpleClose()
+        content=CenterImage(source=source,image_size=image_size)
+        self.content.add_widget(content)    
+        self.decision.add_widget(decision)
+        self.title = title.replace('_',' ').title()
 class EditElement(CustomDialog):
     allow_multiple=BooleanProperty()
     dtype=ObjectProperty()

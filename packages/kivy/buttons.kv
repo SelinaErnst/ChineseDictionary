@@ -79,7 +79,7 @@
         pos_hint: {'x': 0,'center_y': 0.5}
         id: icon
         icon: root.icon
-        padding: root.padding+20,root.padding,20,root.padding
+        padding: root.padding+0,root.padding,0,root.padding
         theme_font_size: "Primary" if root.icon_size==None else "Custom"
         font_size: self.font_size if root.icon_size==None else root.icon_size
         theme_icon_color: "Custom"
@@ -88,7 +88,7 @@
         id: label
         text: root.text
         pos_hint: {'right': 1,'center_y': 0.5}
-        padding: 0,root.padding,root.padding+20,root.padding
+        padding: 0,root.padding,root.padding+0,root.padding
         font_style: root.font_style
         role: root.role
         theme_text_color: "Custom"

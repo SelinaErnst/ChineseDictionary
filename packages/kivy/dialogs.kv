@@ -81,7 +81,6 @@
     deny_text: 'Return'
     # dialog_width: 850
 
-
 <ConfirmFileChoice>:
     title: 'Preview'
 
@@ -163,6 +162,7 @@
             md_bg_color: app.custom.colors['dialog_button_bg']
             font_color: app.custom.colors['dialog_button_fg']
             style: "elevated"
+            role: 'medium'
             on_release: 
                 app.dismiss_all()
                 root.deny_func() if root.deny_func!=None else None
@@ -172,6 +172,7 @@
             icon: root.confirm_icon
             text: root.confirm_text
             style: "elevated"
+            role: 'medium'
             md_bg_color: app.custom.colors['dialog_button_bg']
             font_color: app.custom.colors['dialog_button_fg']
             on_release: 
@@ -255,3 +256,4 @@
     size_hint_y: None
     line_spacing: 10
     height: max(root.min_h,min(root.max_h, self.minimum_height))
+
