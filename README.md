@@ -16,8 +16,8 @@ Since Pleco is only available for android and iOS, the advantage of ChD is, that
     - [Build Application](#build-application)
     - [First Steps (APK)](#first-steps-apk)
   - [Templates](#templates)
-    - [template for character dictionaries:](#template-for-character-dictionaries)
-    - [template for grammar list:](#template-for-grammar-list)
+    - [template for character dictionaries](#template-for-character-dictionaries)
+    - [template for grammar list](#template-for-grammar-list)
   - [Demonstration](#demonstration)
     - [Character Dictionary](#character-dictionary)
     - [Grammar Dictionary](#grammar-dictionary)
@@ -58,8 +58,7 @@ Templates are used to convert entries into txt files that are compatible with th
 
 | Raw Pleco Syntax (`.txt` form) | Pleco Syntax in App |
 | - | - |
-| <div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-231123.png" width="100%"></div> | 水[]	shui3	1A0AENG ◼ water ◼ body of water (river, lake, etc.) ◼ liquid ◼ floodGER ◼ Wasser ◼ Gewässer ◼ FlüssigkeitMW ◼ washings, rinsings (of a garment)RAD ◼ KangXi 85: waterOPP ◼ 冰 [bīng] ◼ 水蒸汽 [shuǐzhēngqì]INFORMATION1A0PVARIANTS: 氵 · 氺CHARACTER1A0PSTROKES: (4)񄪱 񄪲 񄪳 񄪴MNEMONICS: ◼ kneeling by a stream of waterMEANING AS COMPONENT: ◼ liquid ◼ actions involving liquids (like pouring, flowing, swimming, etc)ORIGINS: 水 depicts flowing water. As a component, it is more often written 氵or 氺.ANCIENT FORM: AA10񁠨OCCURENCES1A0PRELATIVES: 冰 [bīng] A0PAA00https://zi.tools/zi/水 |
+| 水[]	shui3	1A0AENG ◼ water ◼ body of water (river, lake, etc.) ◼ liquid ◼ floodGER ◼ Wasser ◼ Gewässer ◼ FlüssigkeitMW ◼ washings, rinsings (of a garment)RAD ◼ KangXi 85: waterOPP ◼ 冰 [bīng] ◼ 水蒸汽 [shuǐzhēngqì]INFORMATION1A0PVARIANTS: 氵 · 氺CHARACTER1A0PSTROKES: (4)񄪱 񄪲 񄪳 񄪴MNEMONICS: ◼ kneeling by a stream of waterMEANING AS COMPONENT: ◼ liquid ◼ actions involving liquids (like pouring, flowing, swimming, etc)ORIGINS: 水 depicts flowing water. As a component, it is more often written 氵or 氺.ANCIENT FORM: AA10񁠨OCCURENCES1A0PRELATIVES: 冰 [bīng] A0PAA00https://zi.tools/zi/水 | <div style="display: flex; gap: 10px;"><img src="appdata/documentation/Screenshot_20260713-231123.png" width="100%"></div> |
 
 Each template can contain multiple components and environments. A component is either a header (H) or content, which can be a list (L), an integer number (I) or plain text (T). An environment can position the text on the left, right or with an indent. The environment always is started by a header.
 
@@ -69,12 +68,13 @@ Content description: <L:[delimiter|newline|size]:category>
 Environment description: <H:[font|color|visibility]:TEXT><position>{...}<E>
 
 End of line: <E>
-additonal character: <(> or <)>
+New line: <N>
+Additional character: <(> or <)>
 ```
 
 Headers have an interesting function, where based on what visibility they are described to have and based on whether or not the character entry has information for that category, the header and the following content might not be presented. This is necessary because otherwise every information category would be visible for every character / dictionary entry even when most of that information is missing or not available. To keep things easy and simple, only those categories that have information input are shown in the Pleco App. 
 
-### template for character dictionaries:
+### template for character dictionaries
 ```
 <H:[b|grey|hidden]:TRANSLATION>
 <LEFT>{
@@ -110,8 +110,8 @@ Headers have an interesting function, where based on what visibility they are de
 <L_LINK:[none|nl|small]:link><E>
 }<E>
 ```
+
 How it is presented in the ChD and in the Pleco app:
- ChD and in the Pleco app:
 <div style="display: flex; gap: 10px;">
   <img src="appdata/documentation/Screenshot_20260713-224745.png" width="19%">
   <img src="appdata/documentation/Screenshot_20260713-224749.png" width="19%">
@@ -119,7 +119,7 @@ How it is presented in the ChD and in the Pleco app:
   <img src="appdata/documentation/Screenshot_20260713-224905.png" width="19%">
 </div>
 
-### template for grammar list:
+### template for grammar list
 
 ```
 <T:[b|blue|big]:level><E><N>
