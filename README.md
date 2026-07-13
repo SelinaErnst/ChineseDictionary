@@ -7,6 +7,20 @@ Another aspect is the compatibility of the ChD dictionaries with one very popula
 
 Since Pleco is only available for android and iOS, the advantage of ChD is, that you can run the python script on Windows and Linux, while the apk file can be run on android. It is possible to share dictionary information among each device by using backup and restore.  
 
+## Table of Contents
+
+- [ChineseDictionary (ChD) ](#chinesedictionary-chd-)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Requirements](#requirements)
+    - [Build Application](#build-application)
+    - [First Steps (APK)](#first-steps-apk)
+  - [Demonstration](#demonstration)
+    - [Character Dictionary](#character-dictionary)
+    - [Grammar Dictionary](#grammar-dictionary)
+    - [Settings](#settings)
+  - [Pleco Compatibility](#pleco-compatibility)
+
 ## Installation
 
 ### Requirements
@@ -81,19 +95,19 @@ Based on templates that were created to determine font style and other design ch
 
 This is how a character entry looks in ChD and in Pleco.
 <div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-224745.png" width="20%">
-  <img src="appdata/documentation/Screenshot_20260713-224749.png" width="20%">
-  <img src="appdata/documentation/Screenshot_20260713-224900.png" width="20%">
-  <img src="appdata/documentation/Screenshot_20260713-224905.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224745.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224749.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224900.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224905.png" width="19%">
 </div>
 
 \
 This is how a grammar entry looks in ChD and in Pleco.
 
 <div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-224631.png" width="20%">
-  <img src="appdata/documentation/Screenshot_20260713-224642.png" width="20%">
-  <img src="appdata/documentation/Screenshot_20260713-224517.png" width="20%">
-  <img src="appdata/documentation/Screenshot_20260713-224538.png" width="20%">
-  <img src="appdata/documentation/Screenshot_20260713-224550.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224631.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224642.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224517.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224538.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224550.png" width="19%">
 </div>
