@@ -200,8 +200,8 @@ class ViewDict(MyScreen):
             from packages.chd import _VALID_EXT
             if output in _VALID_EXT['.jsonl']:
                 dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.jsonl',file_format='jsonl')
-            # if output in _VALID_EXT['.txt']:
-            #     dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.txt',file_format='pleco',template=path_to_template)
+            if output in _VALID_EXT['.txt']:
+                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.txt',file_format='pleco',template=path_to_template)
             # if output in _VALID_EXT['.db']:
             #     dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.db',file_format='db')
             if make_msg: AttentionMsg(attention='File was created',msg=f'The dictionary {dictionary.name} was stored in {directory}').open()
@@ -213,7 +213,7 @@ class ViewDict(MyScreen):
         
         def export_to_dir(path,mode):
             use_filtered = True if 'filter' in mode else False
-            if 'pleco' in mode: output = 'pleco'
+            if 'pleco' in mode: output = 'txt'
             elif 'jsonl' in mode: output = 'jsonl'
             else: output='all'
             if not path.endswith('/'): path+='/'

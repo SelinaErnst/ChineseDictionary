@@ -2,4 +2,5 @@
 build/*
 dist/*
 bin/*.apk
+bin/*.aab
 *.pyc

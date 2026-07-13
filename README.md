@@ -74,3 +74,26 @@ The theme and design palette can be changed through settings. Changes here will 
   <img src="appdata/documentation/Screenshot_20260713-220009.png" width="30%">
   <img src="appdata/documentation/Screenshot_20260713-220117.png" width="30%">
 </div>
+
+## Pleco Compatibility
+
+Based on templates that were created to determine font style and other design choices, the information stored for the characters in a dictionary or even a grammar rule is converted to a txt file using Pleco specific syntax. 
+
+This is how a character entry looks in ChD and in Pleco.
+<div style="display: flex; gap: 10px;">
+  <img src="appdata/documentation/Screenshot_20260713-224745.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224749.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224900.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224905.png" width="20%">
+</div>
+
+\
+This is how a grammar entry looks in ChD and in Pleco.
+
+<div style="display: flex; gap: 10px;">
+  <img src="appdata/documentation/Screenshot_20260713-224631.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224642.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224517.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224538.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-224550.png" width="20%">
+</div>

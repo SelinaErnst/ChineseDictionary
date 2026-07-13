@@ -391,7 +391,7 @@ class ConfirmDecision(CustomDialog):
     def save_dict_changes(self):
         from main import ChD
         app = ChD.get_running_app()
-        app.wm.current_screen.save_dictionary(output='all',make_msg=False)
+        app.wm.current_screen.save_dictionary(make_msg=False)
         self.continue_to_next_screen()
         
     def continue_to_next_screen(self):
