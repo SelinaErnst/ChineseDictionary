@@ -47,25 +47,22 @@ buildozer android release # builds AAB for public distribution
 Before doing anything, the access to storage has to be granted. This is because all the information on characters and grammar will be stored locally. The next step is to determine where these files will be stored (app directory). This can be changed in the settings.
 
 <div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-212519.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-212559.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-213250.png" width="30%">
+  <img src="appdata/documentation/Screenshot_20260713-212519.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-212559.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-213250.png" width="20%">
 </div>
 
 ## Templates
 
-Templates are used to convert entries into txt files that are compatible with the Pleco app. This step involves understanding Pleco syntax. It has been said, that the syntax one can use to beautify personalized dictionaries in Pleco is not meant for public usage. That is the reason why that exact syntax is quite difficult to use. The following text includes commands for color, font style and positioning of text. The idea behind using a template is that each command which is unreadable in the Pleco syntax will be clearly stated and can be easily changed. 
+Templates are used to convert entries into txt files that are compatible with the Pleco app. This step involves understanding Pleco syntax. It has been said, that the syntax one can use to beautify personalized dictionaries in Pleco is not meant for public usage. That is the reason why it is quite difficult to comprehend. Instructions for color, font style and positioning of text are difficult to understand. The idea behind using a template is that each instruction is clearly stated and can be easily changed by other users with no knowledge of the underlying rules for the syntax. 
 
-| Raw Pleco Syntax (`.txt` form) | Pleco Syntax in App |
-| - | - |
-| 水[]	shui3	1A0AENG ◼ water ◼ body of water (river, lake, etc.) ◼ liquid ◼ floodGER ◼ Wasser ◼ Gewässer ◼ FlüssigkeitMW ◼ washings, rinsings (of a garment)RAD ◼ KangXi 85: waterOPP ◼ 冰 [bīng] ◼ 水蒸汽 [shuǐzhēngqì]INFORMATION1A0PVARIANTS: 氵 · 氺CHARACTER1A0PSTROKES: (4)񄪱 񄪲 񄪳 񄪴MNEMONICS: ◼ kneeling by a stream of waterMEANING AS COMPONENT: ◼ liquid ◼ actions involving liquids (like pouring, flowing, swimming, etc)ORIGINS: 水 depicts flowing water. As a component, it is more often written 氵or 氺.ANCIENT FORM: AA10񁠨OCCURENCES1A0PRELATIVES: 冰 [bīng] A0PAA00https://zi.tools/zi/水 | <div style="display: flex; gap: 10px;"><img src="appdata/documentation/Screenshot_20260713-231123.png" width="100%"></div> |
-
-Each template can contain multiple components and environments. A component is either a header (H) or content, which can be a list (L), an integer number (I) or plain text (T). An environment can position the text on the left, right or with an indent. The environment always is started by a header.
+In simple terms, each template can contain multiple components and environments. A component is either a header (H) or content, which can be a list (L), an integer number (I) or plain text (T). An environment, which is always initiated by a header, positions the text on the left or right side or with an indent. 
 
 ```
-Header description: <H:[font|color|visibility]:TEXT>
-Content description: <L:[delimiter|newline|size]:category> 
-Environment description: <H:[font|color|visibility]:TEXT><position>{...}<E>
+Header: <H:[font|color|visibility]:TEXT>
+Content: <L:[delimiter|newline|size]:category> 
+
+Environment: <H:[font|color|visibility]:TEXT><position>{...}<E>
 
 End of line: <E>
 New line: <N>
@@ -162,9 +159,9 @@ Filter:
  - grammatical (in case the character is relevant to a grammatical rule)
 
 <div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-211254.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-211325.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-213552.png" width="30%">
+  <img src="appdata/documentation/Screenshot_20260713-211254.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-211325.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-213552.png" width="20%">
 </div>
 
 ### Grammar Dictionary
@@ -172,9 +169,9 @@ Filter:
 There is only one list of grammar rules. Each rule should be allocated to a certain learning level. Shown here are the rules for level A1. When no level is selected, only rules without a level would be selected. When searching for a grammar rule, text from the title, subtitle and tags can be used. 
 
 <div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-214654.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-214724.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-214753.png" width="30%">
+  <img src="appdata/documentation/Screenshot_20260713-214654.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-214724.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-214753.png" width="20%">
 </div>
 
 ### Settings
@@ -182,9 +179,9 @@ There is only one list of grammar rules. Each rule should be allocated to a cert
 The theme and design palette can be changed through settings. Changes here will be saved to a settings.json file in .config of the app directory.
 
 <div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-220003.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-220009.png" width="30%">
-  <img src="appdata/documentation/Screenshot_20260713-220117.png" width="30%">
+  <img src="appdata/documentation/Screenshot_20260713-220003.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-220009.png" width="20%">
+  <img src="appdata/documentation/Screenshot_20260713-220117.png" width="20%">
 </div>
 
 ## Pleco Compatibility
