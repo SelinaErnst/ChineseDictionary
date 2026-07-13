@@ -16,9 +16,8 @@ Since Pleco is only available for android and iOS, the advantage of ChD is, that
     - [Build Application](#build-application)
     - [First Steps (APK)](#first-steps-apk)
   - [Templates](#templates)
-      - [Pleco syntax in txt form:](#pleco-syntax-in-txt-form)
-      - [How it is presented in the ChD and in the Pleco app:](#how-it-is-presented-in-the-chd-and-in-the-pleco-app)
-      - [template:](#template)
+    - [template for character dictionaries:](#template-for-character-dictionaries)
+    - [template for grammar list:](#template-for-grammar-list)
   - [Demonstration](#demonstration)
     - [Character Dictionary](#character-dictionary)
     - [Grammar Dictionary](#grammar-dictionary)
@@ -57,18 +56,25 @@ Before doing anything, the access to storage has to be granted. This is because 
 
 Templates are used to convert entries into txt files that are compatible with the Pleco app. This step involves understanding Pleco syntax. It has been said, that the syntax one can use to beautify personalized dictionaries in Pleco is not meant for public usage. That is the reason why that exact syntax is quite difficult to use. The following text includes commands for color, font style and positioning of text. The idea behind using a template is that each command which is unreadable in the Pleco syntax will be clearly stated and can be easily changed. 
 
-#### Pleco syntax in txt form:
-> 水[]	shui3	1A0AENG ◼ water ◼ body of water (river, lake, etc.) ◼ liquid ◼ floodGER ◼ Wasser ◼ Gewässer ◼ FlüssigkeitMW ◼ washings, rinsings (of a garment)RAD ◼ KangXi 85: waterOPP ◼ 冰 [bīng] ◼ 水蒸汽 [shuǐzhēngqì]INFORMATION1A0PVARIANTS: 氵 · 氺CHARACTER1A0PSTROKES: (4)񄪱 񄪲 񄪳 񄪴MNEMONICS: ◼ kneeling by a stream of waterMEANING AS COMPONENT: ◼ liquid ◼ actions involving liquids (like pouring, flowing, swimming, etc)ORIGINS: 水 depicts flowing water. As a component, it is more often written 氵or 氺.ANCIENT FORM: AA10񁠨OCCURENCES1A0PRELATIVES: 冰 [bīng] A0PAA00https://zi.tools/zi/水
+| Raw Pleco Syntax (`.txt` form) | Pleco Syntax in App |
+| - | - |
+| <div style="display: flex; gap: 10px;">
+  <img src="appdata/documentation/Screenshot_20260713-231123.png" width="100%"></div> | 水[]	shui3	1A0AENG ◼ water ◼ body of water (river, lake, etc.) ◼ liquid ◼ floodGER ◼ Wasser ◼ Gewässer ◼ FlüssigkeitMW ◼ washings, rinsings (of a garment)RAD ◼ KangXi 85: waterOPP ◼ 冰 [bīng] ◼ 水蒸汽 [shuǐzhēngqì]INFORMATION1A0PVARIANTS: 氵 · 氺CHARACTER1A0PSTROKES: (4)񄪱 񄪲 񄪳 񄪴MNEMONICS: ◼ kneeling by a stream of waterMEANING AS COMPONENT: ◼ liquid ◼ actions involving liquids (like pouring, flowing, swimming, etc)ORIGINS: 水 depicts flowing water. As a component, it is more often written 氵or 氺.ANCIENT FORM: AA10񁠨OCCURENCES1A0PRELATIVES: 冰 [bīng] A0PAA00https://zi.tools/zi/水 |
 
-#### How it is presented in the ChD and in the Pleco app:
-<div style="display: flex; gap: 10px;">
-  <img src="appdata/documentation/Screenshot_20260713-224745.png" width="19%">
-  <img src="appdata/documentation/Screenshot_20260713-224749.png" width="19%">
-  <img src="appdata/documentation/Screenshot_20260713-224900.png" width="19%">
-  <img src="appdata/documentation/Screenshot_20260713-224905.png" width="19%">
-</div>
+Each template can contain multiple components and environments. A component is either a header (H) or content, which can be a list (L), an integer number (I) or plain text (T). An environment can position the text on the left, right or with an indent. The environment always is started by a header.
 
-#### template:
+```
+Header description: <H:[font|color|visibility]:TEXT>
+Content description: <L:[delimiter|newline|size]:category> 
+Environment description: <H:[font|color|visibility]:TEXT><position>{...}<E>
+
+End of line: <E>
+additonal character: <(> or <)>
+```
+
+Headers have an interesting function, where based on what visibility they are described to have and based on whether or not the character entry has information for that category, the header and the following content might not be presented. This is necessary because otherwise every information category would be visible for every character / dictionary entry even when most of that information is missing or not available. To keep things easy and simple, only those categories that have information input are shown in the Pleco App. 
+
+### template for character dictionaries:
 ```
 <H:[b|grey|hidden]:TRANSLATION>
 <LEFT>{
@@ -104,18 +110,43 @@ Templates are used to convert entries into txt files that are compatible with th
 <L_LINK:[none|nl|small]:link><E>
 }<E>
 ```
-Each template can contain multiple components and environments. A component is either a header (H) or content, which can be a list (L), an integer number (I) or plain text (T). An environment can position the text on the left, right or with an indent. The environment always is started by a header.
+How it is presented in the ChD and in the Pleco app:
+ ChD and in the Pleco app:
+<div style="display: flex; gap: 10px;">
+  <img src="appdata/documentation/Screenshot_20260713-224745.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224749.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224900.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224905.png" width="19%">
+</div>
+
+### template for grammar list:
 
 ```
-Header description: <H:[font|color|visibility]:TEXT>
-Content description: <L:[delimiter|newline|size]:category> 
-Environment description: <H:[font|color|visibility]:TEXT><position>{...}<E>
-
-End of line: <E>
-additonal character: <(> or <)>
+<T:[b|blue|big]:level><E><N>
+<T:[b|blue|normal]:title><E><N>
+<T:[n|blue|normal]:subtitle><E>
+<MARK>{
+<L:[none|nl|normal]:structures><E>
+<N><N><E>
+<H:[n|none|available]:Opposite form: ><N><L:[none|nl|normal]:opposite_structures><E>
+}<E>
+<T:[n|none|normal]:explanation><E><N><N>
+<MARKLINE>{
+<L:[none|nl|normal]:sentences><E>
+}<E>
+<LEFT>{
+<H:[n|none|available]:For more see:  ><L_LINK:[d|l|normal]:all_other_char><E>
+}<E>
 ```
+How it is presented in the ChD and in the Pleco app:
 
-Headers have an interesting function, where based on what visibility they are described to have and based on whether or not the character entry has information for that category, the header and the following content might not be presented. This is necessary because otherwise every information category would be visible for every character / dictionary entry even when most of that information is missing or not available. To keep things easy and simple, only those categories that have information input are shown in the Pleco App. 
+<div style="display: flex; gap: 10px;">
+  <img src="appdata/documentation/Screenshot_20260713-224631.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224642.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224517.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224538.png" width="19%">
+  <img src="appdata/documentation/Screenshot_20260713-224550.png" width="19%">
+</div>
 
 ## Demonstration
 
