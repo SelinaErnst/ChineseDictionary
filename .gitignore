@@ -4,3 +4,6 @@ dist/*
 bin/*.apk
 bin/*.aab
 *.pyc
+
+test.ipynb
+test.py

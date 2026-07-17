@@ -30,6 +30,7 @@ Since Pleco is only available for android and iOS, the advantage of ChD is, that
 To be able to run the main.py, the following packages have to be installed.
 
 ```python
+# Python version: 3.12.9
 pip install kivy==2.3.1
 pip install https://github.com/kivymd/KivyMD/archive/master.zip  # kivymd (Version: 2.0.1.dev0)
 pip install materialyoucolor==2.0.10
@@ -37,9 +38,26 @@ pip install materialyoucolor==2.0.10
 ### Build Application
 Buildozer is used to create the .apk for android devices. The buildozer.spec specifies how the application will be compiled. Inside the Workspace, run these commands to build the application.
 
-```python
+```
 buildozer -v android debug # builds the debug APK
 buildozer android release # builds AAB for public distribution  
+```
+PyInstaller is the tool that bundles the application and all its dependencies into a single, standalone executable file.
+
+```
+pyinstaller --clean ChD.spec
+```
+To display the application icon on a linux desktop and make it launch the executable, create the file `~/.local/share/applications/chd.desktop` in your home directory. As app icon is recommended to use `appdata/images/book_icon.png`.
+
+The chd.desktop file would contain these following lines:
+```
+[Desktop Entry]
+Name=ExampleApp
+Type=Application
+Exec=/path/to/executable
+Icon=/path/to/icon.png
+Categories=Utility;
+Terminal=false
 ```
 
 ### First Steps (APK)
@@ -56,13 +74,13 @@ Before doing anything, the access to storage has to be granted. This is because 
 
 Templates are used to convert entries into txt files that are compatible with the Pleco app. This step involves understanding Pleco syntax. It has been said, that the syntax one can use to beautify personalized dictionaries in Pleco is not meant for public usage. That is the reason why it is quite difficult to comprehend. Instructions for color, font style and positioning of text are difficult to understand. The idea behind using a template is that each instruction is clearly stated and can be easily changed by other users with no knowledge of the underlying rules for the syntax. 
 
-In simple terms, each template can contain multiple components and environments. A component is either a header (H) or content, which can be a list (L), an integer number (I) or plain text (T). An environment, which is always initiated by a header, positions the text on the left or right side or with an indent. 
+In simple terms, each template can contain multiple components and environments. A component is either a header (H) or content, which can be a list (L), an integer number (I) or plain text (T). An environment, positions the text on the left or right side or with an indent. 
 
 ```
 Header: <H:[font|color|visibility]:TEXT>
 Content: <L:[delimiter|newline|size]:category> 
 
-Environment: <H:[font|color|visibility]:TEXT><position>{...}<E>
+Environment: <position>{...}<E>
 
 End of line: <E>
 New line: <N>

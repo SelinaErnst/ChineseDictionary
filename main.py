@@ -408,7 +408,7 @@ class GrammarList(MyScreen):
         template=self.get_setting('grammar_template')
         
         from packages.chd import grammar_to_txt, grammar_to_jsonl
-x
+
         grammar_to_jsonl(grammar=self.grammar_list,path=gr_path_jsonl)
         grammar_to_txt(grammar=self.grammar_list,path=gr_path_txt,template=template)
         
