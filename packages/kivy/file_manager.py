@@ -77,7 +77,7 @@ class MyFileManager(MDFileManager):
             path = app.get_setting('app_directory')
             
         if  isinstance(path,str) and path!="/": path = path.rstrip('/')
-            
+        print(path)
         # -----------------------------------------
         from kivy.clock import Clock
         Clock.schedule_once(lambda dt: self.update_dir_name(path))

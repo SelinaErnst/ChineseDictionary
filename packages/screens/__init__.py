@@ -4,6 +4,8 @@ from .dict_chooser import DictionaryChooser
 from .view_dict import ViewDict
 from .settings import Settings
 from .show_character import ShowCharacter
+from .gram_list import GrammarList
+from .show_gram import ShowGrammar
 
 import os
 from kivy.lang import Builder
@@ -16,6 +18,8 @@ Builder.load_file(current_dir+'/upload_dict.kv')
 Builder.load_file(current_dir+'/dict_chooser.kv')
 Builder.load_file(current_dir+'/view_dict.kv')
 Builder.load_file(current_dir+'/show_character.kv')
+Builder.load_file(current_dir+'/gram_list.kv')
+Builder.load_file(current_dir+'/show_gram.kv')
 
 from packages.kivy import (
     MyScreen,

@@ -1,0 +1,42 @@
+<ShowGrammar>:
+    scroll: scroll
+    bottom_nav: bottom_nav
+    ScrollView:
+        MDStackLayout:
+            id: scroll
+            size_hint: 1, None
+            # height: self.minimum_height+(66+2*10)*2
+            height: self.minimum_height+300
+            padding: 10
+            spacing: 20   
+                        
+    MDBottomSheet:
+        id: bottom_nav
+        radius: 0
+        size_hint: None,None
+        height: 170
+        width: Window.width 
+        sheet_type: "standard"
+        md_bg_color: app.custom.colors['bottom']
+
+
+        BottomSheetDragHandleContainer:
+            padding: 20
+            MDAnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                size_hint_y: None
+                height: bottom_nav.height-2*20
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    adaptive_width: True
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: 50
+                    MyIconButton:
+                        text: 'Empty'
+                        icon: 'eraser'
+                        size: self.parent.height, self.parent.height
+                        style: 'text'
+                        md_bg_color: bottom_nav.md_bg_color
+                        on_release: root.empty_grammar()

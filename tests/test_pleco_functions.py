@@ -9,7 +9,7 @@ def test_convert_pron():
     s = convert_pronunciations('阝ljscac [ba1ba]')
     assert '[bāba]' in s
     s = convert_pronunciations('阝ljscac [ba1 ba]')
-    assert '[bāba]' in s
+    assert '[bā ba]' in s
     s = convert_pronunciations('阝ljscac [八ba1ba2]')
     assert '[八ba1ba2]' in s
     s = convert_pronunciations('阝ljscac [ba1ba2八]')

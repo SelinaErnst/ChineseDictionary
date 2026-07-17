@@ -1,0 +1,111 @@
+<GrammarList>:
+    rv_scroll: rv_scroll
+    filter: filter
+    search: search
+    bottom_nav: bottom_nav
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDBoxLayout:
+            md_bg_color: app.custom.colors['head']
+            orientation: 'vertical'
+            adaptive_height: True
+            padding: 20
+            MDBoxLayout:
+                size_hint_y: None
+                height: filter.height
+                orientation: 'horizontal'
+                spacing: 50
+                MDLabel:
+                    text: 'Level'
+                    font_style: "Title"
+                    role: 'small'
+                    adaptive_width: True
+                    theme_text_color: "Custom"
+                    text_color: app.custom.colors['button_fg']
+                Toggle:
+                    id: filter
+                    height: self.minimum_height
+                    Level:
+                        text: 'A1'
+                    Level:
+                        text: 'A2'
+                    Level:
+                        text: 'B1'
+                    Level:
+                        text: 'B2'
+                    Level:
+                        text: 'C1'
+                    Level:
+                        text: 'C2'
+            MDAnchorLayout:
+                size_hint_y: None
+                height: search.height+20
+                anchor_y: 'bottom'
+                anchor_x: 'left'
+                EntryField:
+                    id: search
+                    theme_font_name: "Custom"
+                    font_name:"CH"
+                    color_normal: app.custom.colors['textfield_search']
+                    color_focus: app.custom.colors['textfield_search']
+                    on_text: root.set_list_items()
+                    allow_empty: True     
+        MDRecycleView:
+            id: rv_scroll
+            viewclass: 'GrammarItem'
+            RecycleBoxLayout:
+                id: scroll
+                padding: 20,20,20,300
+                orientation: "vertical"
+                size_hint: 1, None
+                height: self.minimum_height
+                default_size_hint: 1, None
+                default_height: None
+                spacing: 10
+                
+    MDBottomSheet:
+        id: bottom_nav
+        radius: 0
+        size_hint: None,None
+        height: 170
+        width: Window.width 
+        sheet_type: "standard"
+        md_bg_color: app.custom.colors['bottom']
+
+
+        BottomSheetDragHandleContainer:
+            padding: 20
+            MDAnchorLayout:
+                anchor_x: 'center'
+                anchor_y: 'center'
+                size_hint_y: None
+                height: bottom_nav.height-2*20
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    adaptive_width: True
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: 50
+                    MyIconButton:
+                        text: 'Add'
+                        icon: 'plus'
+                        size: self.parent.height, self.parent.height
+                        style: 'text'
+                        md_bg_color: bottom_nav.md_bg_color
+                        on_release: root.add_grammar()
+                    MyIconButton:
+                        text: 'Save'
+                        icon: 'content-save'
+                        style: 'text'
+                        size: self.parent.height, self.parent.height
+                        md_bg_color: bottom_nav.md_bg_color
+                        on_release: root.save_grammar()
+                
+<Level@TextToggleButton>:
+    font_style: 'Title'
+    role: 'medium'
+    width: self.height
+    kind: 'select_multiple'
+    custom_color: app.custom.colors['level'+self.text]
+    custom_font_color: app.custom.colors['text_level'+self.text]
