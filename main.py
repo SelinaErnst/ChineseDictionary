@@ -95,7 +95,6 @@ class ChD(MyApp):
 
         self.load_all_kv_files((self.root_folder+'screens'))
         Builder.load_string(KV)
-        print(self.get_metrics())
     
     def build(self):
         super().build()
