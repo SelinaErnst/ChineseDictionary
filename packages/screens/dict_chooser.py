@@ -1,6 +1,6 @@
 
 import os
-from kivy.properties import StringProperty, ListProperty
+from kivy.properties import StringProperty, ListProperty, ObjectProperty
 
 from packages.kivy import (
     MyScreen,   
@@ -9,7 +9,7 @@ from packages.kivy import (
 )
 class DictionaryChooser(MyScreen):
     filelist=ListProperty()
-    directory=StringProperty()
+    directory=ObjectProperty()
     file_format=StringProperty()
     itemclass=StringProperty('MyMultiLineItem')
     
@@ -21,9 +21,9 @@ class DictionaryChooser(MyScreen):
         if directory != None and os.path.isdir(directory): self.directory = directory
         if os.path.isdir(self.directory):
             if is_file: 
-                self.filelist=[f for f in os.listdir(self.directory) if os.path.isfile(self.directory+f)]
+                self.filelist=[f for f in os.listdir(self.directory) if os.path.isfile(self.directory/f)]
             elif not is_file:
-                self.filelist=[f for f in os.listdir(self.directory) if os.path.isdir(self.directory+f)]
+                self.filelist=[f for f in os.listdir(self.directory) if os.path.isdir(self.directory/f)]
             else:
                 self.filelist=[f for f in os.listdir(self.directory)]
         else:
@@ -37,11 +37,11 @@ class DictionaryChooser(MyScreen):
         return self.filelist
     
     def select_dictionary(self, dict_dir):
-        dict_path=self.directory+dict_dir+'/'
+        dict_path=self.directory/dict_dir
 
         file = [f for f in os.listdir(dict_path) if f==dict_dir+'.'+self.file_format]
         file = file[0]
-        dict_file = dict_path+dict_dir+f'.{self.file_format}'
+        dict_file = dict_path/f'{dict_dir}.{self.file_format}'
         if os.path.isfile(dict_file):
             next_screen=self.switch_screen("view_dict","left")
             next_screen.set_up_screen(dict_name=dict_dir,dict_file=dict_file,file_format=self.file_format)

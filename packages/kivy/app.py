@@ -26,10 +26,7 @@ def access_granted():
     else: return True
     
 def get_project_root():
-    # if getattr(sys, 'frozen', False): root_directory=os.path.dirname(sys.executable)
-    # else: 
-    root_directory=str(Path(os.path.abspath(__file__)).parent.parent.parent)
-    if not root_directory.endswith('/'): root_directory = root_directory+'/'
+    root_directory=Path(os.path.abspath(__file__)).parent.parent.parent
     return root_directory
 
 def get_config():
@@ -47,17 +44,15 @@ class MyApp(MDApp):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.root_folder = get_project_root()
-        self.__appdata = self.root_folder+"appdata/"
-        # self.__config = self.user_data_dir+"/"
-        self.__config = self.user_data_dir+"/"
-        # self.__config = '/home/selina/.config/chd/'
+        self.__appdata = self.root_folder/"appdata"
+        self.__config = Path(self.user_data_dir)
         
         os.makedirs(self.__appdata,exist_ok=True)
         os.makedirs(self.__config,exist_ok=True)
         for folder in ['defaults','colors','fonts','templates']:
-            os.makedirs(self.__appdata+folder,exist_ok=True)
+            os.makedirs(self.__appdata/folder,exist_ok=True)
     
-        resource_add_path(self.__appdata+'fonts')
+        resource_add_path(self.__appdata/'fonts')
     
     def build(self):
         self.theme_cls.bind(theme_style=self.sync_custom_colors)
@@ -81,15 +76,30 @@ class MyApp(MDApp):
         print(msg)
         
     def load_json(self,file,directory=APP_DIR):
+        
+        def extract(value, key=None):
+            if isinstance(value,dict) and self.platform in value.keys:
+                return value[self.platform]
+            elif isinstance(value,str) and 'directory' in key:
+                return Path(value)
+            else:
+                return value
+        
         path=file if directory==None else Path(directory)/file
         with open(path, "r") as f:
             settings = json.load(f)
-        return settings
+        return {k:extract(value=v,key=k) for k,v in settings.items()}
     
     def dump_json(self,data,file, directory=APP_DIR):
+        
+        def convert(value):
+            if isinstance(value, Path):
+                value = str(value)
+            return value
+                
         path=file if directory==None else Path(directory)/file
         with open(path, "w") as f:
-            json.dump(data, f, indent=4,ensure_ascii=False)
+            json.dump({k:convert(v) for k,v in data.items()}, f, indent=4,ensure_ascii=False)
         return True
     
     # = ============================================================== = #
@@ -98,7 +108,7 @@ class MyApp(MDApp):
         
     @property
     def default_settings_file(self):
-        return self.__config + 'default_settings.json'
+        return self.__config/'default_settings.json'
 
     @property
     def settings(self):
@@ -116,14 +126,14 @@ class MyApp(MDApp):
         return result
 
     def get_default_settings(self):
-        # get DEFAULT settings        
+               
+        # get DEFAULT settings    
         if os.path.isfile(self.default_settings_file):
             # getting default settings from specified default_settings_file (under .config)
             default_settings = self.load_json(self.default_settings_file)
         else:
             # get default settings from appdata folder defaults (only necessary first time)
             default_settings=self.load_appdata('default_settings.json','defaults')
-            default_settings={k:v if not isinstance(v,dict) else v[platform] for k,v in default_settings.items()}
             self.save_default_settings(default_settings)
         return default_settings
     
@@ -132,9 +142,9 @@ class MyApp(MDApp):
 
     def load_appdata(self,file,typ):
         if typ in ['defaults','colors']:
-            if typ == 'defaults': directory = self.__appdata+'defaults/'
-            elif typ == 'colors': directory = self.__appdata+'colors/'
-            if os.path.isfile(directory+file): 
+            if typ == 'defaults': directory = self.__appdata/'defaults'
+            elif typ == 'colors': directory = self.__appdata/'colors'
+            if os.path.isfile(directory/file): 
                 return self.load_json(file,directory=directory)
             else:
                 print(f'file ({file}) was not found in directory ({directory})')

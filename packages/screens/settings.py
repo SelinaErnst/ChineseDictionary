@@ -52,7 +52,7 @@ class Settings(MyScreen):
     # = ============================================================== = #
             
     def open_file(self,file):
-        layout = ShowFileContent(md_bg_color='red',file=file)
+        layout = ShowFileContent(md_bg_color='red',file=str(file))
         layout.read_file()
         self.open_widget(layout)
         
@@ -63,7 +63,7 @@ class Settings(MyScreen):
     def update_settings(self):
         for setting in self.ids.keys():
             key = self.get_setting(setting)
-            self.ids[setting].ids.label.text = key
+            self.ids[setting].ids.label.text = str(key)
             self.settings[setting] = key
 
     def save_settings(self):
@@ -145,7 +145,7 @@ class Setting(EntryFieldWithIcon):
         screen = app.wm.current_screen
         
         def select_path(path):
-            self.text = path+'/'
+            self.text = path
             screen.file_manager.close()
             
         try: 
@@ -167,9 +167,8 @@ class Setting(EntryFieldWithIcon):
     # = ============================================================== = #
     
     def is_path(self,path:str):
-        correct_syntax = path.endswith('/')
         exists = os.path.isdir(path)
-        return correct_syntax and exists
+        return exists
     
     # overwriting (dont change name!)
     def is_correct(self):

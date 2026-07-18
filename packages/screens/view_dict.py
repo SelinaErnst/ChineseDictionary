@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from functools import partial
 from kivy.utils import platform
 from kivy.properties import (
@@ -45,7 +46,7 @@ class ViewDict(MyScreen):
         self.toggle_filter(self.filter_box,self.filter,toggle=False,turn_off=True)
         self.toggle_filter(self.sorter_box,self.sorter,toggle=False,turn_off=True)
         self.dict_name = dict_name
-        self.dict_file = dict_file
+        self.dict_file = str(dict_file)
         self.file_format = file_format
         
         if dict_file != "":
@@ -146,15 +147,13 @@ class ViewDict(MyScreen):
     # = –––––––––––––––––––––––––––– read –––––––––––––––––––––––––––– = #
     
     def __read_dict_file(self,dict_file,file_format=None,add=False):
-        
         if not add: self.__empty_dict()
         else: self.edited = True
 
         categories=self.get_setting('categories')
         template=self.get_setting('dictionary_template')
-        
         can_read = self.dictionary.read(
-            dict_file,file_format=file_format,add=add,categories=categories,template=template)
+            dict_file,file_format=file_format,add=add,categories=categories,template=template,name=self.dict_name)
         if can_read:
             self.set_list_items(update_images=True)
             return True
@@ -180,16 +179,16 @@ class ViewDict(MyScreen):
         
     # = –––––––––––––––––––––––––––– save –––––––––––––––––––––––––––– = #
         
-    def save_dictionary(self, output='jsonl',make_msg=True,directory='',use_filtered=False,use_tag=False):
+    def save_dictionary(self, output='jsonl',make_msg=True,directory=None,use_filtered=False,use_tag=False):
 
         path_to_template=self.get_setting('dictionary_template')
         
-        if directory == "":
+        if directory == None:
             app_directory = self.get_setting('app_directory')
             dict_directory = self.get_setting('dict_directory')
             if os.path.isdir(app_directory):
-                os.makedirs(dict_directory+f'{self.dict_name}/', exist_ok=True)
-                directory=dict_directory+f'{self.dict_name}/'
+                os.makedirs(dict_directory/f'{self.dict_name}', exist_ok=True)
+                directory=dict_directory/f'{self.dict_name}'
                 
         if os.path.isdir(directory):
             if use_filtered: dictionary = self.dictionary[self.filtered_characters]
@@ -199,11 +198,11 @@ class ViewDict(MyScreen):
             
             from packages.chd import _VALID_EXT
             if output in _VALID_EXT['.jsonl']:
-                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.jsonl',file_format='jsonl')
+                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}',file_format='jsonl')
             if output in _VALID_EXT['.txt']:
-                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.txt',file_format='pleco',template=path_to_template)
-            # if output in _VALID_EXT['.db']:
-            #     dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}.db',file_format='db')
+                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}',file_format='pleco',template=path_to_template)
+            if output in _VALID_EXT['.db']:
+                dictionary.write(directory=directory,filename=f'{dictionary.name}{name_tag}',file_format='db')
             if make_msg: AttentionMsg(attention='File was created',msg=f'The dictionary {dictionary.name} was stored in {directory}').open()
 
             self.get_screen('select_dict').set_files()
@@ -215,13 +214,16 @@ class ViewDict(MyScreen):
             use_filtered = True if 'filter' in mode else False
             if 'pleco' in mode: output = 'txt'
             elif 'jsonl' in mode: output = 'jsonl'
+            elif 'backup' in mode: output = 'db'
             else: output='all'
-            if not path.endswith('/'): path+='/'
+            if os.path.isdir(path): 
+                from pathlib import Path
+                path = Path(path)
             self.save_dictionary(directory=path,use_filtered=use_filtered, output=output,make_msg=True,use_tag=True)
             self.file_manager.close()
         
         def export_path(mode):
-            # export_to_dir = lambda: export_to_dir(mode=mode)
+
             self.file_manager = MyFileManager(
                 description="Decide on directory for export of dictionary",
                 select_path=partial(export_to_dir,mode=mode),
@@ -232,6 +234,7 @@ class ViewDict(MyScreen):
         export_option = [
             f'pleco txt ({len(self.dictionary)})',
             f'jsonl ({len(self.dictionary)})',
+            f'backup to db ({len(self.dictionary)})',
             f'pleco txt (filter applied: {self.entry_count})',
             f'jsonl (filter applied: {self.entry_count})'
         ]
@@ -338,7 +341,6 @@ class ViewDict(MyScreen):
         # basically if the image is there, I want to know 
         # if another image is already given, this method should not overwrite the path
         # HOWEVER: images with different path are still copied to image directory 
-        
         directory = self.get_setting('image_directory')
         if not os.path.isdir(directory):
             return None
@@ -348,22 +350,22 @@ class ViewDict(MyScreen):
         possible_image_types = character.image_files.keys()
         
         for image_type in possible_image_types:
-            test1 = f'{image_type}/{character.unicode_unique_string}_{image_type}.png'
+            test1 = Path(image_type)/f'{character.unicode_unique_string}_{image_type}.png'
             test2 = f'{character.unicode_unique_string}_{image_type}.png'
-            test3 = f'{character.unicode_unique_string}/{character.unicode_unique_string}_{image_type}.png'
+            test3 = Path(character.unicode_unique_string)/f'{character.unicode_unique_string}_{image_type}.png'
             file_exists,move = False,False
-            if os.path.isfile(os.path.join(directory+test1)):
-                file = os.path.join(directory+test1)
+            if os.path.isfile(directory/test1):
+                file = directory/test1
                 file_exists = True
                 move_file,move=file,True
-            if os.path.isfile(os.path.join(directory,test2)):
-                file = os.path.join(directory,test2)
+            if os.path.isfile(directory/test2):
+                file = directory/test2
                 file_exists = True
                 move_file,move=file,True
-            if os.path.isfile(os.path.join(directory,test3)):
-                file = os.path.join(directory,test3)
+            if os.path.isfile(directory/test3):
+                file = directory/test3
                 file_exists = True
-            
+                
             image_dict = character['images']
             is_dict = isinstance(image_dict,dict)
             
@@ -374,9 +376,9 @@ class ViewDict(MyScreen):
             else: path_correct = False
             
             def copy_img_file(src_path,update_character=False):
-                dest_path = os.path.join(directory,test3)
-                dest_dir=os.path.dirname(dest_path)
-                dest_name=os.path.basename(dest_path)
+                dest_path = directory/test3
+                dest_dir=dest_path.parent
+                dest_name=dest_path.name
                 os.makedirs(dest_dir,exist_ok=True)
                 self.import_file(src_path=src_path,dest_dir=dest_dir,new_name=dest_name)
                 if update_character: character.update_images({image_type:dest_path})
@@ -413,7 +415,7 @@ class ViewDict(MyScreen):
                     src_path = image_dict[image_type]
                     overwrite = False
                 elif not path_correct: 
-                    src_path = os.path.join(self.root_folder,'.images',test2)
+                    src_path = self.root_folder/'.images'/test2
                     overwrite = True
                 if os.path.isfile(src_path): copy_img_file(src_path,update_character=overwrite)
                     

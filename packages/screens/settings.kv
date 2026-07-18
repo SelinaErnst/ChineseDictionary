@@ -33,14 +33,14 @@
                     id: app_directory
                     setting: 'app_directory'
                     hint: 'App Directory'
-                    text: app.get_setting('app_directory',default=True)
+                    text: str(app.get_setting('app_directory',default=True))
                     icon: 'folder-open'
                     press_button: self.select_directory
                 Setting:
                     id: import_directory
                     setting: 'import_directory'
                     hint: 'Import Directory'
-                    text: app.get_setting('import_directory')
+                    text: str(app.get_setting('import_directory'))
                     icon: 'folder-open'
                     press_button: self.select_directory
                 MDStackLayout:
@@ -53,14 +53,14 @@
                         role: 'small'
                         icon_size: sp(12)
                         padding: 15
-                        on_release: root.open_file(app.get_setting('pleco_template'))
+                        on_release: root.open_file(app.get_setting('dictionary_template'))
                     MultiLineIconTextButton:
                         text: 'Categories'
                         icon: 'pencil'
                         role: 'small'
                         icon_size: sp(12)
                         padding: 15
-                        on_release: root.open_file(app._MyApp__appdata+'defaults/'+'dictionary_categories.json')
+                        on_release: root.open_file(app._MyApp__appdata/'defaults'/'dictionary_categories.json')
                     MultiLineIconTextButton:
                         text: 'Reset Settings'
                         icon: 'backup-restore'

@@ -41,8 +41,9 @@ from kivy.properties import (
 
 from kivy.lang import Builder
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/dialogs.kv')
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'dialogs.kv'))
 
 def grant_permissions_external_storage():  
     if platform == "android":
@@ -198,7 +199,8 @@ class LazyOptions(MDBoxLayout):
 class PaletteOptions(LazyOptions):
     
     def __init__(self,*args,**kwargs):
-        self.palette_colors = load_json('appdata/colors/palette_colors.json')
+        from pathlib import Path
+        self.palette_colors = load_json(Path('appdata')/'colors'/'palette_colors.json')
         self.options = self.get_palettes()
         super().__init__(*args,**kwargs)
     
@@ -348,7 +350,7 @@ class ConfirmDecision(CustomDialog):
         if os.path.isdir(dict_directory):
             if file in os.listdir(dict_directory):
                 import shutil
-                shutil.rmtree(dict_directory+file)        
+                shutil.rmtree(dict_directory/file)        
                 app.previous_screen()
                 if hasattr(app.wm.current_screen,'set_files'):
                     app.wm.current_screen.set_files()
@@ -376,8 +378,8 @@ class ConfirmDecision(CustomDialog):
         file=current_screen.character.unicode_unique_string
         d=Dictionary(name=file,characters=[current_screen.character])
         dict_directory = app.get_setting('dict_directory')
-        directory=dict_directory+f'{current_screen.parent_dictionary.name}/'
-        d.write(directory=directory,filename=f'{file}.txt',file_format='pleco',template=path_to_template)
+        directory=dict_directory/f'{current_screen.parent_dictionary.name}'
+        d.write(directory=directory,filename=file,file_format='pleco',template=path_to_template)
         # AttentionMsg(attention='File was created',msg=f'The character {current_screen.character} was stored in {directory}{file}.txt').open()
     
     # = –––––––––––––––––––––––––– save_edit ––––––––––––––––––––––––– = #
@@ -413,8 +415,8 @@ class ConfirmDecision(CustomDialog):
         from main import ChD
         app=ChD.get_running_app()
         settings = app.settings
-        settings['app_directory']=str(app.root_folder)
-        settings['import_directory']=str(app.root_folder)+'appdata/examples/'
+        settings['app_directory']=app.root_folder
+        settings['import_directory']=app.root_folder/'appdata'/'examples'
         app.save_default_settings(settings)
         app.wm.get_screen('settings').update_settings()
 
@@ -456,8 +458,8 @@ class ChooseAppDirectory(CustomDialog):
         default_settings = app.get_default_settings()
         app_directory = self.content.ids.app_directory.text
         if os.path.exists(app_directory):
-            default_settings['app_directory'] = app_directory
-            default_settings['import_directory']=str(app.root_folder)+'appdata/examples/'
+            default_settings['app_directory']=app_directory
+            default_settings['import_directory']=app.root_folder/'appdata'/'examples'
             app.save_default_settings(default_settings)
             app.wm.get_screen('settings').update_settings()
             self.dismiss()
@@ -467,8 +469,8 @@ class ChooseAppDirectory(CustomDialog):
         from main import ChD
         app=ChD.get_running_app()
         settings = app.settings
-        settings['app_directory']=str(app.root_folder)
-        settings['import_directory']=str(app.root_folder)+'appdata/examples/'
+        settings['app_directory']=app.root_folder
+        settings['import_directory']=app.root_folder/'appdata'/'examples'
         app.save_default_settings(settings)
         app.wm.get_screen('settings').update_settings()
         self.dismiss()

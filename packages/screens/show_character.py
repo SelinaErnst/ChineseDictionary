@@ -298,31 +298,48 @@ class ShowCharacter(MyScreen):
             image_type=image_type.lower().replace(' ',"_")
             
             image_name = self.character.unicode_unique_string
-            image_directory = os.path.join(image_directory,image_name)
+            image_directory = image_directory/image_name
             file_name = f'{image_name}_{image_type}.png'
             
-            self.remove_file(os.path.join(image_directory,file_name))
+            self.remove_file(image_directory/file_name)
             
             do_import = True if image_type in ['ancient_character','shuowen_jiezi'] else False
             if do_import:
                 os.makedirs(image_directory, exist_ok=True)
                 imported = self.import_file(src_path=path,dest_dir=image_directory,new_name=file_name,inform=False)
-                filepath = os.path.join(image_directory,file_name)
+                filepath = image_directory/file_name
                 self.update_image_display(image_type=image_type,path=filepath)
             elif os.path.isfile(path):
                 self.update_image_display(image_type=image_type,path=path)
-            
+        
+        def find_images(image_type=""):
+            from pathlib import Path
+            directory = self.get_setting('image_directory')
+            matches = []
+            if image_type!="": image_type=f'_{image_type.lower().replace(' ','_')}'
+            search_pattern = f"*{self.character.unicode_unique_string}{image_type}*"
+            matches.extend(directory.rglob(search_pattern))
+            return matches
+        
         def choose_png_file(image_type):
             self.file_manager = MyFileManager(
-                description='Decide which png image should be uploaded.',
+                description=f'Decide which png image should be uploaded. \nType of image: {image_type.replace('_',' ').title()}',
                 select_path=partial(select_image_path,image_type=image_type),
                 preview=True,
                 ext=[".png"])
-            self.file_manager.show(path=None,use_root_folder=True)
+
+            matches = find_images(image_type)
+            if matches != []:  path = matches[0].parent
+            else: path = None
+            self.file_manager.show(path=path,use_root_folder=True)
             
         def choose_image_type():
             # options=list(set(['ancient_character','shuowen_jiezi']) | set(self.character.image_files.keys()))
             options = list(dict.fromkeys(['ancient_character','shuowen_jiezi'] + list(self.character.image_files.keys())))
+            matches = find_images()
+            if matches!=[]: match_options = [p.stem.replace(f'{self.character.unicode_unique_string}_',"") for p in matches if p.is_file()]
+            options = set(options+match_options)
+
             options=[o.replace('_',' ').title() for o in options]
             kwargs={
                 "title":"Image Type",

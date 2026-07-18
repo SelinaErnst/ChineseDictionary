@@ -93,7 +93,7 @@ class ChD(MyApp):
         self.get_default_settings() 
         self.update_design()
 
-        self.load_all_kv_files((self.root_folder+'screens'))
+        self.load_all_kv_files(self.root_folder/'screens')
         Builder.load_string(KV)
     
     def build(self):
@@ -147,7 +147,7 @@ class ChD(MyApp):
     def user_settings_file(self):
         # app_directory
         user_settings_directory = self.get_setting('config_directory',default=True)
-        return user_settings_directory + 'settings.json'
+        return user_settings_directory/'settings.json'
     
     @property
     def settings(self):
@@ -155,6 +155,7 @@ class ChD(MyApp):
         settings = self.load_json(self.default_settings_file)
         if os.path.isfile(self.user_settings_file):
             settings.update(self.load_json(self.user_settings_file))
+            
         return settings
     
     def get_setting(self,kind,default=False,settings=None):
@@ -167,17 +168,17 @@ class ChD(MyApp):
         elif kind == 'app_directory':
             result = default_settings['app_directory']
         elif kind == 'dict_directory':
-            result = default_settings['app_directory']+'dictionaries/'
+            result = default_settings['app_directory']/'dictionaries'
         elif kind == 'image_directory':
-            result = default_settings['app_directory']+'.images/'
+            result = default_settings['app_directory']/'.images'
         elif kind == 'config_directory':
-            result = default_settings['app_directory']+'.config/'
+            result = default_settings['app_directory']/'.config'
         elif kind == 'grammar_directory':
-            result = default_settings['app_directory']+'grammar/'
+            result = default_settings['app_directory']/'grammar'
         elif kind == 'dictionary_template':
-            result = self._MyApp__appdata+'templates/'+default_settings['dictionary_template']
+            result = self._MyApp__appdata/'templates'/default_settings['dictionary_template']
         elif kind == 'grammar_template':
-            result = self._MyApp__appdata+'templates/'+default_settings['grammar_template']
+            result = self._MyApp__appdata/'templates'/default_settings['grammar_template']
         else:
             result = super().get_setting(kind=kind, default=default, settings=settings)
         return result
@@ -205,7 +206,7 @@ class ChD(MyApp):
         
         # the app directory in default settings needs to be changed 
         default_settings = self.get_default_settings()
-        default_settings['app_directory'] = settings['app_directory']
+        default_settings['app_directory'] = Path(settings['app_directory'])
         self.save_default_settings(default_settings)
 
         # settings directory
@@ -216,12 +217,12 @@ class ChD(MyApp):
         remove = remove + ['access_granted','app_directory','hidden_categories','dictionary_template']
         # user settings
         settings = {k:v for k,v in settings.items() if k not in remove}
-        self.dump_json(settings,user_settings_directory+"settings.json")
+        self.dump_json(settings,user_settings_directory/'settings.json')
     
     def save_default_settings(self, settings):
-        directories = ['dictionaries/','.images/','grammar/']
+        directories = ['dictionaries','.images','grammar']
         for d in directories:
-            os.makedirs(settings['app_directory']+d,exist_ok=True)
+            os.makedirs(settings['app_directory']/d,exist_ok=True)
         super().save_default_settings(settings)
             
     # = ============================================================== = #
@@ -293,7 +294,8 @@ class ChD(MyApp):
         repeat_exact=[] # when EXACT character exists in dictionary
         dict_directory=self.get_setting('dict_directory')
         for some_dict in os.listdir(dict_directory):
-            d_path = os.path.join(dict_directory,some_dict,some_dict+'.jsonl')
+            d_path = dict_directory / some_dict / (some_dict+'.jsonl')
+            print(d_path)
             if os.path.isfile(d_path):
                 some_dict = Dictionary(name=some_dict)
                 some_dict.read(d_path,file_format='jsonl',add=False,categories=self.get_setting('categories'))
@@ -329,7 +331,7 @@ class ChD(MyApp):
         linked_characters={}
         
         for some_dict in os.listdir(dict_directory):
-            d_path = os.path.join(dict_directory,some_dict,some_dict+'.jsonl')
+            d_path = dict_directory / some_dict / (some_dict+'.jsonl')
             if os.path.isfile(d_path):
                 some_dict = Dictionary(name=some_dict)
                 some_dict.read(d_path,file_format='jsonl',add=False,categories=self.get_setting('categories'))
@@ -361,17 +363,17 @@ class ChD(MyApp):
             self.wm.current_screen.file_manager.close()
             dict_directory=self.get_setting('dict_directory')
             backup_name='ChD_dictionaries_BACKUP.db'
-            backup_dir=directory
-            if os.path.isfile(os.path.join(backup_dir,backup_name)): 
-                os.remove(os.path.join(backup_dir,backup_name))
+            backup_dir=Path(directory)
+            if os.path.isfile(backup_dir/backup_name): 
+                os.remove(backup_dir/backup_name)
             for some_dict in os.listdir(dict_directory):
-                d_path = os.path.join(dict_directory,some_dict,some_dict+'.jsonl')
+                d_path = dict_directory/some_dict/(some_dict+'.jsonl')
                 if os.path.isfile(d_path):
                     some_dict = Dictionary(name=some_dict)
                     some_dict.read(d_path,file_format='jsonl',add=False,categories=self.get_setting('categories'))
                     some_dict.set_grammar(self.wm.get_screen('gram_list').grammar_list)
-                    some_dict.to_db(directory=backup_dir,filename=backup_name,clean=False)
-        
+                    some_dict.write(directory=backup_dir,filename=backup_name,clean=False)
+                    
         self.wm.current_screen.file_manager = MyFileManager(
             description='Choose directory for backup.',
             select_path=backup_to,
@@ -381,31 +383,32 @@ class ChD(MyApp):
     def restore(self):
         
         def restore_from_backup(file):
-            from packages.chd import grammar_to_jsonl, open_db, get_table_names, close_db
+            from packages.chd import grammar_to_jsonl, open_db, get_table_names, close_db, get_unique_values
             self.wm.current_screen.file_manager.close()
             conn,cursor = open_db(file)
             tables = get_table_names(cursor)
             has_grammar = 'Grammar' in tables
-            tables = [tab for tab in tables if tab not in ['Grammar','Links']]
+            # tables = [tab for tab in tables if tab not in ['Grammar','Links']]
+            dictionaries = get_unique_values(cursor,'Dictionary','dict_name')
             categories=self.get_setting('categories')
             dict_directory = self.get_setting('dict_directory')
             gr_directory = self.get_setting('grammar_directory')
-            gr_path_jsonl=os.path.join(gr_directory,'grammar.jsonl')
+            gr_path_jsonl=gr_directory/'grammar.jsonl'
             
             overwrite=True
-            for name in tables:
+            for name in dictionaries:
                 d = Dictionary(name=name)
-                d.read_db(add=False,categories=categories,name=name,file=file)
-                directory=os.path.join(dict_directory,name+'/')
+                d.read(filepath=file,add=False,categories=categories,name=name)
+                directory=dict_directory/name
                 if not os.path.isdir(directory) or overwrite:
                     os.makedirs(directory, exist_ok=True)
-                    d.write(directory=directory,filename=f'{name}.jsonl')
+                    d.write(directory=directory,filename=name,file_format='jsonl')
                 else:
-                    d.write(directory=directory,filename=f'{name}_BACKUP.jsonl')
+                    d.write(directory=directory,filename=f'{name}_BACKUP',file_format='jsonl')
             if has_grammar and (not os.path.isfile(gr_path_jsonl) or overwrite):
                 grammar_to_jsonl(grammar=d.grammar,path=gr_path_jsonl)
             elif has_grammar:
-                gr_path_jsonl=os.path.join(gr_directory,'grammar_BACKUP.jsonl')
+                gr_path_jsonl=gr_directory/'grammar_BACKUP.jsonl'
                 grammar_to_jsonl(grammar=d.grammar,path=gr_path_jsonl)
                 
             close_db(conn)
@@ -415,7 +418,10 @@ class ChD(MyApp):
             select_path=restore_from_backup,
             ext=[".db"])
         self.wm.current_screen.file_manager.show(path=None,use_root_folder=False)
-                
+        
+    def clean_files(self):
+        pass
+                    
 if __name__=="__main__":
     ChD().run()
 

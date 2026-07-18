@@ -10,8 +10,13 @@ from .sql_methods import (
     create_table, 
     remove_table,
     open_db, close_db, 
+    get_table_columns,
+    create_column_list,
+    add_columns,
+    get_unique_values,
     )
 from typing import Literal, TypeAlias
+from pathlib import Path
 # from typeguard import typechecked
 
 _EXPORT_CHOICES: TypeAlias = Literal['pleco', 'txt', 'chd', '.txt', 'jsonl', '.jsonl','db','.db']
@@ -310,25 +315,35 @@ class Dictionary():
     # =                              READ                              = #
     # = ============================================================== = #
     
-    def read(self,filename,file_format:_EXPORT_CHOICES|None=None,add=True,categories=None,template=None):
-        file,ext = os.path.splitext(filename)
+    def read(self,filepath:str|Path,add:bool=True,categories=None,file_format:_EXPORT_CHOICES|None=None,**kwargs):
+        if isinstance(filepath,str): filepath = Path(filepath)
+        directory = filepath.parent
+        filename = filepath.stem
+        ext = filepath.suffix
         if ext!="": file_format=ext
         file_format=choose_file_ext(file_format)
         if file_format!=None:
-            file=file+file_format
+            file=filename+file_format
             if file_format == '.txt':
-                return self.read_pleco(file,template=template,add=add,categories=categories)
+                if 'template' in kwargs.keys(): template = kwargs.pop('template')
+                else: print('WARNING: a template is required to read a pleco txt file.')
+                return self.__read_pleco(directory/file,add=add,categories=categories,template=template)
             elif file_format == '.jsonl':
-                return self.read_jsonl(file,add=add,categories=categories)
+                return self.__read_jsonl(directory/file,add=add,categories=categories)
             elif file_format == '.db':
-                return self.read_db(file,add=add,categories=categories)
+                if 'name' in kwargs.keys(): name = kwargs.pop('name')
+                else: name = None
+                return self.__read_db(directory/file,add=add,categories=categories,name=name)
             else: return False
         else: return False
             
-    def read_jsonl(self,file,add=True,categories=None):
+    def __read_jsonl(self,filepath,add=True,categories=None):
+        
+        if not os.path.isfile(filepath): return False
+        
         try:
-            with open(file,'r') as file:
-                json_list = list(file)
+            with open(filepath,'r') as filepath:
+                json_list = list(filepath)
             if not add: self.characters=[]
             for json_str in json_list:
                 entry=json.loads(json_str)
@@ -346,10 +361,13 @@ class Dictionary():
         except:
             return False
         
-    def read_pleco(self,file,template,add=True,categories=None):
-        if template!=None and os.path.isfile(template):
+    def __read_pleco(self,filepath,template,add=True,categories=None):
+        
+        if not os.path.isfile(filepath): return False
+        
+        if template!=None:
             l=Loader(template=template)
-            with open(file) as f:
+            with open(filepath) as f:
                 character_lines=f.readlines()
             if character_lines!=None:
                 if not add: self.characters=[]
@@ -368,20 +386,12 @@ class Dictionary():
             else: return False
         else: return False
         
-    def read_db(self,file: str,add=True,categories=None,name=None):
+    def __read_db(self,filepath:str|Path,add=True,categories=None,name=None):
         
-        if not os.path.isfile(file): return False
+        if not os.path.isfile(filepath): return False
+        elif isinstance(filepath,str): filepath = Path(filepath)
         
-        conn,cursor = open_db(file)
-        
-        if name==None or not table_exists(cursor,name):
-            filename=os.path.splitext(os.path.basename(file))[0]
-            if table_exists(cursor,self.name):
-                name = self.name
-            elif table_exists(cursor,filename):
-                name = filename
-            else:
-                return False
+        conn,cursor = open_db(filepath)       
             
         self.grammar = []
         try:
@@ -389,7 +399,7 @@ class Dictionary():
             from packages.chd import Grammar
             for row in g_rows:
                 data = dict(row)
-                idx = data.pop('index')
+                idx = data.pop('uniq')
                 clean_data = {k: (json.loads(v) if isinstance(v, str) and v.startswith(('[', '{')) else v) 
                                 for k, v in data.items()}
                 g_obj = Grammar(**clean_data) 
@@ -398,10 +408,29 @@ class Dictionary():
         except:
             read=False
 
+        filename=filepath.stem
+        if not table_exists(cursor,'Dictionary'):
+            if name!=None and table_exists(cursor,name): name, table = name, name
+            if table_exists(cursor,self.name): name, table = self.name, self.name
+            elif table_exists(cursor,filename): name, table = filename, filename
+            else: return False
+        else:
+            table = 'Dictionary'
+            if name!=None and name not in get_unique_values(cursor,table,'dict_name'): name='all'
+            elif name==None: name='all'
+            
+
         if not add: self.characters=[]
         try:
-            c_rows = cursor.execute(f"SELECT * FROM {name}").fetchall()
             from packages.chd import Character
+            
+            if name=='all':
+                query = f"SELECT * FROM {table}"
+                c_rows = cursor.execute(query).fetchall()
+            else:
+                query = f"SELECT * FROM {table} WHERE TRIM(dict_name, ' \n\r\t') = ?"
+                c_rows = cursor.execute(query,[f'{name}']).fetchall()
+            
             for row in c_rows:
                 data = dict(row)
                 uniq = data.pop('uniq')
@@ -427,70 +456,73 @@ class Dictionary():
     # =                              WRITE                             = #
     # = ============================================================== = #
     
-    def write(self,directory:str='./',filename:str|None=None,file_format:_EXPORT_CHOICES|None=None,**kwargs):
-        file,ext = os.path.splitext(filename)
+    def write(self,directory:str|Path='',filename:str|Path|None=None,file_format:_EXPORT_CHOICES|None=None,**kwargs):
+        
+        if not os.path.isdir(directory): return None
+        
+        if isinstance(filename,str): filename,ext = os.path.splitext(filename)
+        elif isinstance(filename,Path): filename,ext = filename.stem,filename.suffix
+        elif filename == None: filename = self.name
+        else: return None
+        
         if ext!="": file_format=ext
-        filename = self.name if filename == None else filename
+        
         file_format=choose_file_ext(file_format)
+        
         if file_format!=None:
-            filename = filename+file_format if filename == self.name else filename
+            file = filename+file_format
             if file_format == '.txt':
                 template = kwargs.pop('template')
-                self.to_txt(directory=directory,filename=filename,template=template)
+                self.__to_txt(directory=directory,filename=file,template=template)
             elif file_format == '.jsonl':
-                self.to_jsonl(directory=directory,filename=filename)
+                self.__to_jsonl(directory=directory,filename=file)
             elif file_format == '.db':
-                self.to_db(directory=directory,filename=filename)
-                
+                if 'clean' in kwargs: self.__to_db(directory=directory,filename=file,clean=kwargs.pop('clean'))
+                else: self.__to_db(directory=directory,filename=file)
 
-    def to_jsonl(self,directory:str,filename=None):
-        filename = filename+'.jsonl' if filename == self.name else filename
-        with open(directory+filename,'w') as outfile:
+    def __to_jsonl(self,directory:Path,filename:str):
+        if not isinstance(directory,Path): directory=Path(directory)
+        if not filename.endswith('jsonl'): filename+='.jsonl'
+        with open(directory/filename,'w') as outfile:
             for c in self.characters:
                 json.dump(c.to_dict(), outfile, indent=None, ensure_ascii=False)
                 outfile.write('\n')
     
-    def to_txt(self,directory:str,template:str,filename=None):
-        filename = filename+'.txt' if filename == self.name else filename
-        with open(directory+filename,'w') as file:
+    def __to_txt(self,directory:Path,filename:str,template:str):
+        if not isinstance(directory,Path): directory=Path(directory)
+        if not filename.endswith('txt'): filename+='.txt'
+        with open(directory/filename,'w') as outfile:
             pleco_text=[
                 c.to_pleco_entry(template=template)
                 for c in self.characters]
-            file.write('\n'.join(pleco_text))
-        
+            outfile.write('\n'.join(pleco_text))
 
-    def to_db(self,directory:str,filename=None,clean=True):
-        filename = filename+'.db' if filename == self.name else filename
-        db_file = os.path.join(directory,filename)
+    def __to_db(self,directory:Path,filename:str,clean=True):
+        if not isinstance(directory,Path): directory=Path(directory)
+        if not filename.endswith('db'): filename+='.db'
+        db_file = directory/filename
 
         conn,cursor = open_db(db_file)
         
-        def get_col(dtype):
-            dtype_map = {
-                str:'TEXT',
-                int:'INTEGER',
-                float:'NUMERIC',
-                list:'TEXT',
-                dict:'TEXT',
-            }
-            if dtype not in dtype_map.keys(): return 'TEXT'
-            else: return [t for d,t in dtype_map.items() if dtype==d][0]
-        
         c_links = []
+        table_name = 'Dictionary'
+        
         for i,c in enumerate(self.characters):
             c_data = c.to_dict()
+            unique = f'{c.unicode_unique_string}_{self.name}'
             
             for entry,result in self.get_linked_grammar(c).items():
                 if result!=None:
-                    c_links.append((c.unicode_unique_string,result.unique_string,entry))
+                    c_links.append((unique,result.unique_string,entry))
                 else:
-                    c_links.append((c.unicode_unique_string,result,entry))
-                        
+                    c_links.append((unique,result,entry))
+            
             if i == 0:
-                cols = ['"uniq" TEXT UNIQUE']+[f'"{k}" {get_col(v)}' for k,v in c.default_dtypes.items()]
-                remove_table(cursor,self.name)
-                insert_query = create_table(cursor,self.name,cols)
-            values = [c.unicode_unique_string]+[json.dumps(v) if isinstance(v, (list, dict)) else v for v in c_data.values()]
+                cols = ['"uniq" TEXT UNIQUE','"dict_name" TEXT']+create_column_list(c.default_dtypes)
+                # remove_table(cursor,table_name)
+                if clean: remove_table(cursor,table_name)
+                insert_query = create_table(cursor,table_name,cols)
+            values = [unique,self.name]+[json.dumps(v) if isinstance(v, (list, dict)) else v for v in c_data.values()]
             cursor.execute(insert_query, values)
                         
         from packages.chd import Grammar
@@ -498,7 +530,8 @@ class Dictionary():
             if isinstance(g,Grammar) and not g.is_empty():
                 g_data = g.to_dict()
                 if  i == 0:
-                    cols = ['"index" TEXT UNIQUE']+[f'"{k}" TEXT' for k in g_data.keys()]
+                    # cols = ['"index" TEXT UNIQUE']+[f'"{k}" TEXT' for k in g_data.keys()]
+                    cols = ['"uniq" TEXT UNIQUE']+create_column_list({k:str for k in g_data.keys()})
                     remove_table(cursor,'Grammar')
                     insert_query = create_table(cursor,'Grammar',cols)
                 values = [g.unique_string]+[json.dumps(v) if isinstance(v, (list, dict)) else v for v in g_data.values()]

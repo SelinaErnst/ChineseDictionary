@@ -12,17 +12,22 @@ from typing import Literal, TypeAlias
 APP_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent.parent
 
 def load_json(path, default_dir=APP_DIR):
-    path=path if default_dir==None else Path(default_dir)/path
+    if default_dir!=None: path = Path(default_dir)/path
     with open(path, "r") as f:
         data = json.load(f)
     return data
 
-def dump_json(data,path, default_dir=APP_DIR,indent=4):
-    path=path if default_dir==None else Path(default_dir)/path
+def dump_json(data,path, default_dir=None,indent=4):
+    if default_dir!=None: path = Path(default_dir)/path
+    
+    def convert(value):
+        if isinstance(value, Path):
+            value = str(value)
+        return value
+    
     with open(path, "w") as f:
-        json.dump(data, f, indent=indent,ensure_ascii=False)
+        json.dump({k:convert(v) for k,v in data.items()}, f, indent=4,ensure_ascii=False)
     return True
-
 
 _PLECO_COMMAND: TypeAlias = Literal[
     'newline', 'tab', 'point', 'dot',
@@ -31,10 +36,11 @@ _PLECO_COMMAND: TypeAlias = Literal[
     'left','right','indent','mark','markline',
     'line'
     ]
-_PLECO_SYNTAX = load_json('pleco_syntax.json',APP_DIR/'appdata'/'defaults')
 
-_CHD_COLOR = load_json('pleco_colors.json',APP_DIR/'appdata'/'colors')
-_PLECO_COLOR = load_json('possible_colors.json',APP_DIR/'appdata'/'colors')
+default_dir = APP_DIR/'appdata'
+_PLECO_SYNTAX = load_json('pleco_syntax.json',default_dir/'defaults')
+_CHD_COLOR = load_json('pleco_colors.json',default_dir/'colors')
+_PLECO_COLOR = load_json('possible_colors.json',default_dir/'colors')
 _CHD_COLOR.update(_PLECO_COLOR)
 
 _CHD_FONT_MAP={
@@ -374,7 +380,7 @@ class Block():
     
 class Writer():
     def __init__(self,template,character:Character):
-        self.__used_template=template
+        self.__used_template=str(template)
         self.__use_template()
         self.current_header=None
         self.current_content=None
@@ -472,7 +478,7 @@ class Loader():
     dtype_map={'L':list,'T':str,'I':int,'list':list,'str':str,'int':int}
     
     def __init__(self,template):
-        self.template=template
+        self.template=str(template)
         self.__use_template()
         self.__analyze_template()
         self.__additional_categories={'images':dict,'image_urls':list}

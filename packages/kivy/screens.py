@@ -2,12 +2,9 @@ from kivymd.uix.screen import MDScreen
 
 from kivy.lang import Builder
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/screens.kv')
-
-from kivy.graphics.svg import Svg
-
-        
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'screens.kv'))
 class MyScreen(MDScreen):
     def __init__(self,**kwargs):
         super(MyScreen,self).__init__(**kwargs)
@@ -66,8 +63,8 @@ class MyScreen(MDScreen):
         app.hide_widget(*args,**kwargs)
         
     def import_file(self,src_path, dest_dir, new_name:str="",inform=False):
-        if new_name=="": new_name=os.path.basename(src_path)
-        dest_path = os.path.join(str(dest_dir), new_name)
+        if new_name=="": new_name=src_path.name
+        dest_path = dest_dir/new_name
         try:
             import shutil
             shutil.copyfile(src_path, dest_path)
@@ -83,3 +80,8 @@ class MyScreen(MDScreen):
     def remove_file(self,src_path):
         if os.path.isfile(src_path): os.remove(src_path)
     
+    def count_character(self,character):
+        from main import ChD
+        app=ChD.get_running_app()
+        repeat,repeat_exact = app.check_character_for_multiple(character)
+        return len(repeat)

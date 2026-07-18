@@ -14,9 +14,9 @@ from kivymd.uix.appbar.appbar import MDActionBottomAppBarButton
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
         
 from kivy.lang import Builder
-import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/buttons.kv')
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'buttons.kv'))
 
 # = ============================================================== = #
 # =                             TOGGLE                             = #

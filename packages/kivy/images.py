@@ -13,8 +13,9 @@ from kivy.uix.recycleview.views import RecycleDataViewBehavior
 from .layouts import ClickableBoxLayout
 from kivy.lang import Builder
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/images.kv')
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'images.kv'))
 
 class ImageDisplay(RecycleDataViewBehavior,MDStackLayout):
     images = ObjectProperty({})
@@ -33,7 +34,7 @@ class ImageDisplay(RecycleDataViewBehavior,MDStackLayout):
         self.clear_widgets()
         if image_files != {}:
             for k,f in image_files.items():
-                b=ImageBox(source=f, use_default=False, image_type=k)
+                b=ImageBox(source=str(f), use_default=False, image_type=k)
                 self.ids[k] = b
                 self.add_widget(b)
             self.images = image_files
@@ -44,7 +45,7 @@ class ImageDisplay(RecycleDataViewBehavior,MDStackLayout):
             if self.images[image_type] == file:
                 self.ids[image_type].use_default = True
         else:
-            b=ImageBox(source=file, use_default=False, image_type=image_type)
+            b=ImageBox(source=str(file), use_default=False, image_type=image_type)
             self.ids[image_type] = b
             self.images[image_type] = file
             self.add_widget(b)
@@ -54,15 +55,14 @@ class ImageBox(ClickableBoxLayout):
     use_default=BooleanProperty(False)
     image_type=StringProperty()
     
-    
     def imagefile(self,source):
         from main import ChD
-        default_file=ChD.get_running_app().root_folder+"appdata/images/app_icon_fg.png"
+        default_file=ChD.get_running_app().root_folder/"appdata"/"images"/"app_icon_fg.png"
         if (not os.path.isfile(self.source) or self.use_default):
             image_file=default_file
         else:
             image_file=self.source
-        return image_file        
+        return str(image_file)
     
 class CenterImage(MDAnchorLayout):
     source=StringProperty()

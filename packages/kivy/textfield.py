@@ -10,9 +10,9 @@ from kivy.properties import (
     )
 
 from kivy.lang import Builder
-import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/textfield.kv')
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'textfield.kv'))
 
 # = ============================================================== = #
 # =                         ONLY TEXTFIELD                         = #

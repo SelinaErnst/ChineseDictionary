@@ -9,7 +9,7 @@ class DictionaryNew(MyScreen):
 
     def __exists(self,dict_name:str=None):
         dict_name=self.dict_name if dict_name==None else dict_name
-        return os.path.isdir(self.get_setting('dict_directory')+dict_name)
+        return os.path.isdir(self.get_setting('dict_directory')/dict_name)
 
     def check_name(self):
         entry=(self.ids.name_entry.text)

@@ -17,10 +17,9 @@ from kivy.properties import (
 from packages.chd import Grammar
 from .dialogs import EditElement
 from kivy.lang import Builder
-import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/listitems.kv')
-
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'listitems.kv'))
 class TableRow(MDBoxLayout):
     # used in: ConfirmChoice
     head=StringProperty()
@@ -50,7 +49,8 @@ class PaletteColor(MDBoxLayout):
     
     def get_color(self,palette,color_name):
         from packages.chd import load_json
-        palette_colors = load_json('appdata/colors/palette_colors.json')
+        from pathlib import Path
+        palette_colors = load_json(Path('appdata')/'colors'/'palette_colors.json')
         return palette_colors[self.theme_cls.theme_style][palette.capitalize()][color_name]
     
 class PaletteItem(CustomListItem):

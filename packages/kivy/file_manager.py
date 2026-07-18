@@ -9,8 +9,9 @@ from kivy.properties import (
 from kivymd.uix.filemanager import MDFileManager
 from kivy.lang import Builder
 import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/file_manager.kv')
+from pathlib import Path
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'file_manager.kv'))
 
 class MyFileManager(MDFileManager):
     root_folder=StringProperty()
@@ -75,9 +76,8 @@ class MyFileManager(MDFileManager):
             from main import ChD
             app = ChD.get_running_app()
             path = app.get_setting('app_directory')
-            
-        if  isinstance(path,str) and path!="/": path = path.rstrip('/')
-        print(path)
+        
+        path = str(path)
         # -----------------------------------------
         from kivy.clock import Clock
         Clock.schedule_once(lambda dt: self.update_dir_name(path))
@@ -90,7 +90,7 @@ class MyFileManager(MDFileManager):
             The path to the directory that will be opened in the file manager.
         """
 
-        self.current_path = path
+        self.current_path = str(path)
         self.selection = []
         dirs, files = self.get_content()
         manager_list = []

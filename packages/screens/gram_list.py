@@ -26,7 +26,7 @@ class GrammarList(MyScreen):
         self.set_list_items()
         
     def get_grammar_list(self):
-        path=os.path.join(self.get_setting('app_directory'),'grammar','grammar.jsonl')
+        path=self.get_setting('app_directory')/'grammar'/'grammar.jsonl'
         grammar_list = self.read_grammar_jsonl(path)
         grammar_list = list(set(grammar_list))
         def get_sorting_keys(data):
@@ -48,8 +48,8 @@ class GrammarList(MyScreen):
     
     def save_grammar(self):
         self.edited=False
-        gr_path_jsonl=os.path.join(self.get_setting('grammar_directory'),'grammar.jsonl')
-        gr_path_txt=os.path.join(self.get_setting('grammar_directory'),'grammar.txt')
+        gr_path_jsonl=self.get_setting('grammar_directory')/'grammar.jsonl'
+        gr_path_txt=self.get_setting('grammar_directory')/'grammar.txt'
         template=self.get_setting('grammar_template')
         
         from packages.chd import grammar_to_txt, grammar_to_jsonl

@@ -7,19 +7,20 @@ from .show_character import ShowCharacter
 from .gram_list import GrammarList
 from .show_gram import ShowGrammar
 
-import os
+from pathlib import Path
 from kivy.lang import Builder
-current_dir = os.path.dirname(os.path.abspath(__file__))
-Builder.load_file(current_dir+'/home.kv')
-Builder.load_file(current_dir+'/interface.kv')
-Builder.load_file(current_dir+'/settings.kv')
-Builder.load_file(current_dir+'/new_dict.kv')
-Builder.load_file(current_dir+'/upload_dict.kv')
-Builder.load_file(current_dir+'/dict_chooser.kv')
-Builder.load_file(current_dir+'/view_dict.kv')
-Builder.load_file(current_dir+'/show_character.kv')
-Builder.load_file(current_dir+'/gram_list.kv')
-Builder.load_file(current_dir+'/show_gram.kv')
+
+current_dir = Path(__file__).resolve().parent
+Builder.load_file(str(current_dir/'home.kv'))
+Builder.load_file(str(current_dir/'interface.kv'))
+Builder.load_file(str(current_dir/'settings.kv'))
+Builder.load_file(str(current_dir/'new_dict.kv'))
+Builder.load_file(str(current_dir/'upload_dict.kv'))
+Builder.load_file(str(current_dir/'dict_chooser.kv'))
+Builder.load_file(str(current_dir/'view_dict.kv'))
+Builder.load_file(str(current_dir/'show_character.kv'))
+Builder.load_file(str(current_dir/'gram_list.kv'))
+Builder.load_file(str(current_dir/'show_gram.kv'))
 
 from packages.kivy import (
     MyScreen,
