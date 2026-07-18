@@ -10,6 +10,11 @@ def change_metrics():
         
     elif platform == "linux":
         
+        os.environ['KIVY_METRICS_FONTSCALE'] = '1.15'
+        os.environ['KIVY_DPI'] = '500'
+        os.environ['KIVY_METRICS_DENSITY'] = '4'
+        
+        
         # my linux: KIVY_METRICS_FONTSCALE: 1, KIVY_METRICS_DENSITY: 1, KIVY_DPI: 96 -> dp(1): 1, sp(1): 1
 
         # os.environ['KIVY_METRICS_DENSITY'] = '2.625'

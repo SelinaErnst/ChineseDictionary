@@ -41,5 +41,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=r"C:\Users\serns\Documents\VSCode\ChineseDictionary\appdata\images\book_icon.ico"
+    # icon=r"C:\Users\serns\Documents\VSCode\ChineseDictionary\appdata\images\book_icon.ico"
 )
