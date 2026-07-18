@@ -316,14 +316,15 @@ class ShowCharacter(MyScreen):
             from pathlib import Path
             directory = self.get_setting('image_directory')
             matches = []
-            if image_type!="": image_type=f'_{image_type.lower().replace(' ','_')}'
+
+            if image_type!="": image_type=f'_{image_type.lower().replace(" ","_")}'
             search_pattern = f"*{self.character.unicode_unique_string}{image_type}*"
             matches.extend(directory.rglob(search_pattern))
             return matches
         
         def choose_png_file(image_type):
             self.file_manager = MyFileManager(
-                description=f'Decide which png image should be uploaded. \nType of image: {image_type.replace('_',' ').title()}',
+                description=f'Decide which png image should be uploaded. \nType of image: {image_type.replace("_"," ").title()}',
                 select_path=partial(select_image_path,image_type=image_type),
                 preview=True,
                 ext=[".png"])

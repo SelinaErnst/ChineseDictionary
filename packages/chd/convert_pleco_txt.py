@@ -13,7 +13,7 @@ APP_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent.parent
 
 def load_json(path, default_dir=APP_DIR):
     if default_dir!=None: path = Path(default_dir)/path
-    with open(path, "r") as f:
+    with open(path, "r", encoding='utf-8') as f:
         data = json.load(f)
     return data
 

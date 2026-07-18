@@ -46,6 +46,7 @@ class MyApp(MDApp):
         self.root_folder = get_project_root()
         self.__appdata = self.root_folder/"appdata"
         self.__config = Path(self.user_data_dir)
+        # print('CONFIG',self.__config)
         
         os.makedirs(self.__appdata,exist_ok=True)
         os.makedirs(self.__config,exist_ok=True)

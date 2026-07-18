@@ -6,14 +6,17 @@ from packages.chd import Dictionary, Character, Grammar, Sentence
 from kivy.utils import platform
 import re
 
+from kivy.config import Config
+icon_path=Path(__file__).resolve().parent/'appdata'/'images'/'book_icon.png'
+Config.set('kivy', 'window_icon', icon_path)
 from resizing import change_metrics, window_size
 
 change_metrics()
-# window_size()
+window_size()
 # window_size(device='GalaxyS24',orientation='portrait')
 # window_size(device='Laptop')
 # print(window_size(device='Pixel6',orientation='portrait'))
-print(window_size(device='Pixel6',orientation='p'))
+# print(window_size(device='Pixel6',orientation='p'))
 
 from kivymd.icon_definitions import md_icons
 

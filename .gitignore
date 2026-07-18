@@ -8,3 +8,4 @@ bin/*.aab
 test.*
 .vscode
 .images
+import.ipynb

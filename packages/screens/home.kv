@@ -29,7 +29,8 @@
                     style: 'filled'
                     font_style: 'Title'
                     role: 'medium'
-                    width: 700-2*20
+                    # width: 700-2*20 # linux
+                    width: 700 # windows
                     on_release: 
                         app.switch_screen("select_dict","left")
                         app.wm.current_screen.directory = app.get_setting('dict_directory')

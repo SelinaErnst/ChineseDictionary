@@ -2,7 +2,14 @@
 def change_metrics():
     from kivy.utils import platform
     import os
-    if platform in ["linux","win"]:
+
+    if platform == "win":
+        # windows: KIVY_METRICS_FONTSCALE: 1, KIVY_METRICS_DENSITY: 1.75, KIVY_DPI: 168 
+        os.environ['KIVY_METRICS_FONTSCALE'] = '1.5'
+        os.environ['KIVY_DPI'] = '200'
+        
+    elif platform == "linux":
+        
         # my linux: KIVY_METRICS_FONTSCALE: 1, KIVY_METRICS_DENSITY: 1, KIVY_DPI: 96 -> dp(1): 1, sp(1): 1
 
         # os.environ['KIVY_METRICS_DENSITY'] = '2.625'
@@ -14,13 +21,12 @@ def change_metrics():
         # os.environ['KIVY_METRICS_FONTSCALE'] = '1.15'
         
         # Pixel6: KIVY_METRICS_FONTSCALE: 1.145, KIVY_METRICS_DENSITY: 4.025, KIVY_DPI: 560
-        os.environ['KIVY_METRICS_DENSITY'] = '4.025'
-        os.environ['KIVY_DPI'] = '560'
-        os.environ['KIVY_METRICS_FONTSCALE'] = '1.145'
+        # os.environ['KIVY_METRICS_DENSITY'] = '4.025'
+        # os.environ['KIVY_DPI'] = '560'
+        # os.environ['KIVY_METRICS_FONTSCALE'] = '1.145'
         
         pass
         
-    # os.environ['KIVY_METRICS_FONTSCALE'] = '1.4'
         
 def window_size(device=None,orientation=None):
     from kivy.core.window import Window
