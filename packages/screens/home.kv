@@ -24,25 +24,25 @@
                 on_release: 
                     app.switch_screen("gram_list","left")
 
-            RigidIconTextButton:
-                id: grammar
-                text: 'Sentences'
-                icon: 'comment-text'
-                font_size: sp(18)
-                width: self.parent.width
-                padding: 50
-                on_release: None
+            # RigidIconTextButton:
+            #     id: grammar
+            #     text: 'Sentences'
+            #     icon: 'comment-text'
+            #     font_size: sp(18)
+            #     width: self.parent.width
+            #     padding: 50
+            #     on_release: None
 
-            RigidIconTextButton:
-                id: grammar
-                text: 'Practice'
-                icon: 'brain'
-                font_size: sp(18)
-                width: self.parent.width
-                padding: 50
-                on_release: 
-                    app.wm.get_screen("select_dict").set_next('')
-                    app.switch_screen("select_dict","left")
+            # RigidIconTextButton:
+            #     id: grammar
+            #     text: 'Practice'
+            #     icon: 'brain'
+            #     font_size: sp(18)
+            #     width: self.parent.width
+            #     padding: 50
+            #     on_release: 
+            #         app.wm.get_screen("select_dict").set_next('')
+            #         app.switch_screen("select_dict","left")
             MDGridLayout:
                 id: dictionaries
                 rows:1

@@ -557,7 +557,7 @@ class ChD(MyApp):
             kwargs = {
                 'description' : 'Choose directory for backup.',
                 'select_path' : backup_to,
-                'ext' : ['.____nothing____'],
+                'ext' : ['.db'],
             }
             file_manager = self.pre_loaded_widgets['file_manager']
             file_manager.set_attrs(**kwargs)
