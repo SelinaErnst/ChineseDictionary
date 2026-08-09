@@ -3,18 +3,19 @@ from .entry import Entry
 import re
 
 class Character():
+    
     def __init__(self,needed_categories:dict|None=None,**kwargs):
         # defines every category that is included from the start
+        # this helps with making the character be part of a dictionary with clear requirements
         # also: ORDER
-        default_keys={'simple':str,'traditional':str,'pronunciation':str}
-        if needed_categories!=None: default_keys.update(needed_categories)
-        needed_categories = default_keys
-        self.__default_info_categories=needed_categories
+        standard_keys={'simple':str,'traditional':str,'pronunciation':str}
+        if needed_categories!=None: standard_keys.update(needed_categories)
+        self.__default_info_categories = standard_keys
         
         # here we get either the respective value or None for each default key
         # this excludes all keys that are in kwargs and not a default key
         char_info={k : kwargs[k] if k in kwargs.keys() else None for k in self.__default_info_categories.keys()}
-        
+            
         self.entry=Entry(**char_info)
         from .convert_pleco_txt import encode_pinyin
         self.entry.pronunciation = encode_pinyin(self.entry.pronunciation)
@@ -72,6 +73,12 @@ class Character():
     
     def __getitem__(self, key:str):
         return self.__get_category(category=key)
+    
+    def __contains__(self, c):
+        if c in self.__default_info_categories:
+            return True
+        else:
+            return False
     
     # = ============================================================== = #
     # =                           PROPERTIES                           = #
@@ -142,7 +149,8 @@ class Character():
     # = ============================================================== = #
     
     def __get_category(self,category:str):
-        if category in self.entry.categories:
+        # if category in self.entry.categories:
+        if category in self.__default_info_categories:
             return self.entry.__dict__[category]
         
     def get_dtype(self,category):
@@ -183,18 +191,6 @@ class Character():
     # =                             CHECKS                             = #
     # = ============================================================== = #
     
-    def is_radical(self):
-        valid_category_names = ['radical']
-        return bool(set(self.filled) & set(valid_category_names))
-    def is_measure_word(self):
-        valid_category_names = ['measure_word']
-        return bool(set(self.filled) & set(valid_category_names))
-    def is_grammatical(self):
-        valid_category_names = ['dict_entries']
-        return bool(set(self.filled) & set(valid_category_names))
-    def has_translation(self):
-        valid_category_names = ['english','german']
-        return bool(set(self.filled) & set(valid_category_names))
     def is_empty(self):
         if self.uniq == (None,None,None): return True
         return False
@@ -223,8 +219,12 @@ class Character():
     def to_dict(self):
         return self.entry.to_dict()
     
-    def to_pleco_entry(self,template):
+    def to_pleco_entry(self,template,categories=None):
         from .convert_pleco_txt import Writer
+        if isinstance(categories,dict): 
+            standard_keys={'simple':str,'traditional':str,'pronunciation':str}
+            standard_keys.update(categories)
+            self.__default_info_categories=categories
         w = Writer(template=template,character=self)
         w.add_uniq()
         w.link_pronunciations()
@@ -243,11 +243,16 @@ class Character():
                 cairosvg.svg2png(url=url,write_to=path,dpi=dpi,scale=scale)
         
     def convert_to_unicode(self):
+        
         symbols=self.uniq[:2]
+        if symbols[0]==None: symbols=["",symbols[1]]
+        if symbols[1]==None or symbols[1]=="": symbols=[symbols[0]]*2
         unicode=[]
         for symbol in symbols:
+            word = []
             for e in symbol:
-                if isinstance(e,str) and len(e)>0: unicode+=[f'U+{ord(e):04X}']
+                if isinstance(e,str) and len(e)>0: word+=[f'U+{ord(e):04X}']
+            if len(word)>0: unicode+=[''.join(word)]
         return unicode
     
     # = ============================================================== = #

@@ -22,7 +22,9 @@ from .buttons import (
     ToggleButton,
     TextToggleButton,
     MultipleToggle,
-    IconTextToggleButton
+    IconTextToggleButton,
+    IconToggleButton,
+    Toggle
 )
 
 from .dialogs import (
@@ -44,7 +46,7 @@ from .dialogs import (
 
 from .labels import (
     ChLabel,
-    # AnchoredLabel,
+    AnchoredLabel,
     MultiLineLabel,
 )
 
@@ -53,7 +55,8 @@ from .layouts import (
     BottomFieldButton,
     ClickableBoxLayout,
     BlockingAnchorLayout,
-    BlockingFloatLayout
+    BlockingFloatLayout,
+    ShowFileContent,
 )
 
 from .listitems import (
@@ -96,6 +99,9 @@ from kivy.properties import (
 from kivymd.theming import ThemeManager
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen, Screen
+from kivymd.uix.screenmanager import MDScreenManager
+from kivy.uix.screenmanager import FadeTransition, SlideTransition, NoTransition
+from kivymd.uix.transition import MDSharedAxisTransition, MDFadeSlideTransition, MDSlideTransition, MDSwapTransition
 
 from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivymd.uix.boxlayout import MDBoxLayout

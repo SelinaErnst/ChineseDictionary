@@ -23,6 +23,7 @@ Since Pleco is only available for android and iOS, the advantage of ChD is, that
     - [Grammar Dictionary](#grammar-dictionary)
     - [Settings](#settings)
   - [Pleco Compatibility](#pleco-compatibility)
+  - [Plans for the future](#plans-for-the-future)
 
 ## Installation
 
@@ -224,3 +225,23 @@ This is how a grammar entry looks in ChD and in Pleco.
   <img src="appdata/documentation/Screenshot_20260713-224538.png" width="19%">
   <img src="appdata/documentation/Screenshot_20260713-224550.png" width="19%">
 </div>
+
+## Plans for the future
+
+- Dictionary Settings
+  - categories: add, rename, remove
+  - templates: add, remove, edit
+- Practice sessions for Vocabulary
+    - give each dictionary entry a personal score (from 1-5 how easy)
+    - decide whether to test for translation, character recognition, writing
+    - steps
+        - select dictionary
+        - select level
+        - go through all cards in that level until you don't want anymore 
+        - show hint and reveal rest upon tap
+        - choose whether to leave at same level or choose another
+- Sentences (Conversations)
+    - the idea is to have a storage of conversations for different topics (maybe A1 - C2 or HSK)
+        - example: Hobbies (A1), Hobbies (A2), Small Talk (A2), Small Talk (C1), ...
+    - switch between chinese, pinyin, translation
+    - tap on sentence to see rest 

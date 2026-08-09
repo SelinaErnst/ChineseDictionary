@@ -25,7 +25,7 @@ source.include_patterns =  packages/*, appdata/*
 source.exclude_exts = spec, gitignore, git
 
 # (list) List of directory to exclude (let empty to not exclude anything)
-source.exclude_dirs = bin, venv, test_packages, dictionaries, images
+source.exclude_dirs = bin, venv, tests, dictionaries, images, .images
 
 # (list) List of exclusions using pattern matching
 # Do not prefix with './'

@@ -3,20 +3,46 @@
         MDBoxLayout:
             orientation: 'vertical'
             spacing: 50
-            size_hint_x: None 
-            width: 1000
+            size_hint_x: .9
             adaptive_height: True
+            RigidIconTextButton:
+                id: grammar
+                text: 'Settings'
+                icon: 'cog-outline'
+                font_size: sp(18)
+                width: self.parent.width
+                padding: 50
+                on_release: 
+                    app.switch_screen("settings","down")
             RigidIconTextButton:
                 id: grammar
                 text: 'Grammar'
                 icon: 'bookshelf'
-                style: 'filled'
-                font_style: 'Title'
-                role: 'medium'
+                font_size: sp(18)
                 width: self.parent.width
+                padding: 50
                 on_release: 
                     app.switch_screen("gram_list","left")
-                    app.wm.current_screen.set_up_screen()
+
+            RigidIconTextButton:
+                id: grammar
+                text: 'Sentences'
+                icon: 'comment-text'
+                font_size: sp(18)
+                width: self.parent.width
+                padding: 50
+                on_release: None
+
+            RigidIconTextButton:
+                id: grammar
+                text: 'Practice'
+                icon: 'brain'
+                font_size: sp(18)
+                width: self.parent.width
+                padding: 50
+                on_release: 
+                    app.wm.get_screen("select_dict").set_next('')
+                    app.switch_screen("select_dict","left")
             MDGridLayout:
                 id: dictionaries
                 rows:1
@@ -26,26 +52,27 @@
                 RigidIconTextButton:
                     text: 'Dictionaries'
                     icon: 'format-list-text'
-                    style: 'filled'
-                    font_style: 'Title'
-                    role: 'medium'
+                    font_size: sp(18)
                     width: grammar.width - 2*(grammar.height+20)
+                    padding: 50
                     on_release: 
+                        app.wm.get_screen("select_dict").set_next('view_dict')
                         app.switch_screen("select_dict","left")
-                        app.wm.current_screen.directory = app.get_setting('dict_directory')
-                        app.wm.current_screen.set_files()
                 MyIconButton: 
                     text: "Load Dictionary"
                     icon: 'upload'
-                    style: 'filled'
                     padding: 50,50,50,50
                     size:  [grammar.height]*2
                     on_release: app.switch_screen("upload_dict","left")
-                # Widget:
                 MyIconButton: 
                     text: "New Dictionary"
                     icon: 'plus'
-                    style: 'filled'
                     padding: 50,50,50,50
                     size:  [grammar.height]*2
                     on_release: app.switch_screen("new_dict","left")
+
+
+
+
+
+            

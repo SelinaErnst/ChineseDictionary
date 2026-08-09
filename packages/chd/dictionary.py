@@ -2,6 +2,7 @@ import json
 import os
 import sqlite3
 from .character import Character
+from .grammar import Grammar
 import re
 from .convert_pleco_txt import encode_pinyin, decode_pinyin
 from .convert_pleco_txt import Loader
@@ -11,6 +12,7 @@ from .sql_methods import (
     remove_table,
     open_db, close_db, 
     get_table_columns,
+    get_table_names,
     create_column_list,
     add_columns,
     get_unique_values,
@@ -25,7 +27,8 @@ _VALID_EXT={
     '.jsonl':['chd','jsonl','.jsonl','all'],
     '.db':['db','.db','sql','base','all'],
 }
-_SORT_OPT: TypeAlias = Literal['simple','traditional','pronunciation']
+_SORT_KEY: TypeAlias = Literal['simple','traditional','pronunciation']
+_SORT_ORD: TypeAlias = Literal['ascending','descending']
 
 def choose_file_ext(choice:_EXPORT_CHOICES|None,ext_map:dict=_VALID_EXT):
     file_format=[f for f,f_options in ext_map.items() if choice in f_options]
@@ -48,19 +51,24 @@ class Dictionary():
     def __init__(self,
                  name:str|None=None,
                  characters:list|Character|None=None,
-                 grammar:list|None=None,
-                 sorting_key:_SORT_OPT='pronunciation'):
+                 grammar:list|Grammar|None=None,
+                 sorting_key:_SORT_KEY='pronunciation',
+                 sorting_order:_SORT_ORD='ascending'):
+        
         self.name = name if isinstance(name,str) else ""
         self.__init_characters(characters=characters)
         self.__init_grammar(grammar=grammar)
-        self._sorting_key=sorting_key
+        self.__sorting_key=sorting_key
+        self.__sorting_order=sorting_order
+        
+        
         self.sort()
         
 
                 
     def copy(self):
         characters = [c.copy() for c in self.characters]
-        return Dictionary(name=self.name,characters=characters,sorting_key=self.sorting_key,grammar=self.grammar)
+        return Dictionary(name=self.name,characters=characters,sorting_key=self.__sorting_key,grammar=self.grammar)
     
     def empty(self):
         self.characters=[]
@@ -81,12 +89,45 @@ class Dictionary():
 
     @property
     def sorting_key(self):
-        return self._sorting_key
+        return self.__sorting_key
+    
+    @property
+    def sorting_order(self):
+        return self.__sorting_order
     
     # = ============================================================== = #
     # =                         SET PROPERTIES                         = #
     # = ============================================================== = #
 
+    @sorting_key.setter
+    def sorting_key(self, key):
+        acceptable = list(_SORT_KEY.__args__)
+        if key.lower() in acceptable:
+            self.__sorting_key = key.lower()
+            self.sort()
+    
+    @sorting_order.setter
+    def sorting_order(self, order):
+        acceptable = list(_SORT_ORD.__args__)
+        if order.lower() in acceptable:
+            self.__sorting_order = order.lower()
+            self.sort()
+    
+    def reorder(self,key,order):
+        key,order = key.lower(),order.lower()
+        acceptable = list(_SORT_KEY.__args__)
+        if key not in acceptable:
+            return None
+        
+        acceptable = list(_SORT_ORD.__args__)
+        if order not in acceptable:
+            return None
+        
+        if key != self.__sorting_key or order != self.__sorting_order:
+            self.__sorting_key = key
+            self.__sorting_order = order
+            self.sort()
+        
     def __init_characters(self,characters):
         if isinstance(characters,list): 
             self.characters=[c for c in set(characters) if isinstance(c,Character) and not c.is_empty()]
@@ -108,22 +149,13 @@ class Dictionary():
             
     def set_categories(self,categories):
         # defines default categories and dtypes for characters
-        self.__category_dictionary=categories 
+        self.__categories=categories 
         
     def set_grammar(self,grammar):
         self.__init_grammar(grammar=grammar)
 
     def rename(self,name):
         self.name = name
-        
-    @sorting_key.setter
-    def sorting_key(self, key):
-        acceptable = ['simple','traditional','pronunciation']
-        if key.lower() in ['simple','traditional','pronunciation']:
-            self._sorting_key = key.lower()
-            self.sort()
-        else:
-            print(f'\nWARNING: Sorting key is not valid. Choose from: {acceptable}')
 
     # = ============================================================== = #
     # =                          MAGIC METHODS                         = #
@@ -171,7 +203,7 @@ class Dictionary():
                 elif do_warning:
                     print(f'character {c} was not added to dictionary, it already exists')
 
-        return Dictionary(name=name, characters=characters, sorting_key=self.sorting_key,grammar=self.grammar)
+        return Dictionary(name=name, characters=characters, sorting_key=self.__sorting_key,grammar=self.grammar)
     
     def __sub__(self,c:Character):
         if c.uniq in self.character_index:
@@ -183,12 +215,12 @@ class Dictionary():
     
     def __getitem__(self,index):
         kwargs={
-            'sorting_key':self.sorting_key,
+            'sorting_key':self.__sorting_key,
             'grammar':self.grammar
         }
         if isinstance(index,int):
             if index < len(self.characters): return self.characters[index]
-        elif isinstance(index,tuple) and index in self.character_index:
+        elif isinstance(index,tuple):
             matching_c = [c for c in self.characters if c.uniq == index]
             return make_subset(matching_characters=matching_c,dictionary_name=self.name,force_dictionary=False,**kwargs)
         elif isinstance(index,str):
@@ -209,7 +241,9 @@ class Dictionary():
             print(f'WARNING: dictionary cannot work with index {type(index)}',isinstance(index,Character))
         
     def __contains__(self, c):
-        if c in self.characters or c in self.character_index:
+        if c in self.character_index:
+            return True
+        elif c in self.characters:
             return True
         else:
             return False
@@ -218,11 +252,9 @@ class Dictionary():
     # =                          SORT & SEARCH                         = #
     # = ============================================================== = #
     
-    # def _get_sorted_characters(self,sorting_key=None):
-        # sorting_key = self.sorting_key if sorting_key == None else sorting_key
-    
-    def sort(self,sorting_key=None,sorting_function=None):
-        sorting_key = self.sorting_key if sorting_key == None else sorting_key
+    def sort(self,sorting_key=None,sorting_order=None,sorting_function=None):
+        sorting_key = self.__sorting_key if sorting_key == None else sorting_key
+        sorting_order = self.__sorting_order if sorting_order == None else sorting_key
         def get_next_key(char,sorting_key):
             # determine priorities (what happens when property is None/"")
             if sorting_key == "simple":
@@ -235,8 +267,10 @@ class Dictionary():
             values = [char[key] for key in other_keys if char[key] not in [None,'']]
             value = values[0] if len(values)>=1 else ""
             return value
-        if self.sorting_key in ['simple','traditional','pronunciation']:
-            self.characters.sort(key=lambda x: encode_pinyin(get_next_key(char=x,sorting_key=sorting_key)))
+            
+        if sorting_key in list(_SORT_KEY.__args__):
+            reverse = False if sorting_order=="ascending" else True
+            self.characters.sort(key=lambda x: encode_pinyin(get_next_key(char=x,sorting_key=sorting_key)), reverse=reverse)
         return self
     
     def search(self,text:str="",exact:bool=False,search_prompt:bool=False):
@@ -262,53 +296,91 @@ class Dictionary():
         search_text = prepare_text(text)
         if search_prompt: print('Look for:',text,'or',search_text)
         fits = [char for char in self.characters if compare(text=search_text,character=char)]
-        return Dictionary(name=self.name, characters=fits, sorting_key=self.sorting_key, grammar=self.grammar)
+        return Dictionary(name=self.name, characters=fits, sorting_key=self.__sorting_key, grammar=self.grammar)
+    
+    def search_category(self,category:str,text:str="",exact:bool=False,search_prompt:bool=False):
+
+        def look_for(text,string:str):
+            if exact:
+                for c in '().[]",:':
+                    string = string.replace(c,"")
+                string = string.split(' ')
+                return text.lower() in [s.strip().lower() for s in string if s!=""]
+            else:
+                return text.lower() in string.lower()
+
+        def compare(text:str,character:Character,category:str):
+            if isinstance(category,list):
+                return any([compare(text,character,cat) for cat in category])
+            elif category in character:
+                value = character[category]
+                if isinstance(value,str):
+                    return look_for(text,str(value))
+                elif isinstance(value,list):
+                    return any([look_for(text,str(v)) for v in value])
+                elif isinstance(value,dict):
+                    return any([look_for(text,str(v)) for v in value.values()])
+            else:
+                return False
+            
+        if search_prompt: print('Look for:',text)
+        fits = [char for char in self.characters if compare(text=text,character=char,category=category)]
+        return Dictionary(name=self.name, characters=fits, sorting_key=self.__sorting_key, grammar=self.grammar)
     
     # = –––––––––––––––––––––––––––– links ––––––––––––––––––––––––––– = #
         
-    def get_linked_grammar(self,character,key='dict_entries'):
-        # get grammar entries that correspond to dict_entries of character
+    def __clean_link(self,text):
+        text = re.sub(r'[.|。|,|，|!|！|?|？]','',text)
+        text = text.replace('_','＿').replace('…','＿').replace(' ','')
+        text = text.strip('＿')
+        return text
+    
+    def get_linked_grammar(self,character,key='grammar') -> dict:
+        # get grammar entries that are linked in character
         
-        def match_gram_to_dict_entry(entry,grammar):
+        def match_gram_to_dict_entry(entry,grammar,msg=False) -> bool:
             if hasattr(grammar,'references'):
-                references = [re.sub(r'[.|。|,|，|!|！|?|？]','',ref) for ref in grammar.references]
-                references = [ref.strip('＿') for ref in references]
-                entry = re.sub(r'[.|。|,|，|!|！|?|？]','',entry)
-                entry = entry.strip('＿')
+                references = [self.__clean_link(ref) for ref in grammar.references]
+                entry = self.__clean_link(entry)
+                if msg: print(entry,references)
                 return entry in references
             return False
         
         links={}
+        
         if isinstance(character[key],list):
             for n,entry in enumerate(character[key]):
-                match_gram = [g for g in self.grammar if match_gram_to_dict_entry(entry,g)]
-                if match_gram != []: links[entry]=match_gram[0]
-                else: links[entry]=None
+                match_gram = [g for g in self.grammar if match_gram_to_dict_entry(entry,g,False)]
+                links[entry]=match_gram
+                
         return links
     
-    def get_linked_character(self,grammar_link,key='dict_entries'):
-        # get characters that have grammar linked in dict_entries
+    def get_linked_character(self,character,key='grammar') -> list:
         
-        if isinstance(grammar_link,Character):
-            grammar_link=grammar_link['simple'].replace('…','＿')
-        elif isinstance(grammar_link,str):
-            grammar_link=grammar_link.replace('…','＿')
+        # get characters that have grammar from given character linked
+        if isinstance(character,Character):
+            character=character['simple']
+        elif isinstance(character,str):
+            character=character
         else:
-            grammar_link=""
+            character=""
             
-        def match_to_dict_entries(gram_char,character):
-            if isinstance(character[key],list):
-                entries=character[key]
-                entries = [re.sub(r'[.|。|,|，|!|！|?|？]','',entry) for entry in entries]
-                entries = [entry.strip('＿') for entry in entries]
-                gram_char = re.sub(r'[.|。|,|，|!|！|?|？]','',gram_char)
-                gram_char = gram_char.strip('＿')
-                return gram_char in entries
+        def match_to_entries(search_char,dict_char,msg=False) -> bool:
+            entries=dict_char[key]
+            if isinstance(entries,list):
+                entries = [self.__clean_link(entry) for entry in entries]
+                search_char = self.__clean_link(search_char)
+                if msg: print(search_char,entries)
+                return search_char in entries
+            elif isinstance(entries,str):
+                search_char = self.__clean_link(search_char)
+                entries = self.__clean_link(entries)
+                if msg: print(search_char,entries)
+                return search_char == entries
             else:
                 return False
-        
-        grammar_link.strip('＿')
-        match_char = [char for char in self.characters if match_to_dict_entries(grammar_link,char)]
+
+        match_char = [char for char in self.characters if match_to_entries(character,char,False)]
         return match_char
     
     # = ============================================================== = #
@@ -342,8 +414,9 @@ class Dictionary():
         if not os.path.isfile(filepath): return False
         
         try:
-            with open(filepath,'r') as filepath:
-                json_list = list(filepath)
+            with open(filepath,'r') as file:
+                json_list = list(file)
+                
             if not add: self.characters=[]
             for json_str in json_list:
                 entry=json.loads(json_str)
@@ -357,6 +430,7 @@ class Dictionary():
                         self.characters.append(c)
                         
             self.sort()
+            self.set_categories(categories=categories)
             return True
         except:
             return False
@@ -382,63 +456,63 @@ class Dictionary():
                             self.characters.remove(matching_c)
                             self.characters.append(c)
                 self.sort()
+                self.set_categories(categories=categories)
                 return True
             else: return False
         else: return False
         
     def __read_db(self,filepath:str|Path,add=True,categories=None,name=None):
-        
+        import traceback
         if not os.path.isfile(filepath): return False
         elif isinstance(filepath,str): filepath = Path(filepath)
-        
         conn,cursor = open_db(filepath)       
             
         self.grammar = []
-        try:
+        tables = get_table_names(cursor)
+        
+        if table_exists(cursor,'Grammar'):
             g_rows = cursor.execute("SELECT * FROM Grammar").fetchall()
             from packages.chd import Grammar
             for row in g_rows:
                 data = dict(row)
-                idx = data.pop('uniq')
+                try: 
+                    idx = data.pop('uniq')
+                except: 
+                    idx = data.pop('index')
+                    
                 clean_data = {k: (json.loads(v) if isinstance(v, str) and v.startswith(('[', '{')) else v) 
                                 for k, v in data.items()}
                 g_obj = Grammar(**clean_data) 
                 self.grammar.append(g_obj)
-                read=True
-        except:
-            read=False
 
         filename=filepath.stem
         if not table_exists(cursor,'Dictionary'):
-            if name!=None and table_exists(cursor,name): name, table = name, name
-            if table_exists(cursor,self.name): name, table = self.name, self.name
-            elif table_exists(cursor,filename): name, table = filename, filename
+            name = 'all'
+            if name!=None and table_exists(cursor,name): table = name
+            elif table_exists(cursor,self.name): table = self.name
+            elif table_exists(cursor,filename): table = filename
             else: return False
         else:
             table = 'Dictionary'
             if name!=None and name not in get_unique_values(cursor,table,'dict_name'): name='all'
             elif name==None: name='all'
             
-
         if not add: self.characters=[]
+
         try:
             from packages.chd import Character
-            
-            if name=='all':
-                query = f"SELECT * FROM {table}"
-                c_rows = cursor.execute(query).fetchall()
-            else:
+            if table=='Dictionary' and name!='all':
                 query = f"SELECT * FROM {table} WHERE TRIM(dict_name, ' \n\r\t') = ?"
                 c_rows = cursor.execute(query,[f'{name}']).fetchall()
-            
+            else:
+                query = f"SELECT * FROM {table}"
+                c_rows = cursor.execute(query).fetchall()
             for row in c_rows:
                 data = dict(row)
                 uniq = data.pop('uniq')
                 clean_data = {k: (json.loads(v) if isinstance(v, str) and v.startswith(('[', '{')) else v) 
                             for k, v in data.items()}
-                
                 c_obj = Character(needed_categories=categories,**clean_data)
-                
                 if c_obj.uniq not in self.character_index:
                     self.characters.append(c_obj)
                 elif c_obj.uniq in self.character_index:
@@ -446,11 +520,15 @@ class Dictionary():
                     if c_obj.default_dtypes != matching_c.default_dtypes:
                         self.characters.remove(matching_c)
                         self.characters.append(c_obj)
-        except:
-            pass
+                        
+        except Exception as e:
+            traceback.print_exc()
+            return False
 
         close_db(conn)
-        return read
+        # if read: 
+        self.set_categories(categories=categories)
+        return True
     
     # = ============================================================== = #
     # =                              WRITE                             = #
@@ -462,7 +540,7 @@ class Dictionary():
         
         if isinstance(filename,str): filename,ext = os.path.splitext(filename)
         elif isinstance(filename,Path): filename,ext = filename.stem,filename.suffix
-        elif filename == None: filename = self.name
+        elif filename == None: filename,ext = self.name,""
         else: return None
         
         if ext!="": file_format=ext
@@ -473,11 +551,14 @@ class Dictionary():
             file = filename+file_format
             if file_format == '.txt':
                 template = kwargs.pop('template')
-                self.__to_txt(directory=directory,filename=file,template=template)
+                categories = None if 'categories' not in kwargs else kwargs.pop('categories')
+                self.__to_txt(directory=directory,filename=file,template=template,categories=categories)
             elif file_format == '.jsonl':
                 self.__to_jsonl(directory=directory,filename=file)
             elif file_format == '.db':
-                if 'clean' in kwargs: self.__to_db(directory=directory,filename=file,clean=kwargs.pop('clean'))
+                if 'clean' in kwargs: 
+                    clean=kwargs.pop('clean')
+                    self.__to_db(directory=directory,filename=file,clean=clean)
                 else: self.__to_db(directory=directory,filename=file)
 
     def __to_jsonl(self,directory:Path,filename:str):
@@ -488,12 +569,12 @@ class Dictionary():
                 json.dump(c.to_dict(), outfile, indent=None, ensure_ascii=False)
                 outfile.write('\n')
     
-    def __to_txt(self,directory:Path,filename:str,template:str):
+    def __to_txt(self,directory:Path,filename:str,template:str,categories:list=None):
         if not isinstance(directory,Path): directory=Path(directory)
         if not filename.endswith('txt'): filename+='.txt'
         with open(directory/filename,'w') as outfile:
             pleco_text=[
-                c.to_pleco_entry(template=template)
+                c.to_pleco_entry(template=template,categories=categories)
                 for c in self.characters]
             outfile.write('\n'.join(pleco_text))
 
@@ -512,14 +593,13 @@ class Dictionary():
             unique = f'{c.unicode_unique_string}_{self.name}'
             
             for entry,result in self.get_linked_grammar(c).items():
-                if result!=None:
-                    c_links.append((unique,result.unique_string,entry))
+                if result!=[]:
+                    c_links+=[(unique,grammar.unique_string,entry) for grammar in result]
                 else:
-                    c_links.append((unique,result,entry))
+                    c_links.append((unique,None,entry))
             
             if i == 0:
                 cols = ['"uniq" TEXT UNIQUE','"dict_name" TEXT']+create_column_list(c.default_dtypes)
-                # remove_table(cursor,table_name)
                 if clean: remove_table(cursor,table_name)
                 insert_query = create_table(cursor,table_name,cols)
             values = [unique,self.name]+[json.dumps(v) if isinstance(v, (list, dict)) else v for v in c_data.values()]
@@ -530,7 +610,6 @@ class Dictionary():
             if isinstance(g,Grammar) and not g.is_empty():
                 g_data = g.to_dict()
                 if  i == 0:
-                    # cols = ['"index" TEXT UNIQUE']+[f'"{k}" TEXT' for k in g_data.keys()]
                     cols = ['"uniq" TEXT UNIQUE']+create_column_list({k:str for k in g_data.keys()})
                     remove_table(cursor,'Grammar')
                     insert_query = create_table(cursor,'Grammar',cols)
@@ -544,4 +623,19 @@ class Dictionary():
                 insert_query = create_table(cursor,'Links',cols)
             cursor.execute(insert_query, list(links)+[self.name])
             
+        for i,(k,v) in enumerate(self.__categories.items()):
+                
+            if v==list: v="list"
+            elif v==str: v="str"
+            elif v==int: v="int"
+            elif v==dict: v="dict"
+            else: v="str"
+            
+            if  i == 0:
+                cols = [f'"{c}" TEXT' for c in ['category','dtype']]
+                if clean: cursor.execute(f"DROP TABLE IF EXISTS Categories")
+                insert_query = create_table(cursor,'Categories',cols)
+            if not k in get_unique_values(cursor,'Categories','category'):
+                cursor.execute(insert_query, [k,v])
+                
         close_db(conn)

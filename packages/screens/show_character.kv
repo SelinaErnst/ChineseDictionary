@@ -2,89 +2,99 @@
     bottom_nav: bottom_nav
     scroll: scroll
 
-    MDStackLayout:
-        padding: 0,0,0,200
-        MDBoxLayout:
-            id: head
-            adaptive_height: True
-            orientation: 'horizontal'
-            md_bg_color: app.custom.colors['head']
-            padding: 20,20,20,20
-            spacing: 20
-            text_color: app.custom.colors['head_text']
-            text_bg_color: app.custom.colors['head_content']
-
-            MDStackLayout:
-                adaptive_height: True
-                MDBoxLayout:
-                    orientation: 'horizontal'
-                    adaptive_height: True
-                    spacing: 10
-                    MultiLineLabel:
-                        id: simple
-                        text: root.get_category('simple')
-                        role: 'medium'
-                        font_style: "Title"
-                        label_height: root.default_height
-                        label_bg_color: head.text_bg_color
-                        text_color: head.text_color 
-                        size_hint_x: 1 if self.text!="" else None
-                        width: 0
-                    MultiLineLabel:
-                        id: traditional
-                        text: root.get_category('traditional')
-                        role: 'medium'
-                        font_style: "Title"
-                        label_height: root.default_height
-                        label_bg_color: head.text_bg_color
-                        text_color: head.text_color 
-                        size_hint_x: 1 if self.text!="" else None
-                        width: 0
-                Separator:
-                MDBoxLayout:
-                    orientation: 'horizontal'
-                    adaptive_height: True
-                    MDBoxLayout:
-                        size_hint: None,None
-                        size: 0,root.default_height
-                    MultiLineLabel:
-                        id: pronunciation
-                        text: root.character.pinyin
-                        role: 'small'
-                        font_style: "Label"
-                        label_padding: 20,12,0,12
-                        label_height: root.default_height
-                        label_bg_color: head.text_bg_color
-                        text_color: head.text_color 
-            MDAnchorLayout:
-                anchor_y: 'top'
-                anchor_x: 'right'
-                size_hint_x: None
-                width: edit.size[0]
-                MDStackLayout:
-                    size_hint: None, None
-                    width: edit.size[0]
-                    height: 2*edit.size[0]+20
-                    MyIconButton:
-                        id: edit
-                        size: 80,80
-                        icon: 'pencil'
-                        style: 'text'
-                        on_release:  root.edit_character()
-                    Separator:
-                    MyIconButton:
-                        size: edit.size
-                        icon: 'plus'
-                        style: 'text'
-                        on_release: root.new_category()
-
+    MDAnchorLayout:
+        # padding: 0,0,0,200
+        anchor_y: 'top'
         ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
             MDStackLayout:
                 id: scroll
                 size_hint: 1, None
-                height: self.minimum_height+(66+2*10)*2
-                padding: 10
+                # height: self.minimum_height+(66+2*10)*2
+                height: self.minimum_height
+                padding: 30,head.height+2*20,30,300
+                spacing: 30
+        BlockingAnchorLayout:
+            size_hint_y: None
+            height: head.height+2*30
+            padding: 60
+            MDBoxLayout:
+                id: head
+                radius: app.radius
+                adaptive_height: True
+                orientation: 'horizontal'
+                md_bg_color: app.custom.colors['head']
+                padding: 20,20,20,20
                 spacing: 20
+                text_color: app.custom.colors['head_text']
+                text_bg_color: app.custom.colors['head_content']
+
+                MDStackLayout:
+                    adaptive_height: True
+                    MDBoxLayout:
+                        orientation: 'horizontal'
+                        adaptive_height: True
+                        MultiLineLabel:
+                            id: simple
+                            text: root.get_category('simple')
+                            role: 'medium'
+                            font_style: "Title"
+                            label_height: root.default_height
+                            label_bg_color: head.text_bg_color
+                            text_color: head.text_color 
+                            size_hint_x: 1 if self.text!="" else None
+                            width: 0
+                        MultiLineLabel:
+                            id: traditional
+                            text: root.get_category('traditional')
+                            role: 'medium'
+                            font_style: "Title"
+                            label_height: root.default_height
+                            label_bg_color: head.text_bg_color
+                            text_color: head.text_color 
+                            size_hint_x: 1 if self.text!="" else None
+                            width: 0
+                            padding: 10,0,0,0
+                    Separator:
+                    MDBoxLayout:
+                        orientation: 'horizontal'
+                        adaptive_height: True
+                        MDBoxLayout:
+                            size_hint: None,None
+                            size: 0,root.default_height
+                        MultiLineLabel:
+                            id: pronunciation
+                            text: root.get_category('pinyin')
+                            role: 'small'
+                            font_style: "Label"
+                            label_padding: 20,12,0,12
+                            label_height: root.default_height
+                            label_bg_color: head.text_bg_color
+                            text_color: head.text_color 
+                MDAnchorLayout:
+                    anchor_y: 'top'
+                    anchor_x: 'right'
+                    size_hint_x: None
+                    width: edit.size[0]
+                    MDStackLayout:
+                        size_hint: None, None
+                        width: edit.size[0]
+                        height: 2*edit.size[0]+20
+                        BigIconButton:
+                            id: edit
+                            size: [(head.height-head.spacing*3)/2]*2
+                            icon: 'pencil'
+                            style: 'text'
+                            on_release:  root.edit_character()
+                        Separator:
+                        BigIconButton:
+                            size: edit.size
+                            icon: 'plus'
+                            style: 'text'
+                            on_release: root.new_category()
+
+
                 
                 
     MDBottomSheet:
@@ -95,67 +105,72 @@
         width: Window.width 
         sheet_type: "standard"
         # sheet_type: "modal"
-        md_bg_color: app.custom.colors['bottom']
+        md_bg_color: app.custom.colors['clear']
 
         BottomSheetDragHandleContainer:
-            padding: 20
-            adaptive_height: True
             MDAnchorLayout:
                 anchor_x: 'center'
                 anchor_y: 'center'
                 size_hint_y: None
-                height: bottom_nav.height-2*20
+                height: bottom_nav.height
+                md_bg_color: app.custom.colors['clear']
                 MDBoxLayout:
                     orientation: 'horizontal'
                     adaptive_width: True
                     size_hint_y: None
-                    height: self.parent.height
+                    height: bottom_nav.height-20
                     spacing: 50
-                    MyIconButton:
+                    padding: 50,50
+                    md_bg_color: app.custom.colors['head']
+                    radius: app.radius
+                    BigIconButton:
                         text: 'Delete'
                         icon: 'delete'
                         style: 'text'
-                        size: self.parent.height, self.parent.height
-                        md_bg_color: bottom_nav.md_bg_color
-                        on_release: 
-                            root.del_character()
-                    MyIconButton:
-                        text: 'Replace'
-                        icon: 'auto-upload'
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['clear']
+                        on_release: root.del_character()
+                    BigIconButton:
+                        text: 'Move'
+                        icon: 'file-move'
                         style: 'text'
-                        size: self.parent.height, self.parent.height
-                        md_bg_color: bottom_nav.md_bg_color
-                        on_release: 
-                            root.replace_character()
-                    MyIconButton:
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['clear']
+                        on_release: app.move_character(root.character)
+                    #         root.replace_character()
+                    BigIconButton:
                         text: 'Upload Image'
                         icon: 'image-plus-outline'
                         style: 'text'
-                        size: self.parent.height, self.parent.height
-                        md_bg_color: bottom_nav.md_bg_color
-                        on_release: 
-                            root.add_image()
-                    MyIconButton:
-                        text: 'Export'
-                        icon: 'content-save'
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['clear']
+                        on_release: root.add_image()
+
+                    BigIconButton:
+                        text: 'Search Web'
+                        icon: 'search-web'
                         style: 'text'
-                        size: self.parent.height, self.parent.height
-                        md_bg_color: bottom_nav.md_bg_color
-                        on_release:
-                            root.export_character()
-                    MyIconButton:
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['clear']
+                        on_release: root.find_urls()
+                    BigIconButton:
+                        text: 'Export'
+                        icon: 'download'
+                        style: 'text'
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['clear']
+                        on_release: root.export_character()
+                    BigIconButton:
                         text: 'Previous Character'
                         icon: 'arrow-left'
                         style: 'text'
-                        size: self.parent.height, self.parent.height
-                        md_bg_color: bottom_nav.md_bg_color
-                        on_release: 
-                            root.show_previous()
-                    MyIconButton:
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['clear']
+                        on_release: root.show_previous()
+                    BigIconButton:
                         text: 'Next Character'
                         icon: 'arrow-right'
                         style: 'text'
-                        size: self.parent.height, self.parent.height
-                        md_bg_color: bottom_nav.md_bg_color
-                        on_release: 
-                            root.show_next()
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['clear']
+                        on_release: root.show_next()

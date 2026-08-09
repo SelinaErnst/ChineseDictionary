@@ -1,5 +1,5 @@
 
-def change_metrics():
+def change_metrics(device='Laptop'):
     from kivy.utils import platform
     import os
 
@@ -8,31 +8,31 @@ def change_metrics():
         os.environ['KIVY_METRICS_FONTSCALE'] = '1.5'
         os.environ['KIVY_DPI'] = '200'
         
-    elif platform == "linux":
-        
-        os.environ['KIVY_METRICS_FONTSCALE'] = '1.15'
-        os.environ['KIVY_DPI'] = '500'
-        os.environ['KIVY_METRICS_DENSITY'] = '4'
-        
-        
-        # my linux: KIVY_METRICS_FONTSCALE: 1, KIVY_METRICS_DENSITY: 1, KIVY_DPI: 96 -> dp(1): 1, sp(1): 1
+    elif platform == "linux":      
 
-        # os.environ['KIVY_METRICS_DENSITY'] = '2.625'
-        # os.environ['KIVY_DPI'] = '420'
-        # os.environ['KIVY_METRICS_FONTSCALE'] = '1.0'
-        
-        # os.environ['KIVY_METRICS_DENSITY'] = '2.8125'
-        # os.environ['KIVY_DPI'] = '450'
-        # os.environ['KIVY_METRICS_FONTSCALE'] = '1.15'
-        
-        # Pixel6: KIVY_METRICS_FONTSCALE: 1.145, KIVY_METRICS_DENSITY: 4.025, KIVY_DPI: 560
-        # os.environ['KIVY_METRICS_DENSITY'] = '4.025'
-        # os.environ['KIVY_DPI'] = '560'
-        # os.environ['KIVY_METRICS_FONTSCALE'] = '1.145'
-        
-        pass
-        
-        
+        if device=='TabS6':
+            os.environ['KIVY_METRICS_DENSITY'] = '2.625'
+            os.environ['KIVY_DPI'] = '420'
+            os.environ['KIVY_METRICS_FONTSCALE'] = '1.0'
+            
+        elif device=='GalaxyS24':
+            
+            os.environ['KIVY_METRICS_DENSITY'] = '2.8125'
+            os.environ['KIVY_DPI'] = '500'
+            os.environ['KIVY_METRICS_FONTSCALE'] = '1.15'
+            
+        elif device=='Pixel6':
+            # Pixel6: KIVY_METRICS_FONTSCALE: 1.145, KIVY_METRICS_DENSITY: 4.025, KIVY_DPI: 560
+            os.environ['KIVY_METRICS_DENSITY'] = '4.025'
+            os.environ['KIVY_DPI'] = '560'
+            os.environ['KIVY_METRICS_FONTSCALE'] = '1.145'
+            
+        else:
+            # my linux: KIVY_METRICS_FONTSCALE: 1, KIVY_METRICS_DENSITY: 1, KIVY_DPI: 96 -> dp(1): 1, sp(1): 1
+            os.environ['KIVY_METRICS_DENSITY'] = '3'
+            os.environ['KIVY_METRICS_FONTSCALE'] = '1.2'
+    
+    
 def window_size(device=None,orientation=None):
     from kivy.core.window import Window
     from kivy.utils import platform
@@ -53,6 +53,8 @@ def window_size(device=None,orientation=None):
             Window.size = sorted(size)
         elif orientation in ['landscape','l']:
             Window.size = sorted(size,reverse=True)
+        elif orientation in ['max','m']:
+            Window.maximize()
         elif len(size)==2 and Window != None:
             Window.size = size
         elif Window != None:

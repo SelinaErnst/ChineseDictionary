@@ -1,7 +1,7 @@
 
 
 <ErrorMsg>:
-    radius: 20,20,0,0
+    radius: app.radius,app.radius,0,0
     md_bg_color: root.theme_cls.errorColor
     orientation: "horizontal"
     MDSnackbarText:
@@ -22,7 +22,7 @@
         on_release: root.dismiss()
 
 <AttentionMsg>:
-    radius: 20,20,0,0
+    radius: app.radius,app.radius,0,0
     orientation: "horizontal"
     MDSnackbarText:
         text: root.attention

@@ -28,9 +28,12 @@ class MyFileManager(MDFileManager):
         from kivy.clock import Clock
         Clock.schedule_once(lambda dt: self.change_design())
         
+    def set_attrs(_self, **kwargs):
+        for k,v in kwargs.items():
+            if v!=None: setattr(_self, k, v)
+            
     def change_design(self):
         self.ids.toolbar.ids.text_box.children[0].role = 'small'
-        
         
     def exit_manager(self,*args):
         self.close()
@@ -74,8 +77,8 @@ class MyFileManager(MDFileManager):
             path=self.root_folder
         elif path == None and not use_root_folder:
             from main import ChD
-            app = ChD.get_running_app()
-            path = app.get_setting('app_directory')
+            app:ChD = ChD.get_running_app()
+            path = app.app_directory
         
         path = str(path)
         # -----------------------------------------

@@ -2,22 +2,49 @@
     theme_font_name: "Custom"
     font_name:"CH"
 
-<ClickableLabel>:
+<ClickableLabel>: #MDLabel
     theme_font_name: "Custom"
     font_name:"CH"
 
-# <AnchoredLabel>: #MDAnchorLayout
-#     label:label
-#     theme_bg_color: 'Custom'
-#     md_bg_color: app.theme_cls.surfaceBrightColor
-#     radius: 20
-#     padding: 20
-#     MDLabel:
-#         id:label
-#         text: root.text
-#         font_style: root.font_style
-#         role: root.role
-#         halign: root.halign
+<OneLineLabel@MDLabel>:
+    theme_line_height: "Custom"
+    line_height: 1
+
+<AnchoredLabel>: #MDAnchorLayout
+    label:label
+    text: ""
+    font_style: "Label"
+    role: "large"
+    font_size: None
+    text_color: None
+    halign: 'left'
+
+    min_h: 0
+    min_padding: 0
+    size_hint_y: None
+    label_size: label.texture_size
+    height: max(label.texture_size[1]+root.min_padding*2,root.min_h)
+    padding: root.min_padding,0,0,0
+
+    multiline: False
+    anchor_x: root.halign
+
+    OneLineLabel:
+        id:label
+        text: root.text
+        font_style: root.font_style
+        role: root.role
+        valign: 'top'
+        halign: root.halign
+        shorten: not root.multiline
+        shorten_from: 'right'
+        max_lines: 2
+        theme_text_color: "Primary" if root.text_color==None else "Custom"
+        text_color: root.text_color
+        theme_font_size: "Primary" if root.font_size==None else "Custom"
+        font_size: sp(10) if root.font_size==None else root.font_size
+        theme_font_name: "Custom"
+        font_name:"CH"
 
 <TitleLabel@MDLabel>:
     font_style: "Title"
@@ -30,7 +57,7 @@
     label:label
     theme_bg_color: 'Custom'
     md_bg_color: app.theme_cls.surfaceDimColor
-    radius: 20
+    radius: app.radius
     padding: 20
     orientation: 'horizontal'
     adaptive_height: True
@@ -88,7 +115,7 @@
         theme_text_color: "Primary" if root.text_color==None else "Custom"
         text_color: root.text_color
 
-        radius: 20
+        radius: app.radius
 
         allow_copy: True
         # on_copy: app.test(root.text+str(self.size))

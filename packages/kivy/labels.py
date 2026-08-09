@@ -20,8 +20,11 @@ class ChLabel(MDLabel):
 class ClickableLabel(ButtonBehavior,MDLabel):
     pass
 
+class AnchoredLabel(MDAnchorLayout):
+    # text=StringProperty()
+    pass
+
 # class AnchoredLabel(MDAnchorLayout):
-#     text=StringProperty()
 #     font_style=StringProperty('Label')
 #     role=StringProperty('medium')
 #     halign=StringProperty('left')
@@ -35,4 +38,3 @@ class TitleLabels(MDBoxLayout):
     right_text=StringProperty()
     font_style=StringProperty('Title')
     role=StringProperty('medium')
-    

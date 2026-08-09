@@ -22,6 +22,7 @@ class DictionaryNew(MyScreen):
     def create(self):
         is_name=self.check_name()
         if is_name:
-            next_screen=self.switch_screen("view_dict",'left')
-            next_screen.set_up_screen(dict_name=self.dict_name)
-            next_screen.edited = True
+            screen = self.get_screen('view_dict')
+            screen.set_attr(dict_name=self.dict_name,dict_file='',file_format='')
+            self.switch_screen('view_dict',"left")
+            screen.edited = True

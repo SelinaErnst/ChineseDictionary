@@ -1,16 +1,11 @@
-from kivymd.uix.dialog.dialog import MDDialog, MDDialogButtonContainer
-from kivy.utils import platform
-from packages.chd import Dictionary
-from packages.chd import convert_to_dtype, convert_pronunciations
-from packages.chd import load_json
 import re
-from .snackbars import ErrorMsg, AttentionMsg
-from .layouts import BlockingFloatLayout
-from .buttons import MultipleToggle
+import os
+from pathlib import Path
+from kivy.utils import platform
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.anchorlayout import MDAnchorLayout
 from kivy.uix.textinput import TextInput
-from .images import ImageBox, CenterImage
+from kivy.metrics import dp, sp
+from kivy.clock import Clock
 
 if platform == 'android':
     from jnius import cast
@@ -27,6 +22,17 @@ if platform == 'android':
     activity = PythonActivity.mActivity
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER)
 
+
+from packages.chd import Dictionary
+from packages.chd import convert_to_dtype, convert_pronunciations
+from packages.chd import load_json
+
+from .layouts import BlockingFloatLayout
+from .buttons import MultipleToggle
+from .listitems import OptionItem
+from .images import CenterImage
+from .labels import AnchoredLabel
+
 from kivy.properties import (
     ObjectProperty, 
     StringProperty, 
@@ -34,14 +40,9 @@ from kivy.properties import (
     NumericProperty, 
     BooleanProperty, 
     DictProperty,
-    ColorProperty,
     )
 
-
-
 from kivy.lang import Builder
-import os
-from pathlib import Path
 current_dir = Path(__file__).resolve().parent
 Builder.load_file(str(current_dir/'dialogs.kv'))
 
@@ -92,6 +93,13 @@ class MakeDecision(MDBoxLayout):
     accept_func=ObjectProperty(None)
     button_width=NumericProperty(350)
     
+    
+class DoAction(MDBoxLayout):
+    text=StringProperty('ACTION')
+    icon=StringProperty('info')
+    action=ObjectProperty(None)
+    button_width=NumericProperty(350)
+    
 # class MakeSimpleDecision(MDDialogButtonContainer):
 class MakeSimpleDecision(MDBoxLayout):
     confirm_icon=StringProperty('check')
@@ -104,20 +112,25 @@ class SimpleClose(MDBoxLayout):
     pass
 
 class FileContent(MDBoxLayout):
+    # init
     file_path=StringProperty()
-    file_name=StringProperty()
-    
-    file_format=StringProperty()
     dict_name=StringProperty()
-    
+    # covered by load_file
+    file_name=StringProperty()
+    file_format=StringProperty()
     count=StringProperty()
     first_line=StringProperty()
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
-        
 
-    def load_file(self):
+    def set_attrs(_self, **kwargs):
+        for k,v in kwargs.items():
+            if v!=None: setattr(_self, k, v)
+
+    def load_file(self,file=None,name=None):
+        self.file_path = file if file!=None else self.file_path
+        self.dict_name = name if name!=None else self.dict_name
         if os.path.isfile(self.file_path):
             count,first_line=0,""
             try:
@@ -132,35 +145,162 @@ class FileContent(MDBoxLayout):
             if self.file_name=="": self.file_name=os.path.basename(self.file_path)
             file_path,ext = os.path.splitext(self.file_path)
             if ext!="": self.file_format=ext
-
 class Options(MDBoxLayout):
     max_h = NumericProperty(1000)
     min_h = NumericProperty(300)
+    data = ListProperty()
+    item = ObjectProperty()
+    is_open = BooleanProperty(True)
+    selection = StringProperty()
     
-    def __init__(self,data,**kwargs):
+    def __init__(self,data=None,**kwargs):
         super().__init__(**kwargs)
-        self.set_list_items(data=data)
+        if self.is_open: self.set_list_items(data=data)
+        
+    def set_attrs(_self, **kwargs):
+        for k,v in kwargs.items():
+            if v!=None: setattr(_self, k, v)
+        
+    def on_data(self,instance,value):
+        self.data = value
+        if value not in [None,[],{}]: 
+            self.set_list_items(data=value)
         
     def set_list_items(self,data):
-        pass
-    
-class ToggleOptions(Options):
-
-    def set_list_items(self,data):
-        self.scroll.include=[]
-        self.scroll.exclude=[]
-        for option in data:
-            element = MultipleToggle(text=option,kind='select_multiple')
-            self.scroll.ids[option]=element
+        
+        if data==None: data=[]
+        elif data!=[]: self.data=data
+        if not self.is_open: return None
+        
+        if hasattr(self,'scroll') and self.scroll!=None and len(self.scroll.children)>0: self.clear_scroll()
+        
+        for value in data:
+            element = OptionItem(text=value,func=self.choose)
+            # element = OptionItem()
+            self.scroll.ids[value]=element
             self.scroll.add_widget(element)
             
-class DictOptions(Options):
+    def close_options(self):
+        if self.is_open:
+            self.is_open = False
+            for c in [c for c in self.scroll.children]:
+                self.scroll.remove_widget(c)
+            self.scroll.do_layout()
+        else:
+            self.is_open = True
+            self.set_list_items(data=self.data)
+            self.scroll.do_layout()
+            
+    def choose(self,selection):
+        self.selection = selection
         
-    def set_list_items(self,data):
+    def clear_selection(self):
+        self.selection = ""
+        # self.ids['input'].text = ""
+        
+    def update_data(self,data):
+        self.data = data
+        
+    def clear_scroll(self):
+        self.scroll.ids={}
+        for c in [c for c in self.scroll.children]:
+            self.scroll.remove_widget(c)
+class ToggleOptions(Options):
+    data = ObjectProperty()
+    include = ListProperty()
+    
+    def on_include(self,instance,value):
+        # self.include = value
+        if self.data not in [[],{}] and self.include!=[]: 
+            self.set_list_items(data=self.data,include=self.include)
+        
+    def set_list_items(self,data=[],include=None):
+        if data==None: data=[]
+        elif data!=[]: self.data=data
+        if include==None: include=[]
+        elif include=="all": include=data
+        elif include=="none": include=[]
+        
+        if hasattr(self,'scroll') and self.scroll!=None:
+            if len(self.scroll.children)>0: self.clear_scroll()
+            self.clear_selection()
+
+        if isinstance(data,list):
+            for option in data:
+                state = "on" if option in include else "off"
+                self.add_item(value=option,state=state)
+        elif isinstance(data,dict):
+            for head,options in data.items():
+                self.add_head(head)
+                for option in options:
+                    state = "on" if option in include else "off"
+                    self.add_item(value=option,state=state)
+            self.add_head('Uncategorized')
+            
+    def add_item(self,value,state='off'):
+        element = MultipleToggle(text=value,kind='select_multiple',disabled=False)
+        self.scroll.ids[value]=element
+        self.scroll.add_widget(element)
+        if state == "on":
+            element.toggle_on()
+            
+    def add_head(self,text):
+        from main import ChD
+        app:ChD=ChD.get_running_app()
+        element = AnchoredLabel(text=text,min_padding=30,md_bg_color=app.custom.colors['button_bg'],role='small',radius=app.radius,text_color=app.custom.colors['button_fg'])
+        self.scroll.add_widget(element)
+        
+    def clear_scroll(self):
+        self.scroll.ids={}
+        self.clear_selection()
+        # self.data = []
+        # self.include = []
+        # for c in [c for c in self.scroll.children]:
+            # self.scroll.remove_widget(c)
+        self.scroll.clear_widgets()
+            
+    def clear_selection(self):
+        # print('clear_selection',self.scroll.include)
+        self.scroll.include=[]
+        self.scroll.exclude=[]
+class DictOptions(Options):
+    data = DictProperty()
+    mode = StringProperty('value')
+    del_func = ObjectProperty()
+                
+    def set_list_items(self,data={}):
+        if data==None: data={}
+        elif isinstance(data,dict): self.data=data
+        if data!={} and len(self.scroll.children)>0: self.clear_scroll()
         for k,v in data.items():
-            element=DictElement(key=k,value=v)
-            self.scroll.ids[k]=element
-            self.scroll.add_widget(element)
+            self.add_item(key=k,value=v)
+    
+    def add_item(self,key,value):
+        if self.mode == "value":
+            # element=DictValue(key=key,value=value)
+            element=DictValue(key=str(key),value=str(value))
+        elif self.mode == "element":
+            # element=DictElement(key=key,value=value)
+            element=DictElement(key=str(key),value=str(value))
+        elif self.mode == "del_element":
+            # element=DictElementDel(key=key,value=value,del_func=self.delete_key)
+            element=DictElementDel(key=str(key),value=str(value),del_func=self.delete_key)
+        self.scroll.ids[key]=element
+        self.scroll.add_widget(element)
+            
+    def delete_key(self,key):
+        if callable(self.del_func):
+            self.del_func(key)
+        for c in [c for c in self.scroll.children if c.key == key]:
+            self.scroll.remove_widget(c)
+            self.scroll.ids.pop(key)
+            self.data.pop(key)
+            
+    def clear_scroll(self):
+        self.scroll.ids={}
+        # self.data = {}
+        for c in [c for c in self.scroll.children]:
+            self.scroll.remove_widget(c)
             
 class LazyOptions(MDBoxLayout):
     itemclass = StringProperty()
@@ -168,16 +308,21 @@ class LazyOptions(MDBoxLayout):
     icons = ListProperty()
     max_h = NumericProperty(1200)
     min_h = NumericProperty(0)
+    
     def __init__(self,func=None,data=None,item_args={},*args,**kwargs):
         super().__init__(*args, **kwargs)
         if self.options != []: self.set_list_items(func=func,data=data,**item_args)
     
     def set_options(self,options:list):
         self.options=options
+        
+    def set_attrs(_self, **kwargs):
+        for k,v in kwargs.items():
+            if v!=None: setattr(_self, k, v)
     
     def create_dataitem(self,text,**kwargs):
         kwargs={k:v for k,v in kwargs.items() if v!=None}
-        dataitem={'text': text,'callback':lambda x:x}
+        dataitem={'text': str(text),'callback':lambda x:x}
         dataitem.update(kwargs)
         # print(dataitem.keys())
         return dataitem 
@@ -189,7 +334,7 @@ class LazyOptions(MDBoxLayout):
         self.rv_scroll.data = []
         if self.icons == []:
             for option in self.options: 
-                dataitem=self.create_dataitem(text=option,**kwargs)
+                dataitem=self.create_dataitem(text=option,**kwargs) 
                 self.add_list_item(dataitem)
         elif len(self.icons) == len(self.options):
             for option,icon in zip(self.options,self.icons):
@@ -250,10 +395,21 @@ class PaletteOptions(LazyOptions):
         colors = [c for c in colors if '#' not in c]
         return colors
 
+class DictValue(MDBoxLayout):
+    key=StringProperty()
+    value=StringProperty()
+    
 class DictElement(MDBoxLayout):
     key=StringProperty()
     value=StringProperty()
     
+class DictElementDel(DictElement):
+    del_func=ObjectProperty()
+    
+    def delete(self):
+        
+        if callable(self.del_func):
+            success = self.del_func(self.key)
 class AddOption(MDBoxLayout):
 
     def __init__(self, add_option=None, *args, **kwargs):
@@ -262,15 +418,33 @@ class AddOption(MDBoxLayout):
     
     def add_option(self,text):
         pass
+    
+class AddProperty(MDBoxLayout):
+    add_func=ObjectProperty()
+    
+    def __init__(self, add_property=None, *args, **kwargs):
+        if add_property!=None: self.add_property=add_property
+        super().__init__(*args, **kwargs)
+    def add_property(self,key,value):
+        if callable(self.add_func):
+            success = self.add_func(key,value)
+            if success: 
+                self.ids['key'].text = ""
+                self.ids['value'].text = ""
+                
 class ElementInput(TextInput):
     max_h=NumericProperty(1000)
     min_h=NumericProperty(300)
     
+    def clear(self):
+        self.text = ""
+            
 # = ============================================================== = #
 # =                             DIALOGS                            = #
 # = ============================================================== = #
 
 class CustomDialog(BlockingFloatLayout):
+    decision = ObjectProperty()
     add_decision=BooleanProperty(False)
     title=StringProperty()
     support_text=StringProperty()
@@ -278,8 +452,15 @@ class CustomDialog(BlockingFloatLayout):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
-        if self.add_decision:
+        
+    def set_attrs(_self, **kwargs):
+        for k,v in kwargs.items():
+            setattr(_self, k, v)
+    
+    def on_add_decision(self,instance,value):
+        if value and hasattr(self,'decision') and self.decision!=None:
             decision=SimpleClose()
+            if len(self.decision.children)>0: self.decision.clear_widgets()
             self.decision.add_widget(decision)
                 
     def deny_func(self):
@@ -290,12 +471,12 @@ class CustomDialog(BlockingFloatLayout):
     def open(self):
         from main import ChD
         app = ChD.get_running_app()
-        app.open_widget(self)
+        app.open_dialog(self)
         
     def dismiss(self):
         from main import ChD
         app = ChD.get_running_app()
-        app.dismiss_widget()
+        app.dismiss_dialog()
         
 class ConfirmDecision(CustomDialog):
     name=StringProperty()
@@ -310,6 +491,10 @@ class ConfirmDecision(CustomDialog):
             self.deny_text=""
             
         super().__init__(*args,**kwargs)
+
+        self.choose_action(what=what,do_choice=do_choice,accept_func=accept_func,deny_func=deny_func)
+        
+    def choose_action(self,what=None,do_choice=True,accept_func=None,deny_func=None):
         decision_map={
             'delete_dictionary':[self.delete_dictionary,self.do_nothing],
             'delete_character':[self.delete_character,self.do_nothing],
@@ -319,23 +504,24 @@ class ConfirmDecision(CustomDialog):
             'access':[self.permissions_external_storage,self.permission_denied],
         }
         
+        if not do_choice: 
+            self.confirm_text=""
+            self.deny_text=""
+            
         if what!=None and what in decision_map: 
             self.accept_func=decision_map[what][0]
             self.deny_func=decision_map[what][1]
         if accept_func != None: self.accept_func = accept_func
         if deny_func != None: self.deny_func = deny_func
         
+        if len(self.decision.children) > 0: self.decision.clear_widgets()
         if do_choice:
             decision=MakeDecision(button_width=365,
                 confirm_text=self.confirm_text,deny_text=self.deny_text,
                 deny_func=self.deny_func,accept_func=self.accept_func)
+            self.decision.add_widget(decision)     
         else:
-            decision=SimpleClose()
-        self.decision.add_widget(decision)
-    
-    def set_attrs(_self, **kwargs):
-        for k,v in kwargs.items():
-            setattr(_self, k, v)
+            self.add_decision=True
 
     def do_nothing(self):
         pass
@@ -372,15 +558,15 @@ class ConfirmDecision(CustomDialog):
     def export_character(self):
         from main import ChD
         app = ChD.get_running_app()
-        path_to_template = app.get_setting('dictionary_template')
-        
-        current_screen = app.wm.current_screen
-        file=current_screen.character.unicode_unique_string
-        d=Dictionary(name=file,characters=[current_screen.character])
-        dict_directory = app.get_setting('dict_directory')
-        directory=dict_directory/f'{current_screen.parent_dictionary.name}'
-        d.write(directory=directory,filename=file,file_format='pleco',template=path_to_template)
-        # AttentionMsg(attention='File was created',msg=f'The character {current_screen.character} was stored in {directory}{file}.txt').open()
+        if hasattr(self,'template'):
+            current_screen = app.wm.current_screen
+            file=current_screen.character.unicode_unique_string
+            d=Dictionary(name=file,characters=[current_screen.character])
+            dict_directory = app.get_setting('dict_directory')
+            directory=dict_directory/f'{current_screen.parent_dictionary.name}'
+            print(self.template,d)
+            d.write(directory=directory,filename=file,file_format='pleco',template=self.template)
+            # AttentionMsg(attention='File was created',msg=f'The character {current_screen.character} was stored in {directory}{file}.txt').open()
     
     # = –––––––––––––––––––––––––– save_edit ––––––––––––––––––––––––– = #
     
@@ -409,17 +595,13 @@ class ConfirmDecision(CustomDialog):
         msg=grant_permissions_external_storage()
         app=ChD.get_running_app()
         app._MyApp__decide_on_app_directory()
-        print(msg)
+        # print(msg)
     
     def permission_denied(self):
         from main import ChD
-        app=ChD.get_running_app()
-        settings = app.settings
-        settings['app_directory']=app.root_folder
-        settings['import_directory']=app.root_folder/'appdata'/'examples'
-        app.save_default_settings(settings)
+        app:ChD=ChD.get_running_app()
+        app.change_app_directory(app.root_folder)
         app.wm.get_screen('settings').update_settings()
-
 class ConfirmExport(ConfirmDecision):
     pass
 class ConfirmDelete(ConfirmDecision):
@@ -428,25 +610,15 @@ class ConfirmUnsaved(ConfirmDecision):
     pass
 class GrantAccess(ConfirmDecision):
     pass
-    # deny_text=StringProperty('Return')
-    # confirm_text=StringProperty('Accept')
-    
-    # def __init__(self,*args,**kwargs):
-    #     super().__init__(*args,**kwargs)
-    #     decision=MakeDecision(button_width=365,
-    #         confirm_text=self.confirm_text,deny_text=self.deny_text,
-    #         deny_func=self.deny_func,accept_func=self.accept_func)
-    #     self.decision.add_widget(decision)
-        
-
 
 class ChooseAppDirectory(CustomDialog):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from packages.screens.settings import Setting
-        content=Setting(setting='app_directory',hint='App Directory',icon='folder-open')
+        content=Setting(setting='app_directory',hint='App Directory',icon='folder-open',padding=[0,0,0,40])
         content.press_button=content.select_directory
+        content.text = ""
         decision=MakeSimpleDecision(deny_func=self.deny_func,accept_func=self.accept_func)
         self.content.ids['app_directory']=content
         self.content.add_widget(content)
@@ -454,24 +626,17 @@ class ChooseAppDirectory(CustomDialog):
 
     def save_app_dir(self):
         from main import ChD
-        app=ChD.get_running_app()
-        default_settings = app.get_default_settings()
+        app:ChD=ChD.get_running_app()
         app_directory = self.content.ids.app_directory.text
         if os.path.exists(app_directory):
-            default_settings['app_directory']=app_directory
-            default_settings['import_directory']=app.root_folder/'appdata'/'examples'
-            app.save_default_settings(default_settings)
+            app.change_app_directory(app_directory)
             app.wm.get_screen('settings').update_settings()
             self.dismiss()
     
     def save_default_app_dir(self):
-        
         from main import ChD
-        app=ChD.get_running_app()
-        settings = app.settings
-        settings['app_directory']=app.root_folder
-        settings['import_directory']=app.root_folder/'appdata'/'examples'
-        app.save_default_settings(settings)
+        app:ChD=ChD.get_running_app()
+        app.change_app_directory(app.root_folder)
         app.wm.get_screen('settings').update_settings()
         self.dismiss()
         
@@ -479,10 +644,9 @@ class ShowPaletteOptions(CustomDialog):
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args)
-        decision=SimpleClose()
         content=PaletteOptions(**kwargs)
-        self.decision.add_widget(decision)
         self.content.add_widget(content)    
+        self.add_decision = True
 
 class ShowOptions(CustomDialog):
     
@@ -490,72 +654,118 @@ class ShowOptions(CustomDialog):
         self.title=title
         self.support_text=support_text
         super().__init__(title=title,support_text=support_text)
-        decision=SimpleClose()
         content=LazyOptions(**kwargs)
-        self.decision.add_widget(decision)
         self.content.add_widget(content)    
         self.content.ids['options']=content
         if allow_add: self.content.add_widget(AddOption(add_option=self.add_option))
+        self.add_decision = True
         
     def add_option(self,text):
         options = self.content.ids['options']
         if text!="" and text not in options.options: 
             options.set_options(options.options+[text])
             options.set_list_items()
+            
+    def list_options(self,options=[],itemclass=None,title=None,support_text=None,**kwargs):
+        self.title = title if title!=None else self.title
+        self.support_text = support_text if support_text!=None else self.support_text
+        self.content.ids['options'].set_attrs(options=options,itemclass=itemclass)
+        self.content.ids['options'].set_list_items(**kwargs)
 
 class ConfirmFileChoice(CustomDialog):
     def __init__(self,deny_func=None,accept_func=None,*args,**kwargs):
         super().__init__(*args)
+        content=FileContent(**kwargs)
+        self.content.add_widget(content)    
+        self.choose_action(deny_func=deny_func,accept_func=accept_func)   
+        
+    def choose_action(self,deny_func=None,accept_func=None):
+        if len(self.decision.children)>0: self.decision.clear_widgets()
         decision=MakeSimpleDecision(deny_func=deny_func,accept_func=accept_func)
         self.decision.add_widget(decision)
-        content=FileContent(**kwargs)
-        content.load_file()
-        self.content.add_widget(content)       
+        
+    def load_file(self,file=None,name=None):
+        self.content.children[0].load_file(file=file,name=name)
         
 class ShowImage(CustomDialog):
     
     def __init__(self,source="",title="",image_size=[100,100],*args,**kwargs):
         super().__init__(*args, **kwargs)
-        self.support_text=os.path.basename(source)
-        decision=SimpleClose()
+        self.choose_image(source=source,title=title,image_size=image_size)
+        
+    def choose_image(self,source:str="",title:str="",image_size:list=[100,100]):
+        self.title = title.replace('_',' ').title()
+        delete_source = lambda: self.delete_image(source)
+        decision=DoAction(button_width=365,icon='delete',text='Delete',action=delete_source)
         content=CenterImage(source=source,image_size=image_size)
+        if len(self.content.children)>0: self.content.clear_widgets()
+        if len(self.decision.children)>0: self.decision.clear_widgets()
         self.content.add_widget(content)    
         self.decision.add_widget(decision)
-        self.title = title.replace('_',' ').title()
+        
+    def delete_image(self,source):
+        from main import ChD
+        app:ChD=ChD.get_running_app()
+        app.remove_file(source)
+        
+    def do_sth(self):
+        print('do_sth')
+        
 class EditElement(CustomDialog):
     allow_multiple=BooleanProperty()
     dtype=ObjectProperty()
     original=ObjectProperty()
     style=StringProperty()
     
-    def __init__(self,style='normal',options=[],**kwargs):
+    def __init__(self,style='',options=[],**kwargs):
         super().__init__(**kwargs)
-
-        self.style=style
-        if style=="normal": 
-            content=ElementInput()
-            self.content.ids['input']=content
-            self.content.add_widget(content)
-        elif style=="custom":
-            self.options=options
-            content=ToggleOptions(max_h=1210, data=options)
-            self.content.ids['input']=content
-            self.content.add_widget(content)
-            
+        
+        self.content_options = {
+            'normal' : ElementInput(),
+            'custom' : ToggleOptions(max_h=1210),
+            'dict' : DictOptions()
+        }
+        # self.choose_content(style=style,options=options)
         decision=MakeSimpleDecision(deny_func=None,accept_func=self.confirm_edit)
         self.decision.add_widget(decision)
     
-    def __list_dict(self,entry):
-        options = DictOptions(data=entry)
-        self.content.add_widget(options)
-        self.content.ids['options'] = options
-        
+    def choose_content(self,style="",options=[],**kwargs):
+        self.set_attrs(**kwargs)
+        self.style=style
+        if style in ['normal','custom','dict']:
+            if len(self.content.children)>0: self.content.clear_widgets()
+            if style=="normal": 
+                content = self.content_options[style]
+                self.content.ids['input']=content
+                self.content.add_widget(content)
+            elif style=="custom":
+                self.options=options if options!=None else []
+                content = self.content_options[style]
+                content.set_attrs(data=options)
+                content.clear_selection()
+                self.content.ids['custom']=content
+                self.content.add_widget(content)
+            elif style=="dict":
+                content = self.content_options[style]
+                self.content.ids['options']=content
+                self.content.add_widget(content)
+    
     def set_entry(self,entry):
-        if self.style=="custom": 
-            for e in entry:
-                self.content.ids.input.scroll.ids[e].toggle_on()
+        if self.style=="custom" and not isinstance(entry,str): 
+            options = self.content.ids.custom
+            missing_entry = [e for e in entry if e not in options.scroll.ids]
+            for e in options.scroll.ids:
+                if e in entry: options.scroll.ids[e].toggle_on()
+                else: options.scroll.ids[e].toggle_off()
+            if missing_entry!=[]:
+                # options.add_head('Uncategorized')
+                for e in missing_entry:
+                    options.add_item(e,state='on')
+            # print('\n\nset_entry',
+            #     options.scroll.include,
+            #     )
         elif isinstance(entry,list): self.content.ids.input.text='- '+'\n- '.join(entry)
-        elif isinstance(entry,dict): self.__list_dict(entry)
+        elif isinstance(entry,dict): self.content.ids['options'].set_attrs(data=entry)
         elif isinstance(entry,str): self.content.ids.input.text = re.sub(r'[■|●|□|○|◼]','■',entry)
         else: self.content.ids.input.text=str(entry) if entry!=None else ""
         
@@ -565,29 +775,30 @@ class EditElement(CustomDialog):
         entry = "" if entry == {} else entry
         return entry
     
+    def get_custom(self):
+        active = self.content.ids.custom.scroll.include
+        # print('get_custom',active)
+        return active
+    
     def get_input(self,category, convert_pronunciation=True,new_line=True):
         from main import ChD
         app=ChD.get_running_app()
         dict_categories = app.get_setting('categories')
-        
-        if self.style=="custom":
-            active = self.content.ids.input.scroll.include
-            return active
-        
+                
         text = self.content.ids.input.text
         if convert_pronunciation: text = convert_pronunciations(text)
         
         def allows_multiple():
-            if category in dict_categories.keys():
+            if category == 'new_character': return True
+            elif category in dict_categories.keys():
                 if dict_categories[category]==list: return True
                 else: return False
-            elif category == 'new_character': return True
             elif self.allow_multiple: return True
             else: return False
             
         def get_default_dtype():
-            if category in dict_categories: return dict_categories[category]
-            elif category == 'new_character': return list
+            if category == 'new_character': return list
+            elif category in dict_categories: return dict_categories[category]
             elif self.dtype != None: return self.dtype
             else: return str
         
@@ -640,7 +851,8 @@ class EditElement(CustomDialog):
                 
     def __category_edit(self):
         category=self.title.lower().replace(' ','_')
-        if 'input' in self.content.ids: new_entry = self.get_input(category,convert_pronunciation=True,new_line=True)
+        if self.style=="custom": new_entry = self.get_custom()
+        elif 'input' in self.content.ids: new_entry = self.get_input(category,convert_pronunciation=True,new_line=True)
         else: new_entry=self.get_dict()
         
         if category == 'dictionary_name': self.screen.rename_dict(new_entry)

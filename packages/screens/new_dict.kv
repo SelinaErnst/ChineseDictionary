@@ -5,10 +5,10 @@
         TitleLabel:
             text: f"Create New Dictionary"
         MDBoxLayout:
-            radius: 20
-            padding: 40
+            radius: app.radius
+            padding: 40,60,40,40
             spacing: 60
-            md_bg_color: app.theme_cls.surfaceContainerColor
+            md_bg_color: app.custom.colors['dialog_bg']
             orientation: 'vertical'
             size_hint_x: 1
             adaptive_height: True
@@ -18,11 +18,13 @@
                 role: "medium"
                 # text: root.dict_name
                 is_correct: root.check_name
+                multiline: False
             MDBoxLayout:
                 adaptive_height: True
                 spacing: 20
                 Widget:
-                MyIconTextButton:
+                RigidIconTextButton:
+                    width: 300
                     text: "Add"
                     icon: "plus"    
                     style: "tonal"

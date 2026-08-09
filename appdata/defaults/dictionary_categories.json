@@ -1,7 +1,4 @@
 {
-  "simple": "str",
-  "traditional":"str", 
-  "pronunciation":"str", 
   "english": "list",
   "german": "list",
   "measure_word": "list",
@@ -9,8 +6,8 @@
   "opposite": "list",
   "classifier": "list",
   "variants": "list",
-  "others": "list",
-  "dict_entries": "list",
+  "confusables": "list",
+  "grammar": "list",
   "strokes": "str",
   "strokes_count": "int",
   "components": "list",
@@ -20,7 +17,7 @@
   "ancient": "list",
   "relatives": "list",
   "words": "list",
-  "link": "list",
+  "links": "list",
   "images": "dict",
   "image_urls": "list"
   }

@@ -1,21 +1,18 @@
 
 <Settings>: #MyScreen
     ScrollView:
+        do_scroll_x: False
+        do_scroll_y: True
         MDStackLayout:
             size_hint: 1, None
             height: self.minimum_height
-            padding: 50,50,50,0
+            padding: 50,50,50,400
             spacing: 20
             TitleLabel:
-                text: f"Settings"
-            MDBoxLayout:
-                radius: 20
-                padding: 40,80,40,40
-                spacing: 80
-                md_bg_color: app.theme_cls.surfaceContainerColor
-                size_hint_x: 1
-                adaptive_height: True
-                orientation: 'vertical'
+                text: 'Design Choices'
+            SettingsType:
+                padding: 40,60,40,40
+                spacing: 60
                 Setting:
                     id: theme_style
                     hint: 'Theme Style'
@@ -27,15 +24,21 @@
                     icon: 'palette'
                     hint: 'Palette'
                     text:  app.theme_cls.primary_palette
-                    press_button: self.select_palette
+                    press_button: app.select_palette
                     options: self.palettes
+            TitleLabel:
+                text: 'Directories'
+            SettingsType:
+                padding: 40,60,40,40
+                spacing: 60
                 Setting:
                     id: app_directory
                     setting: 'app_directory'
                     hint: 'App Directory'
-                    text: str(app.get_setting('app_directory',default=True))
+                    text: str(app.app_directory)
                     icon: 'folder-open'
                     press_button: self.select_directory
+                    multiline: True
                 Setting:
                     id: import_directory
                     setting: 'import_directory'
@@ -43,46 +46,65 @@
                     text: str(app.get_setting('import_directory'))
                     icon: 'folder-open'
                     press_button: self.select_directory
-                MDStackLayout:
+                    multiline: True
+            TitleLabel:
+                text: 'General Dictionary Settings'
+            SettingsType:
+                EditTemplates:
+                    id: dict_template
+                    title: 'Templates'
+                    text: ''
+                    # options: [t.strip('.chd') for t in app.get_setting('templates')]
+                    cols: 1
+                EditCategories:
+                    id: dict_cat
+                    title: 'Categories'
+                    text: ''
+                    options: app.get_categories()
+                    cols: 1
+            TitleLabel:
+                text: 'Grammar Settings'
+            SettingsType:
+                MDGridLayout:
                     adaptive_height: True
                     spacing: 20
-                    orientation: 'lr-tb'
+                    rows: 1
+                    MultiLineIconTextButton:
+                        text: 'Tags'
+                        icon: 'pencil'
+                        role: 'small'
+                        icon_size: sp(12)
+                        on_release: app.open_file(app.get_app_file('grammar_tags',open_file=False),allow_new=False,create_tmp=True)
                     MultiLineIconTextButton:
                         text: 'Template'
                         icon: 'pencil'
                         role: 'small'
                         icon_size: sp(12)
-                        padding: 15
-                        on_release: root.open_file(app.get_setting('dictionary_template'))
-                    MultiLineIconTextButton:
-                        text: 'Categories'
-                        icon: 'pencil'
-                        role: 'small'
-                        icon_size: sp(12)
-                        padding: 15
-                        on_release: root.open_file(app._MyApp__appdata/'defaults'/'dictionary_categories.json')
-                    MultiLineIconTextButton:
-                        text: 'Reset Settings'
-                        icon: 'backup-restore'
-                        role: 'small'
-                        icon_size: sp(12)
-                        padding: 15
-                        on_release: app.reset_settings()
-
+                        on_release: app.open_file(app.get_setting('grammar_template'),allow_new=False,create_tmp=True)
+            # TitleLabel:
+            #     text: 'Factory Reset'
+            # SettingsType:
+            #     MDGridLayout:
+            #         adaptive_height: True
+            #         spacing: 20
+            #         rows: 1
+            #         MultiLineIconTextButton:
+            #             text: 'Reset'
+            #             icon: 'backup-restore'
+            #             role: 'small'
+            #             icon_size: sp(12)
+            #             on_release: 
+            #                 app.reset_settings()
+            #                 dict_cat.undo()
             BottomFieldButton:
                 text: 'Save'
-                style: 'filled'
                 press_button: root.save_settings
 
-<ShowFileContent>:
-    input: input
-    anchor_y: 'bottom'
-    TextInput:
-        id: input
-        text: root.text
-        font_size: sp(11)
-
-    BottomFieldButton:
-        text: 'Save'
-        style: 'elevated'
-        press_button: root.change_file    
+<SettingsType@MDBoxLayout>:
+    radius: app.radius
+    spacing: 40
+    padding: 40,40,40,40
+    md_bg_color: app.custom.colors['dialog_bg']
+    adaptive_height: True
+    orientation: 'vertical'
+    title: ""

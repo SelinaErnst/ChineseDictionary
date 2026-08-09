@@ -6,12 +6,12 @@
         TitleLabel:
             text: f"Import Dictionary File"
         MDBoxLayout:
-            radius: 20
+            radius: app.radius
             md_bg_color: app.custom.colors['dialog_bg']
             orientation: 'vertical'
             size_hint_x: 1
             adaptive_height: True
-            padding: 40,50,40,40
+            padding: 40,60,40,40
             spacing: 60
             EntryField:
                 id: name_entry
@@ -22,11 +22,12 @@
             EntryFieldWithIcon:
                 id: file_entry
                 hint: "File path"
-                role: "small"
+                role: "medium"
                 text: root.dict_file
                 press_button: root.select_file # function
                 is_correct: root.check_file
                 icon: "folder-open"
+                multiline: True
             EntryFieldWithIcon:
                 id: file_format
                 hint: "File format"
@@ -40,7 +41,8 @@
                 adaptive_height: True
                 spacing: 20
                 Widget:
-                MyIconTextButton:
+                RigidIconTextButton:
+                    width: 300
                     text: "Add"
                     icon: "plus"    
                     style: "tonal"

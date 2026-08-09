@@ -4,9 +4,6 @@ from kivy.properties import StringProperty
 from packages.kivy import (
     MyScreen,   
     ErrorMsg, # snackbar
-    ShowOptions, # dialog
-    MyFileManager,
-    ConfirmFileChoice
 )
 
 from packages.chd import _VALID_EXT, choose_file_ext
@@ -64,13 +61,15 @@ class DictionaryUpload(MyScreen):
         def set_file_format(text):
             self.ids.file_format.label.text=text
             if text=="all": self.ids.file_format.label.text=""
-
-        dialog = ShowOptions(
-            title='File Format',
-            options=list(_VALID_EXT.keys()),
-            itemclass='MyListItem', 
-            func=set_file_format
-            )
+            
+        kwargs={
+            "title":'File Format',
+            "options":list(_VALID_EXT.keys()),
+            "itemclass":"MyListItem",
+            "func": set_file_format
+        }
+        dialog = self.my_app.pre_loaded_widgets['options']
+        dialog.list_options(**kwargs)
         dialog.open()
 
     def select_file(self):
@@ -91,12 +90,17 @@ class DictionaryUpload(MyScreen):
         directory = self.get_setting('import_directory')
         if self.check_file_format() and self.file_format in _VALID_EXT: ext=_VALID_EXT[self.file_format]
         else: self.file_format,ext="",""
-        self.file_manager = MyFileManager(
-            description="Choose the dictionary file that you want to import.",
-            select_path=set_file_path,
-            ext=ext)
+        
+        kwargs = {
+            'description' :"Choose the dictionary file that you want to import.",
+            'select_path' : set_file_path,
+            'ext' : ext,
+        }
+        self.file_manager = self.my_app.pre_loaded_widgets['file_manager']
+        self.file_manager.set_attrs(**kwargs)
+        
         if os.path.isdir(directory): self.file_manager.show(directory,use_root_folder=False)
-        else: self.file_manager.show(use_root_folder=False)
+        else: self.file_manager.show(path=None,use_root_folder=False)
         
     # = ============================================================== = #
     # =                             PREVIEW                            = #
@@ -106,13 +110,9 @@ class DictionaryUpload(MyScreen):
         is_file,is_name,is_format=self.check_file(),self.check_name(),self.check_file_format()
         if all([is_file,is_name,is_format]): 
             try:
-                dialog = ConfirmFileChoice(
-                        dict_name=self.dict_name,
-                        file_name=self.file_name,
-                        file_format=self.file_format,
-                        file_path=self.dict_file,
-                        accept_func=self.load_dictionary
-                )
+                dialog = self.my_app.pre_loaded_widgets['file_choice']
+                dialog.choose_action(deny_func=None,accept_func=self.load_dictionary)
+                dialog.load_file(file=self.dict_file,name=self.dict_name)
                 dialog.open()
                 
             except Exception as err:
@@ -127,11 +127,7 @@ class DictionaryUpload(MyScreen):
                 ).open()
         
     def load_dictionary(self):
-        error=""
-        next_screen=self.switch_screen("view_dict",'left')
-        can_read = next_screen.set_up_screen(dict_name=self.dict_name,dict_file=self.dict_file,file_format=self.file_format)
-        next_screen.edited = True
-        if not can_read:
-            error='Incompatible file'
-            msg='Cannot read file as dictionary.'
-            ErrorMsg(error=error,msg=msg).open()
+        screen = self.get_screen('view_dict')
+        screen.set_attr(dict_name=self.dict_name,dict_file=self.dict_file)
+        self.switch_screen('view_dict',"left")
+        screen.edited = True

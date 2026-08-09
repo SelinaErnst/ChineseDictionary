@@ -1,15 +1,59 @@
 <ShowGrammar>:
     scroll: scroll
     bottom_nav: bottom_nav
-    ScrollView:
-        MDStackLayout:
-            id: scroll
-            size_hint: 1, None
-            # height: self.minimum_height+(66+2*10)*2
-            height: self.minimum_height+300
-            padding: 10
-            spacing: 20   
-                        
+
+    MDAnchorLayout:
+        anchor_y: 'top'
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            MDStackLayout:
+                id: scroll
+                size_hint: 1, None
+                # height: self.minimum_height+(66+2*10)*2
+                height: self.minimum_height+300
+                padding: 30,head.height+2*30,30,300
+                spacing: 30
+        BlockingAnchorLayout:
+            size_hint_y: None
+            height: head.height+2*30
+            padding: 60
+            MDBoxLayout:
+                id: head
+                size_hint_y: None
+                height: 265
+                md_bg_color: app.custom.colors['text_level'+ root.level] if root.level != "" else app.custom.colors['list_element_bg']
+                radius: app.radius
+                padding: 30,30,30,30
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    spacing: 30
+                    MDAnchorLayout:
+                        size_hint: None, None
+                        size: [head.height-2*30]*2
+                        md_bg_color: app.custom.colors['level'+ root.level] if root.level != "" else app.custom.colors['list_element_bg']
+                        radius: app.radius
+                        AnchoredLabel:
+                            font_style: 'Headline'
+                            role: 'medium'
+                            text: root.level
+                            halign: 'center'
+                            text_color: app.custom.colors['text_level'+root.level]
+                            font_size: head.height-2*30-2*30
+                    MDStackLayout:
+                        md_bg_color: app.custom.colors['level'+ root.level] if root.level != "" else app.custom.colors['list_element_bg']
+                        radius: app.radius
+                        spacing: 10
+                        padding: 30,15,30,15
+                        AnchoredLabel:
+                            text: root.title
+                            text_color: app.custom.colors['text_level'+root.level]
+                        AnchoredLabel:
+                            text: root.subtitle
+                            font_size: sp(9)
+                            multiline: True
+                            text_color: app.custom.colors['text_level'+root.level]
+
     MDBottomSheet:
         id: bottom_nav
         radius: 0
@@ -17,26 +61,28 @@
         height: 170
         width: Window.width 
         sheet_type: "standard"
-        md_bg_color: app.custom.colors['bottom']
-
+        md_bg_color: app.custom.colors['clear']
 
         BottomSheetDragHandleContainer:
-            padding: 20
             MDAnchorLayout:
                 anchor_x: 'center'
                 anchor_y: 'center'
                 size_hint_y: None
-                height: bottom_nav.height-2*20
+                height: bottom_nav.height
+                md_bg_color: app.custom.colors['clear']
                 MDBoxLayout:
                     orientation: 'horizontal'
                     adaptive_width: True
                     size_hint_y: None
-                    height: self.parent.height
+                    height: bottom_nav.height-20
+                    padding: 50,50
                     spacing: 50
-                    MyIconButton:
+                    md_bg_color: app.custom.colors['head']
+                    radius: app.radius
+                    BigIconButton:
                         text: 'Empty'
                         icon: 'eraser'
-                        size: self.parent.height, self.parent.height
+                        size: bottom_nav.height-60, bottom_nav.height-60
+                        md_bg_color: app.custom.colors['head']
                         style: 'text'
-                        md_bg_color: bottom_nav.md_bg_color
                         on_release: root.empty_grammar()

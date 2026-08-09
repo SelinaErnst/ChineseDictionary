@@ -1,40 +1,460 @@
+
+<MyTextField>
+    input_filter: self.field_filter
+    do_backspace: self.do_backspace
+    theme_cursor_color: 'Primary'
+    input_type: 'text'
+    keyboard_suggestions: True
+    
+    canvas.before:
+        Clear
+        # Filled mode.
+        Color:
+            group: "fill-color"
+            rgba:
+                ( \
+                ( \
+                self.theme_cls.surfaceVariantColor \
+                if self.theme_bg_color == "Primary" else
+                ( \
+                self.fill_color_normal \
+                if self.fill_color_normal else \
+                self.theme_cls.surfaceVariantColor \
+                ) \
+                ) \
+                if not self.focus else \
+                ( \
+                self.theme_cls.surfaceVariantColor \
+                if self.theme_bg_color == "Primary" else
+                ( \
+                self.fill_color_focus \
+                if self.fill_color_focus else \
+                self.theme_cls.onSurfaceVariantColor \
+                ) \
+                ) \
+                ) \
+                if self.mode == "filled" else self.theme_cls.transparentColor
+        RoundedRectangle:
+            group: "fill-color-rounded-rectangle"
+            pos: self.x, self.y
+            size: self.width, self.height
+            radius: self.radius[0], self.radius[1], 0, 0
+
+        # Active indicator.
+        Color:
+            group: "active-indicator-color"
+            rgba:
+                ( \
+                ( \
+                ( \
+                ( \
+                self.theme_cls.onSurfaceVariantColor \
+                if self.theme_line_color == "Primary" else \
+                ( \
+                self.line_color_normal \
+                if self.line_color_normal else \
+                self.theme_cls.onSurfaceVariantColor \
+                ) \
+                ) \
+                if not self.focus else \
+                ( \
+                self.theme_cls.primaryColor \
+                if self.theme_line_color == "Primary" else \
+                ( \
+                self.line_color_focus \
+                if self.line_color_focus else \
+                self.theme_cls.primaryColor \
+                ) \
+                ) \
+                ) \
+                if not self.error else self._get_error_color()
+                ) \
+                if not self.disabled else self.theme_cls.disabledTextColor \
+                ) \
+                if self.mode == "filled" else self.theme_cls.transparentColor
+        Line:
+            width: self._indicator_height
+            points:
+                self.x + dp(1 if self.focus else 0), \
+                self.y, \
+                self.x - dp(1 if self.focus else 0) + self.width, \
+                self.y
+
+        # Helper text texture.
+        Color:
+            group: "helper-text-color"
+        Rectangle:
+            group: "helper-text-rectangle"
+            texture:
+                self._helper_text_label.texture \
+                if self._helper_text_label else \
+                None
+            size:
+                self._helper_text_label.texture_size \
+                if self._helper_text_label else \
+                (0, 0)
+            pos:
+                self.x + (dp(16) if self.mode == "filled" else \
+                (0 if self.mode == "filled" else dp(12))), \
+                self.y + dp(-18)
+
+        # Leading icon texture.
+        Color:
+            group: "leading-icons-color"
+        Rectangle:
+            group: "leading-icon-rectangle"
+            texture:
+                self._leading_icon.texture if self._leading_icon else None
+            size:
+                self._leading_icon.texture_size \
+                if self._leading_icon else \
+                (0, 0)
+            pos:
+                ( \
+                ( \
+                self.x + \
+                ( \
+                ( \
+                dp(12) if self.mode != "outlined" else dp(12) \
+                ) \
+                if self.mode != "filled" else \
+                ( \
+                dp(4) if not self._leading_icon else dp(16) \
+                ) \
+                ), \
+
+                self.center_y - self._leading_icon.texture_size[1] / 2 \
+                ) \
+                ) \
+                if self._leading_icon else (0, 0)
+
+        # Trailing icon texture.
+        Color:
+            group: "trailing-icons-color"
+        Rectangle:
+            group: "trailing-icon-rectangle"
+            texture:
+                self._trailing_icon.texture if self._trailing_icon else None
+            size:
+                self._trailing_icon.texture_size \
+                if self._trailing_icon else \
+                (0, 0)
+            pos:
+                ( \
+                (self.width + self.x) - \
+                (self._trailing_icon.texture_size[1]) - dp(14), \
+                self.center_y - self._trailing_icon.texture_size[1] / 2 \
+                ) \
+                if self._trailing_icon else (0, 0)
+
+        # Max length texture.
+        Color:
+            group: "max-length-color"
+        Rectangle:
+            group: "max-length-rect"
+            texture:
+                self._max_length_label.texture \
+                if self._max_length_label else \
+                None
+            size:
+                self._max_length_label.texture_size \
+                if self._max_length_label else \
+                (0, 0)
+            pos:
+                ( \
+                (self.x + self.width) \
+                - (self._max_length_label.texture_size[0] + dp(16)), \
+                self.y - dp(18) \
+                ) \
+                if self._max_length_label else (0, 0)
+
+        # Cursor blink.
+        Color:
+            rgba: 
+                ( \
+                ( \
+                self.theme_cls.primaryColor \
+                if self.theme_cursor_color == "Primary" else \
+                self.cursor_color \ 
+                if self.cursor_color else \
+                self.theme_cls.primaryColor \
+                ) \
+                if self.focus \
+                else self.theme_cls.primaryColor \
+                ) \
+                if self.focus and not self._cursor_blink \
+                else \
+                (0, 0, 0, 0)
+
+        Rectangle:
+            group: "rectangle-cursor-blink"
+            pos: (int(x) for x in self.cursor_pos)
+            size: 1, -self.line_height
+
+        # Outlined mode.
+        Color:
+            group: "rectangle-color"
+            rgba:
+                ( \
+                ( \
+                ( \
+                ( \
+                self.theme_cls.primaryColor \
+                if self.theme_line_color == "Primary" else \
+                self.line_color_focus \
+                if self.line_color_focus else \
+                self.theme_cls.primaryColor \
+                ) \
+                if self.focus else \
+                ( \
+                self.theme_cls.outlineColor \
+                if self.theme_line_color == "Primary" else \
+                self.line_color_normal \
+                if self.line_color_normal else \
+                self.theme_cls.outlineColor \
+                ) \
+                ) \
+                if not self.error else self._get_error_color() \
+                ) \
+                if not self.disabled else \
+                app.theme_cls.onSurfaceColor[:-1] + \
+                [self.text_field_opacity_value_disabled_line]
+                ) \
+                if self.mode != "filled" else self.theme_cls.transparentColor
+
+        # Top right corner.
+        # ------------------------------------------------------─╮
+        SmoothLine:
+            width: self._outline_height
+            circle:
+                self.x + self.width - self.radius[1], \
+                self.y + self.height - self.radius[1], \
+                self.radius[1], \
+                0, \
+                90
+
+        # Bottom corner.
+        # -----------------------------------------------------─╯
+        SmoothLine:
+            width: self._outline_height
+            circle:
+                self.x + self.width - self.radius[2], \
+                self.y + self.radius[2], \
+                -self.radius[2], \
+                0, \
+                -90
+
+        # Top left corner.
+        # ╭─------------------------------------------------------
+        SmoothLine:
+            width: self._outline_height
+            circle:
+                self.x + self.radius[0], \
+                self.y + self.height - self.radius[0], \
+                -self.radius[0], \
+                180, \
+                90
+
+        # Bottom left corner.
+        # ╰─-----------------------------------------------------
+        SmoothLine:
+            width: self._outline_height
+            circle:
+                self.x + self.radius[3], \
+                self.y + self.radius[3], \
+                -self.radius[3], \
+                0, \
+                90
+
+       # Left vertical line.
+       # │
+       # │
+       # ╰─------------------------------------------------------
+        SmoothLine:
+            width: self._outline_height
+            points:
+                self.x, \
+                self.y + self.radius[3], \
+                self.x, \
+                self.y + (self.height - self.radius[0])
+
+        # Right vertical line.
+        #                                                       │
+        #                                                       │
+        # -----------------------------------------------------─╯
+        SmoothLine:
+            width: self._outline_height
+            points:
+                self.x + self.width, \
+                self.y + self.radius[2], \
+                self.x + self.width, \
+                self.y + (self.height - self.radius[1])
+
+        # Bottom horizontal line.
+        # ——————————————————————————————————————————————————————─╯
+        SmoothLine:
+            width: self._outline_height
+            points:
+                self.x + self.radius[3], \
+                self.y, \
+                self.x + self.width - self.radius[2], \
+                self.y
+
+        # Top (left) part of the line.
+        # ╭─-----------------------------------------------------
+        SmoothLine:
+            width: self._outline_height
+            points:
+                self.x + self.radius[0], \
+                self.y + self.height, \
+                self.x + self._left_x_axis_pos, \
+                self.y + self.height
+
+        # Top (right) part of the line.
+        # ╭─-----------—————————————————————————————————————————─╮
+        SmoothLine:
+            width: self._outline_height
+            points:
+                self.x + self._right_x_axis_pos, \
+                self.y + self.height, \
+                self.x + self.width - self.radius[1], \
+                self.y + self.height
+
+        # Text color.
+        Color:
+            group: "text-color"
+            rgba:
+                self.theme_cls.disabled_hint_text_color \
+                if self.disabled else \
+                ( \
+                ( \
+                self.text_color_focus \
+                if self.text_color_focus and self.theme_text_color == "Custom" \
+                else self.theme_cls.onSurfaceColor \
+                ) \
+                # if not self.error else self._get_error_color() \
+                ) \
+                if self.focus else \
+                ( \
+                self.text_color_normal \
+                if self.text_color_normal and self.theme_text_color == "Custom" \
+                else self.theme_cls.onSurfaceVariantColor \
+                ) if not self.error else self._get_error_color()
+
+    # Hint texture.
+    canvas.after:
+        Color:
+            group: "hint-text-color"
+        Rectangle:
+            group: "hint-text-rectangle"
+            texture:
+                self._hint_text_label.texture \
+                if self._hint_text_label else \
+                None
+            size:
+                self._hint_text_label.texture_size \
+                if self._hint_text_label else \
+                (0, 0)
+            pos:
+                ( \
+                self.x + \
+                ( \
+                dp(16) \
+                if not self._leading_icon else \
+                self._leading_icon.texture_size[0] + dp(28) + self._hint_x \
+                ), \
+
+                ( \
+                self.y + self.height \
+                + (self._hint_text_label.texture_size[1] / 2) \
+                - (self.height / 2) \
+                - self._hint_y  \
+                ) \
+                if not self.multiline else \
+                ( \
+                ( \
+                (self.top - self._hint_text_label.texture_size[1] + dp(8)) \
+                if not self.multiline else \
+                ( \
+                self.top - self._hint_text_label.texture_size[1]
+                - (dp(6) if self.mode == "filled" else dp(-8)) \
+                ) \
+                ) \
+                if self.text else \
+                ( \
+                self.y + self.height \
+                + (self._hint_text_label.texture_size[1] / 2) \
+                - (self.height / 2) \
+                - self._hint_y  \
+                ) \
+                ) \
+                ) \
+                if self._hint_text_label else (0, 0)
+
+    bold: False
+    font_name: theme_font_styles[self.font_style][self.role]["font-name"]
+    font_size: theme_font_styles[self.font_style][self.role]["font-size"]
+    padding:
+        ( \
+        dp(16) if not self._leading_icon else dp(42) \
+        if self.mode != "filled" else \
+        (dp(16) if not self._leading_icon else dp(52)), \
+
+        (self.height / 2.0 - (self.line_height / 2.0) * len(self._lines)) \
+        + dp(8 if self.mode == "filled" else 0), \
+
+        dp(16) \
+        if not self._trailing_icon else \
+        self._trailing_icon.texture_size[0] + dp(28), \
+
+        0 \
+        )
+    multiline: False
+    size_hint_y: None
+    height: dp(56)
+
+
 <EntryField>: #MDTextField
     id: label
-    height: root.standard_height
-    font_style: "Label"
-    mode: "outlined" # filled
+    height: 110
+    font_style: "Body"
+    mode: "outlined" # filled / outlined
     theme_font_name: 'Custom'
     font_name: 'CH'
+    radius: app.radius
 
     # color: "dark-light"
     color_focus: app.custom.colors['textfield_set_focus'] 
-    # if root.color=="dark-light" else app.custom.colors['textfield_bright']
     color_normal: app.custom.colors['textfield_set_normal'] 
-    # if root.color=="dark-light" else app.custom.colors['textfield_dark']
 
     theme_text_color: "Custom"
-    text_color_normal: root.color_normal
+    text_color_normal: root.color_normal 
     text_color_focus: root.color_focus
     theme_line_color: 'Custom'
     line_color_normal: root.color_normal
     line_color_focus: root.color_focus
     theme_error_color: "Custom"
     error_color: app.custom.colors['textfield_error']
+    theme_cursor_color: 'Custom'
+    cursor_color: root.color_normal
 
     # theme_bg_color: 'Custom'
-    # fill_color: 'black'
-    # fill_color_normal: app.theme_cls.surfaceContainerLowColor
-    # fill_color_focus: app.theme_cls.surfaceContainerHighColor
+    # fill_color_normal: [0,0,0,0]
+    # fill_color_focus: [0,0,0,0]
 
     MDTextFieldHintText:
         text: root.hint
         text_color_normal: root.color_normal
         text_color_focus: root.color_focus
+        font_style: 'Label'
+
 
 <EntryFieldWithIcon>: #MDBoxLayout
+
     label: label
     adaptive_height: True
     padding: 0,0,0,0
+    multiline: False
 
     EntryField:
         id: label
@@ -43,14 +463,27 @@
         hint: root.hint
         is_correct: root.is_correct
         allow_empty: root.allow_empty
+        padding: 0,0,0,0
+        multiline: root.multiline
 
     MDIconButton:
         size_hint_y: 1
-        size_hint_x: None
-        width: self.height*0.7
         radius: 0
         allow_hover: False
         ripple_effect: False
         icon: root.icon
         on_release: root.press_button()
         
+<SearchBar@EntryField>:
+    role: 'medium'
+    height: 140
+    theme_font_name: "Custom"
+    font_name:"CH"
+    allow_empty: True
+    color_focus: app.custom.colors['textfield_search']
+    color_normal: app.custom.colors['textfield_search']
+    md_bg_color: 'blue'
+
+<MyTextInput@TextInput>:
+    input_type: 'text'
+    keyboard_suggestions: True

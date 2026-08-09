@@ -65,8 +65,12 @@ def add_columns(cursor,name:str,new_columns:dict):
     for col in new_columns:
         cursor.execute(f"ALTER TABLE {name} ADD COLUMN {col}")
         
-        
 def get_unique_values(cursor,name,column:str):
     cursor.execute(f"SELECT DISTINCT {column} FROM {name}")
+    unique_values = [row[0] for row in cursor.fetchall()]
+    return unique_values
+
+def get_values(cursor,name,column:str):
+    cursor.execute(f"SELECT {column} FROM {name}")
     unique_values = [row[0] for row in cursor.fetchall()]
     return unique_values

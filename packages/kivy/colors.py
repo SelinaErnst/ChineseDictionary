@@ -21,6 +21,7 @@ THEME_MAP = {
     "inverse_text": {"Light": "#FFFFFF", "Dark": "#111111"},
     
     "app":{'Light': "#003B3B","Dark": "#003535"},
+    "clear":{'Light': "#003B3B","Dark": "#003535"},
     "bottom":{'Light': "#003B3B","Dark": "#003535"},
     "bg":{'Light': "#FFFFFF","Dark": "#070a0a"},
     "head":{'Light': "#268383","Dark": "#005151"},
@@ -78,9 +79,10 @@ class CustomColors(EventDispatcher):
         DARK_light_primary_color = theme_cls.primary_paletteKeyColorColor
         DARK_super_light_primary_color = theme_cls.surfaceTintColor
         DARK_bright_color=brighten(theme_cls.primaryColor,.7)
-        
+
         theme_cls_colors = {
             'app':{"Light":LIGHT_dark_primary_color,"Dark":DARK_dark_primary_color},
+            'clear':{"Light":[0,0,0,0],"Dark":[0,0,0,0]},
             'bottom':{'Light':LIGHT_dark_primary_color,'Dark':DARK_dark_primary_color},
             'bg':{"Light":LIGHT_dark_bg_color,"Dark":DARK_super_dark_bg_color},
             'bg_overlay':{"Light":[0, 0, 0, 0.7],"Dark":[0, 0, 0, 0.9]},

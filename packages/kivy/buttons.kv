@@ -4,39 +4,56 @@
     spacing: 10
 
 <ToggleButton>: #MDButton
-    radius: 20
+    radius: app.radius
     text: ""
     icon: ""
     theme_bg_color: 'Custom'
-    custom_color: None
-    custom_font_color: None
-    md_bg_color: app.custom.colors[self.active_filter+'_bg'] if self.active_filter != 'include' or root.custom_font_color==None else root.custom_color
-    font_color: app.custom.colors[self.active_filter+'_text'] if self.active_filter != 'include' or root.custom_font_color==None else root.custom_font_color
+    custom_color_focus: None
+    custom_color_unfocus: None
+    custom_font_color_focus: None
+    custom_font_color_unfocus: None
+    md_bg_color: root.get_color(app.custom.colors[self.active_filter+'_bg'],root.custom_color_focus,root.custom_color_unfocus)
+    font_color: root.get_color(app.custom.colors[self.active_filter+'_text'],root.custom_font_color_focus,root.custom_font_color_unfocus)
     role: 'medium'
     font_style: 'Label'
-    style: "elevated"  
+    style: "filled"
+    state_hover: 0
+    disabled: True
+
+<IconToggleButton>: #ToggleButton
+    icon_size: None
+    size_hint_y: None
+    height: 100
+    theme_width: "Custom"
+    width: root.height
+    MDButtonIcon: 
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        id: icon
+        icon: root.icon
+        font_size: root.height - 40 if root.icon_size==None else root.icon_size
+        theme_icon_color: 'Custom'
+        icon_color: root.font_color
 
 <IconTextToggleButton>: #ToggleButton
-    icon_size: sp(9)
+    # icon_size: sp(10)
+    icon_size: None
     role: 'medium'
     height: self.ids.label.texture_size[1]
-    padding: 20 
-
+    padding: 20
     MDButtonIcon: 
         pos_hint: {'x': 0,'center_y': 0.5}
         id: icon
         icon: root.icon
-        # padding: root.padding+20,root.padding,20,root.padding
-        padding: root.padding*2,root.padding,root.padding,root.padding
-        font_size: self.font_size if root.icon_size==None else root.icon_size
+        padding: root.padding+0,root.padding,0,root.padding
+        font_size: root.height - 40 if root.icon_size==None else root.icon_size
         theme_icon_color: 'Custom'
         icon_color: root.font_color
+
     MDButtonText: 
         id: label
         text: root.text
         pos_hint: {'right': 1,'center_y': 0.5}
-        # padding: 0,root.padding,root.padding+20,root.padding
-        padding: 0,root.padding,root.padding*2,root.padding
+        padding: root.padding*3,root.padding,root.padding+5,root.padding
         font_style: root.font_style
         role: root.role
         theme_text_color: 'Custom'
@@ -60,30 +77,39 @@
         theme_text_color: 'Custom'
         text_color: root.font_color
 
+<MultipleToggle>: #TextToggleButton
+    custom_color_unfocus: app.custom.colors['list_element_bg']
+    
 # = ============================================================== = #
 # =                          ICON AND TEXT                         = #
 # = ============================================================== = #
 
 <MyIconTextButton>: #MDButton
-    radius: 20
-    height: self.ids.label.texture_size[1] #based on padding
-    font_style: 'Label'
-    role: 'large'
+    radius: app.radius
+    height: label.texture_size[1] #based on padding
+    font_style: 'Body'
+    role: 'medium'
     icon_size: None
+    font_size: None
     padding: 30
     theme_bg_color: "Custom"
     md_bg_color: app.custom.colors['button_bg']
     font_color: app.custom.colors['button_fg']
+    theme_shadow_color: 'Custom'
+    shadow_color: [0,0,0,0]
+    style: "filled"
+    state_hover: 0
 
     MDButtonIcon: 
         pos_hint: {'x': 0,'center_y': 0.5}
         id: icon
         icon: root.icon
         padding: root.padding+0,root.padding,0,root.padding
-        theme_font_size: "Primary" if root.icon_size==None else "Custom"
-        font_size: self.font_size if root.icon_size==None else root.icon_size
+        # theme_icon_size: "Primary" if root.icon_size==None else "Custom"
+        font_size: root.height - 40 if root.icon_size==None else root.icon_size
         theme_icon_color: "Custom"
         text_color: root.font_color
+
     MDButtonText: 
         id: label
         text: root.text
@@ -91,6 +117,8 @@
         padding: 0,root.padding,root.padding+0,root.padding
         font_style: root.font_style
         role: root.role
+        theme_font_size: "Primary" if root.font_size==None else "Custom"
+        font_size: sp(12) if root.font_size==None else root.font_size
         theme_text_color: "Custom"
         text_color: root.font_color
     
@@ -104,10 +132,11 @@
 
 # used with Interface
 <NavigationButton>:  #MDButton
-    radius: 20
+    radius: app.radius
     theme_width: "Custom"
     size_hint_x: 1
     style: 'text'
+    state_hover: 0
     MDButtonIcon: 
         icon: root.icon
     MDButtonText: 
@@ -120,11 +149,17 @@
 # = ============================================================== = #
 
 <MyTextButton>: #MDButton
-    radius: 20
+    radius: app.radius
     height: self.ids.label.texture_size[1]
     theme_bg_color: "Custom"
     md_bg_color: app.custom.colors['button_bg']
     font_color: app.custom.colors['button_fg']
+    style: "filled"
+    state_hover: 0
+
+    font_style: 'Body'
+    role: 'large'
+
     MDButtonText:
         id: label
         text: root.text
@@ -135,6 +170,7 @@
         role: root.role
         theme_text_color: "Custom"
         text_color: root.font_color
+        
 
 <RigidTextButton>: #MyTextButton
     theme_width: "Custom"
@@ -150,16 +186,41 @@
 <MyIconButton>: #MDButton
     theme_width: "Custom"
     size: self.size
-    radius: 20
+    size: 100, 100
+    radius: app.radius
     pos_hint: {'center_x': 0.5,'center_y': 0.5}
     icon_color: [0,0,0,0]
     theme_bg_color: "Custom" 
     md_bg_color: app.custom.colors['button_bg'] if not root.disabled else app.custom.colors['list_head_bg']
     font_color: app.custom.colors['button_fg']
+    style: "filled"
+    state_hover: 0
+    icon: ""
     MDButtonIcon:
         icon: root.icon
         pos_hint: {'center_x': 0.5,'center_y': 0.5}
         theme_font_size: 'Custom'
-        font_size: sorted(root.size)[0] - 20
+        font_size: sorted(root.size)[0] - 40
+        theme_icon_color: "Custom"
+        icon_color: root.font_color
+
+<BigIconButton@MDButton>:
+    theme_width: "Custom"
+    size: self.size
+    size: 100, 100
+    radius: app.radius
+    pos_hint: {'center_x': 0.5,'center_y': 0.5}
+    icon_color: [0,0,0,0]
+    theme_bg_color: "Custom" 
+    md_bg_color: app.custom.colors['button_bg'] if not root.disabled else app.custom.colors['list_head_bg']
+    font_color: app.custom.colors['button_fg']
+    style: "filled"
+    state_hover: 0
+    icon: ""
+    MDButtonIcon:
+        icon: root.icon
+        pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        theme_font_size: 'Custom'
+        font_size: sorted(root.size)[0] - 10
         theme_icon_color: "Custom"
         icon_color: root.font_color

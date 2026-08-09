@@ -37,10 +37,13 @@
     MDNavigationLayout:
         WindowManager:
             id: wm
-            
-        MDNavigationDrawer:
+            md_bg_color: app.custom.colors['bg']
+
+        MyNavigationDrawer:
             id: nav_drawer
-            radius: 0, 16, 16, 0
+            radius: 0, app.radius, app.radius, 0
+            drawer_type: 'modal'
+            anchor: 'left'
             MDNavigationDrawerMenu:
                 spacing: 5
                 MDNavigationDrawerLabel:
@@ -96,3 +99,6 @@
                         nav_drawer.set_state("toggle")
                     icon: "upload"
                     text: "Restore"
+
+<MyNavigationDrawer@MDNavigationDrawer>:
+    width: dp(200) if Window.width <= dp(360) else dp(200)

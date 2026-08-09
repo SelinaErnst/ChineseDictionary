@@ -1,15 +1,15 @@
 <DictionaryChooser>:
     options: options
-    directory: app.get_setting('dict_directory')
+    # directory: app.get_setting('dict_directory')
     MDAnchorLayout:
         padding: 50
         anchor_y: 'top'
-        MDBoxLayout:
-            orientation: 'vertical'
+        MDStackLayout:
             spacing: 20
-            adaptive_height: True
             TitleLabel:
-                text: "My Dictionaries"
+                text: "Dictionaries"
             LazyOptions:
                 id: options
-                itemclass: root.itemclass
+                itemclass: 'MyMultiLineItem'  #MyListItem MyMultiLineItem
+                scroll_spacing: 30 
+                size_hint_y: 1

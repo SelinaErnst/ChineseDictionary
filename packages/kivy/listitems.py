@@ -15,11 +15,12 @@ from kivy.properties import (
     )
 
 from packages.chd import Grammar
-from .dialogs import EditElement
 from kivy.lang import Builder
 from pathlib import Path
+
 current_dir = Path(__file__).resolve().parent
 Builder.load_file(str(current_dir/'listitems.kv'))
+
 class TableRow(MDBoxLayout):
     # used in: ConfirmChoice
     head=StringProperty()
@@ -33,10 +34,17 @@ class CustomListItem(RectangularRippleBehavior, ButtonBehavior, MDAnchorLayout):
     
 class MyListItem(CustomListItem):
     func=ObjectProperty()
-
+    # font_size=ObjectProperty()
+    
+    def __init__(self, func=None, **kwargs):
+        if callable(func): self.func = func
+        super().__init__(**kwargs)
+    
+class OptionItem(MyListItem):
+    pass
+    
 class MyMultiLineItem(CustomListItem):
     func=ObjectProperty()
-    
 class PaletteColor(MDBoxLayout):
     color_name=StringProperty('surfaceContainerLowColor')
     palette=StringProperty()
@@ -151,8 +159,13 @@ class RemovableCategoryLine(MDBoxLayout):
             entry = {k:v if v!=None else "" for k,v in self.data.to_dict().items()}
             dtype = Sentence
             title = 'Edit Sentence'
-        else: entry,title = {},""
-        dialog = EditElement(style="dict",title=title,dtype=dtype,original=self.data)
+        else: entry,title = {},"" 
+
+        from main import ChD
+        app:ChD = ChD.get_running_app()
+        
+        dialog = app.pre_loaded_widgets['edit_element']
+        dialog.choose_content(style="dict",title=title,dtype=dtype,original=self.data)
         dialog.set_entry(entry)
         dialog.open()
         

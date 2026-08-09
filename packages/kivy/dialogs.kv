@@ -16,7 +16,7 @@
 
     MDBoxLayout:
         id: box
-        radius: 20
+        radius: app.radius
         pos_hint: root.box_pos
         y: 20
         md_bg_color: app.custom.colors['dialog_bg']
@@ -87,24 +87,36 @@
 <Options>: #MDBoxLayout
     scroll: scroll
     size_hint_y: None
-    height: max(root.min_h,min(root.max_h, scroll.minimum_height))
+    height: max(root.min_h,min(root.max_h, scroll.minimum_height)) if root.is_open else 0
+    scroll_spacing: 20
     ScrollView:
+        size_hint_y: None
+        height: root.height
+        do_scroll_x: False
+        do_scroll_y: True
         MDStackLayout:
             id: scroll
             size_hint: 1, None
             height: self.minimum_height
             padding: 20,20,20,0
-            spacing: 10
+            spacing: root.scroll_spacing
+            include: []
+            exclude: []
 
 <LazyOptions>: #MDBoxLayout
     rv_scroll: rv_scroll
     size_hint_y: None
     itemclass: 'MyListItem'
     height: max(root.min_h,min(root.max_h, scroll.minimum_height))
+    scroll_spacing: 20
 
     MDRecycleView:
         id: rv_scroll
         viewclass: root.itemclass
+        scroll_type: ['bars', 'content']
+        bar_width: 20
+        do_scroll_x: False
+        do_scroll_y: True
         RecycleBoxLayout:
             id: scroll
             orientation: "vertical"
@@ -112,7 +124,7 @@
             height: self.minimum_height
             default_size_hint: 1, None
             default_height: None
-            spacing: 10
+            spacing: root.scroll_spacing
 
 <MakeSimpleDecision>: #MDBoxLayout
     orientation: 'vertical'
@@ -121,31 +133,30 @@
     MDBoxLayout:
         padding: 0,40,0,0
         adaptive_height: True
+        spacing: 40
         Widget:
-        MyIconButton:
-            radius: 20
+        BigIconButton:
+            radius: app.radius
             size_hint: None, None
             size: root.button_width, root.button_width
             icon: root.deny_icon
-            style: "elevated"
             md_bg_color: app.custom.colors['dialog_button_bg']
             font_color: app.custom.colors['dialog_button_fg']
             on_release: 
                 app.dismiss_all()
                 root.deny_func() if root.deny_func!=None else None
-        Widget:
-        MyIconButton:
-            radius: 20
+        # Widget:
+        BigIconButton:
+            radius: app.radius
             size_hint: None, None
             size: root.button_width, root.button_width
             icon: root.confirm_icon
-            style: "elevated"
             md_bg_color: app.custom.colors['dialog_button_bg']
             font_color: app.custom.colors['dialog_button_fg']
             on_release: 
                 app.dismiss_all()
                 root.accept_func() if root.accept_func!=None else None
-        Widget:
+        # Widget:
 
 <MakeDecision>: #MDBoxLayout
     orientation: 'vertical'
@@ -161,7 +172,6 @@
             text: root.deny_text
             md_bg_color: app.custom.colors['dialog_button_bg']
             font_color: app.custom.colors['dialog_button_fg']
-            style: "elevated"
             role: 'medium'
             on_release: 
                 app.dismiss_all()
@@ -171,7 +181,6 @@
             width: root.button_width
             icon: root.confirm_icon
             text: root.confirm_text
-            style: "elevated"
             role: 'medium'
             md_bg_color: app.custom.colors['dialog_button_bg']
             font_color: app.custom.colors['dialog_button_fg']
@@ -179,6 +188,32 @@
                 app.dismiss_all()
                 root.accept_func() if root.accept_func!=None else None
         # Widget:
+
+<DoAction>:
+    orientation: 'vertical'
+    adaptive_height: True
+    MDDivider:
+    MDBoxLayout:
+        padding: 0,40,0,0
+        adaptive_height: True
+        Widget:
+        RigidIconTextButton:
+            width: root.button_width
+            icon: root.icon
+            text: root.text
+            md_bg_color: app.custom.colors['dialog_button_bg']
+            font_color: app.custom.colors['dialog_button_fg']
+            role: 'medium'
+            on_release: 
+                app.dismiss_all()
+                root.action() if root.action!=None else None
+        MDAnchorLayout:
+            anchor_x: 'right'
+            BigIconButton:
+                icon: 'close'
+                md_bg_color: app.custom.colors['dialog_button_bg']
+                font_color: app.custom.colors['dialog_button_fg']
+                on_release: app.dismiss_all()
 
 <SimpleClose>:
     icon: 'close'
@@ -189,21 +224,20 @@
         padding: 0,40,0,0
         adaptive_height: True
         Widget:
-        MyIconButton:
+        BigIconButton:
             icon: root.icon
             on_release: app.dismiss_all()
-            style: 'elevated'
             md_bg_color: app.custom.colors['dialog_button_bg']
             font_color: app.custom.colors['dialog_button_fg']
 
-<DictElement>: #MDBoxLayout
+<DictValue>: #MDBoxLayout
     input: input
     key: ""
     value: ""
     orientation: 'vertical'
     size_hint_y: None
     height: input.height
-    TextInput:
+    MyTextInput:
         id: input
         font_name: "CH"
         font_size: sp(11)
@@ -218,15 +252,46 @@
         height: self.minimum_height
         padding: 20
 
-<AddOption>: #MDAnchorLayout
+<DictElement>: #MDBoxLayout
+    key: ""
+    value: ""
     orientation: 'horizontal'
-    # size_hint_y: None
+    size_hint_y: None
+    height: key.height
+    spacing: 20
+    MyTextInput:
+        id: key
+        font_size: sp(11)
+        text: root.key
+        background_color: app.custom.colors['text_input_bg']
+        foreground_color: app.custom.colors['text_input_fg']
+        size_hint_y: None
+        padding: 20
+    MyTextInput:
+        id: value
+        font_size: sp(11)
+        text: root.value
+        background_color: app.custom.colors['text_input_bg']
+        foreground_color: app.custom.colors['text_input_fg']
+        size_hint_y: None
+        padding: 20
+
+
+<DictElementDel>: #DictElement
+    BigIconButton:
+        icon: 'minus'
+        size_hint: None, None
+        size: 100,100
+        on_release: root.delete()
+
+<AddOption>: #MDBoxLayout
+    orientation: 'horizontal'
     size_hint: 1,None
     height: 140
     MDAnchorLayout:
         size_hint: None,None
         size: button.width+40,root.height
-        MyIconButton:
+        BigIconButton:
             id: button
             icon: 'plus'
             on_release: root.add_option(input.text)
@@ -234,7 +299,7 @@
     MDAnchorLayout:
         size_hint_y: None
         height: root.height
-        TextInput:
+        MyTextInput:
             id: input
             font_name: "CH"
             font_size: sp(12)
@@ -246,6 +311,42 @@
             height: self.minimum_height
             padding: 20
 
+<AddProperty>: #MDBoxLayout
+    orientation: 'horizontal'
+    # size_hint_y: None
+    size_hint: 1,None
+    height: 140
+    MDAnchorLayout:
+        size_hint: None,None
+        size: button.width+40,root.height
+        BigIconButton:
+            id: button
+            icon: 'plus'
+            on_release: root.add_property(key.text,value.text)
+            
+    MDAnchorLayout:
+        size_hint_y: None
+        height: root.height
+        MDBoxLayout:
+            orientation: 'horizontal'
+            spacing: 20
+            size_hint_y: None
+            height: key.height
+            MyTextInput:
+                id: key
+                font_size: sp(11)
+                background_color: app.custom.colors['text_input_bg']
+                foreground_color: app.custom.colors['text_input_fg']
+                size_hint_y: None
+                padding: 20
+            MyTextInput:
+                id: value
+                font_size: sp(11)
+                background_color: app.custom.colors['text_input_bg']
+                foreground_color: app.custom.colors['text_input_fg']
+                size_hint_y: None
+                padding: 20
+
 <ElementInput>: #TextInput
 
     background_color: app.custom.colors['text_input_bg']
@@ -256,4 +357,5 @@
     size_hint_y: None
     line_spacing: 10
     height: max(root.min_h,min(root.max_h, self.minimum_height))
-
+    input_type: 'text'
+    keyboard_suggestions: True

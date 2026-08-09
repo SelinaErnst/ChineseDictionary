@@ -6,6 +6,7 @@
 
 <BottomFieldButton>: #BottomField
     height: 150
+    style: 'filled'
     MDBoxLayout:
         adaptive_height: True
         adaptive_width: True
@@ -19,3 +20,31 @@
 <Separator@MDBoxLayout>:
     size_hint_y: None
     height: 20
+
+<ShowFileContent>: #MDAnchorLayout
+    input: input
+    orientation: 'vertical'
+    md_bg_color: app.custom.colors['bg']
+    padding: 20
+    spacing: 20
+    AnchoredLabel:
+        text: 'Directory:  '+os.path.dirname(root.file)
+        font_style: 'Label'
+        role: 'small'
+        min_padding: 10
+    AnchoredLabel:
+        text: 'File:  '+os.path.basename(root.file)
+        font_style: 'Label'
+        role: 'small'
+        min_padding: 10
+    MyTextInput:
+        id: input
+        text: root.text
+        font_size: sp(11)
+        padding: 20,0,20,0
+    BottomFieldButton:
+        text: 'Save'
+        press_button: root.change_file    
+        # md_bg_color: app.custom.colors['bg']
+
+<MyScrollView>:

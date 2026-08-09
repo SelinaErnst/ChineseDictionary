@@ -4,35 +4,10 @@ from packages.kivy import (
     MyScreen,
     ErrorMsg, # snackbar
     EntryFieldWithIcon,
-    ShowPaletteOptions,
-    MyFileManager,
     StringProperty, 
-    NumericProperty, 
     ListProperty,
-    MDBoxLayout,
-    MDAnchorLayout
     )
 from kivy.utils import hex_colormap
-
-class ShowFileContent(MDAnchorLayout):
-    text=StringProperty()
-    file=StringProperty()
-    
-    def read_file(self,file:str|None=None):
-        if file!=None: self.file=file
-        with open(self.file) as f:
-            lines = f.readlines()
-            text=''.join(lines)
-        self.text = text+'\n'*17
-        
-    def change_file(self,file:str|None=None):
-        if file!=None: self.file=file
-        if os.path.isfile(self.file):
-            with open(self.file, "w") as f:
-                f.write(self.input.text.rstrip('\n'))
-        from main import ChD
-        app = ChD.get_running_app()
-        app.dismiss_widget()
         
 class Settings(MyScreen):
     
@@ -47,14 +22,14 @@ class Settings(MyScreen):
         app = ChD.get_running_app()
         return app.settings
     
+    def set_up_screen(self):
+        self.my_app.clean_tmp_files()
+    
     # = ============================================================== = #
     # =                             WIDGET                             = #
     # = ============================================================== = #
             
-    def open_file(self,file):
-        layout = ShowFileContent(md_bg_color='red',file=str(file))
-        layout.read_file()
-        self.open_widget(layout)
+
         
     # = ============================================================== = #
     # =                         CHANGE SETTINGS                        = #
@@ -63,11 +38,17 @@ class Settings(MyScreen):
     def update_settings(self):
         for setting in self.ids.keys():
             key = self.get_setting(setting)
-            self.ids[setting].ids.label.text = str(key)
-            self.settings[setting] = key
+            # print(key,self.ids[setting].ids.label.text,setting)
+            if key!=None:
+                self.ids[setting].ids.label.text = str(key)
+                self.settings[setting] = key
 
     def save_settings(self):
         from main import ChD
+        app:ChD = ChD.get_running_app()
+                    
+        # = –––––––––––––––––––––––– user settings ––––––––––––––––––––––– = #
+            
         new_settings=self.settings
         correctness={}
         i=0
@@ -80,10 +61,8 @@ class Settings(MyScreen):
                 correctness[self.ids[setting].hint]=is_correct
         all_true=all(correctness.values())
         
-        
         if all_true:
             try:
-                app = ChD.get_running_app()
                 app.save_user_settings(new_settings)
                 app.update_design()
                 
@@ -99,6 +78,28 @@ class Settings(MyScreen):
                 error="Invalid settings",
                 msg=f'Cannot save, check settings: {incorrect_entries}'
                 ).open()
+            
+        # = –––––––––––––––––––– dictionary categories ––––––––––––––––––– = #
+        
+        if self.ids['dict_cat'].new_options != {}:
+            rename_map = self.ids['dict_cat'].rename_map
+            new_categories = self.ids['dict_cat'].new_options
+            old_categories = app.get_categories()
+            renamed = [cat for cat in old_categories if cat in rename_map]
+            removed = [cat for cat in old_categories if (cat not in new_categories and cat not in renamed)]
+            added = [cat for cat in new_categories if (cat not in old_categories and cat not in rename_map.values())]
+            
+            # IMPORTANT: RENAMING
+            if renamed != []: app.rename_category(rename_map=rename_map)
+            # CHANGE JSON
+            app.save_app_config(new_categories,'categories')
+        
+        # = ––––––––––––––––– templates and other configs –––––––––––––––– = #
+        
+        self.my_app.move_tmp_files()
+        # print(self.my_app.tmp_files_rm,self.my_app.tmp_files)
+        self.my_app.previous_screen()
+        
 class Setting(EntryFieldWithIcon):
     icon = StringProperty()
     options = ListProperty() # determines valid entries
@@ -123,15 +124,6 @@ class Setting(EntryFieldWithIcon):
         return ['Dark','Light']
         
     # = ––––––––––––––––––––––– primary palette –––––––––––––––––––––– = #
-    
-    def select_palette(self):
-        # update if any changes were made outside of app
-        self.children[1]._check_text()
-        
-        kwargs={'itemclass':'PaletteItem','max_h':1300}
-        if self.hint=='Palette':
-            dialog = ShowPaletteOptions(**kwargs)
-            dialog.open()
         
     @property
     def palettes(self):
@@ -141,7 +133,7 @@ class Setting(EntryFieldWithIcon):
         
     def select_directory(self):
         from main import ChD
-        app = ChD.get_running_app()
+        app:ChD = ChD.get_running_app()
         screen = app.wm.current_screen
         
         def select_path(path):
@@ -149,12 +141,15 @@ class Setting(EntryFieldWithIcon):
             screen.file_manager.close()
             
         try: 
-            screen.file_manager = MyFileManager(
-                description=f'Decide on {self.hint.lower()}.',
-                select_path=select_path,
-                ext=['.____nothing____'], 
-            )
-            screen.file_manager.show(path=None,use_root_folder=True)
+            kwargs = {
+            'description' : f'Decide on {self.hint.lower()}.',
+            'select_path' : select_path,
+            'ext' : ['.____nothing____'],
+            }
+            file_manager = app.pre_loaded_widgets['file_manager']
+            file_manager.set_attrs(**kwargs)
+            file_manager.show(path=None,use_root_folder=True)
+            screen.file_manager = file_manager
             
         except Exception as err:
             error=f"{type(err).__name__}"

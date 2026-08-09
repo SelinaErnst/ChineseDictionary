@@ -57,16 +57,21 @@ class ImageBox(ClickableBoxLayout):
     
     def imagefile(self,source):
         from main import ChD
-        default_file=ChD.get_running_app().root_folder/"appdata"/"images"/"app_icon_fg.png"
+        app:ChD = ChD.get_running_app()
+        # default_file=app.root_folder/"appdata"/"images"/"app_icon_fg.png"
+        default_file = app.get_app_data('app_icon_fg.png','images')
         if (not os.path.isfile(self.source) or self.use_default):
             image_file=default_file
         else:
             image_file=self.source
         return str(image_file)
     
-class CenterImage(MDAnchorLayout):
+class CenterImage(MDAnchorLayout): #MDAnchorLayout
     source=StringProperty()
     max_h = NumericProperty(1000)
     min_h = NumericProperty(300)
     image_size = ListProperty([1000,1000])
     
+    def msg(self):
+        from .snackbars import AttentionMsg
+        AttentionMsg(attention='Image File',msg=self.source).open()
