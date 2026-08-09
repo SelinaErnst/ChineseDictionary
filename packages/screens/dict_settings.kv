@@ -1,0 +1,453 @@
+<DictSettings>: #
+    md_bg_color: app.custom.colors['bg']
+    # md_bg_color: 'red'
+    ScrollView:
+        do_scroll_x: False
+        do_scroll_y: True
+        MDStackLayout:
+            padding: 50,50,50,0
+            spacing: 20
+            size_hint: 1, None
+            height: self.minimum_height
+            TitleLabel:
+                text: f"Dictionary Settings"
+            MDBoxLayout:
+                radius: app.radius
+                padding: 40
+                spacing: 40
+                md_bg_color: app.custom.colors['dialog_bg']
+                adaptive_height: True
+                orientation: 'vertical'
+                EditName:
+                    id: dict_name
+                    title: 'Name'
+                    text: root.dict_name
+                    cols: 2
+                SelectCategories:
+                    id: dict_cat
+                    title: 'Categories'
+                    options: root.get_categories(root.config)
+                    cols: 1
+                    # add_func: root.add_category
+                    # del_func: root.remove_category
+                EditTemplates:
+                    id: dict_template
+                    title: 'Templates'
+                    text: root.get_config('template',root.config)
+                    # options: [t.strip('.chd') for t in app.get_setting('templates')]
+                    cols: 1
+                EditImageType:
+                    id: image_type
+                    title: 'Preview Image'
+                    cols: 2
+                    text: root.get_config('preview_image',root.config)
+
+            BottomFieldButton:
+                text: 'Save'
+                press_button: root.save
+
+
+
+<SelectCategories>: #EditDictSettings
+    content: content
+    text: ""
+    size_hint_y: None
+    height: (max(head.height*2+grid.spacing[0],content.height) if root.cols==2 else head.height+content.height+grid.spacing[0]+12)
+    options: root.all_categories
+    title: ''
+    category: 'dict_cat'
+    cols: 20
+    # add_func: None
+    # del_func: None
+    MDGridLayout:
+        id: grid
+        spacing: 20
+        cols: root.cols
+        rows: 0 if root.cols==2 else 2
+        MDBoxLayout:
+            adaptive_width: True
+            adaptive_height: False if root.cols==2 else True
+            MDAnchorLayout:
+                id: head_box
+                size_hint_x: None
+                size_hint_y: 1 if root.cols==2 else None
+                width: head.width if root.cols==2 else head.width+(grid.spacing[0]+head.height)*3
+                height: head.height*2+grid.spacing[0] if root.cols==2 else head.height+10
+                anchor_x: 'left'
+                anchor_y: 'top'
+                MDStackLayout:
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: grid.spacing
+                    CategoryHead:
+                        id: head
+                        md_bg_color: app.custom.colors['button_bg']
+                        text_color: app.custom.colors['button_fg']
+                        max_width: grid.width
+                        min_width: 400
+                        padding: 50
+                        font_style: 'Body'
+                        role: 'medium'
+                        horizontal: grid.cols==2
+                        title: root.title
+                        category: root.category
+                    MyIconButton:
+                        icon: 'expand-all'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.select_all()
+                    MyIconButton:
+                        icon: 'collapse-all'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.select_none()
+                    MyIconButton:
+                        icon: 'backup-restore'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.select_old()
+        ToggleOptions:
+            id: content
+            data: root.all_categories
+            include: root.options
+            min_h: 0
+            max_h: 750
+            mode: 'del_element'
+            orientation: 'vertical'
+            toggle_state: "on"
+            # del_func: root.del_func
+
+<EditCategories>: #EditDictSettings
+    content: content
+    dropdown: dropdown
+    input: input
+    text: ""
+    size_hint_y: None
+    height: (max(head.height*2+grid.spacing[0],content.height) if root.cols==2 else head_box.height+content.height+grid.spacing[0])
+    title: ''
+    category: 'dict_cat'
+    options: {}
+    cols: 2
+    MDGridLayout:
+        id: grid
+        spacing: 20
+        cols: root.cols
+        rows: 0 if root.cols==2 else 2
+        MDBoxLayout:
+            adaptive_width: True
+            adaptive_height: False if root.cols==2 else True
+            MDAnchorLayout:
+                id: head_box
+                size_hint_x: None
+                size_hint_y: 1 if root.cols==2 else None
+                too_small: head.width if root.cols==2 else head.width+(grid.spacing[0]+head.height)*5 > root.width
+                width: min(head.width if root.cols==2 else head.width+(grid.spacing[0]+head.height)*5,root.width)
+                height: head.height*2+grid.spacing[0] if root.cols==2  or self.too_small else head.height+10
+                anchor_x: 'left'
+                anchor_y: 'top'
+                MDStackLayout:
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: grid.spacing
+                    CategoryHead:
+                        id: head
+                        md_bg_color: app.custom.colors['button_bg']
+                        text_color: app.custom.colors['button_fg']
+                        max_width: grid.width
+                        min_width:(grid.spacing[0]+head.height)*5-grid.spacing[0] if root.cols==2 else (root.width if head_box.too_small else 400)
+                        padding: 50
+                        font_style: 'Body'
+                        role: 'medium'
+                        horizontal: grid.cols==2
+                        title: root.title
+                        category: root.category
+                    MyIconButton:
+                        icon: 'chevron-up' if dropdown.is_open else 'chevron-down'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.use_dropdown()
+                    MyIconButton:
+                        icon: 'pencil'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        # on_release: root.rename(dropdown.selection,input.text)
+                        on_release: root.rename()
+                    MyIconButton:
+                        icon: 'plus'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        # on_release: root.add(input.text)
+                        on_release: root.add()
+                    MyIconButton:
+                        icon: 'delete'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        # on_release: root.remove(input.text)
+                        on_release: root.remove()
+                    MyIconButton:
+                        icon: 'backup-restore'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.undo()
+
+        MDBoxLayout:
+            id: content
+            adaptive_height: True
+            orientation: 'vertical'
+            text: dropdown.selection
+            MDAnchorLayout:
+                size_hint_y: None
+                height: head.height*2+grid.spacing[0] if root.cols==2 and not dropdown.is_open else input.height
+                anchor_y: 'top'
+                ElementInput:
+                    id: input
+                    background_color: app.custom.colors['text_input_bg']
+                    foreground_color: app.custom.colors['textfield_error'] if root.incorrect(self.text) else app.custom.colors['text_input_fg'] 
+                    font_size: sp(14)
+                    font_name: "CH"
+                    multiline: False
+                    size_hint_y: None
+                    height: max(self.min_h,min(self.max_h, self.minimum_height))
+                    min_h: head.height
+                    max_h: self.minimum_height+20
+                    text: dropdown.selection
+                    padding: 20,0,0,0
+                    padding_y: [self.height / 2.0 - (self.line_height / 2.0), 0]
+            Options:
+                id: dropdown
+                data: root.drop_down(root.options)
+                is_open: False
+                min_h: 0
+                max_h: 750
+                selection: root.text
+                padding: 20,0,20,0
+
+<EditTemplates>: #EditDictSettings
+    content: content
+    dropdown: dropdown
+    input: input
+    text: ""
+    size_hint_y: None
+    height: (max(head.height*2+grid.spacing[0],content.height) if root.cols==2 else head_box.height+content.height+grid.spacing[0])
+    title: ''
+    category: 'dict_name'
+    options: root.get_all_templates()
+    cols: 2
+    MDGridLayout:
+        id: grid
+        spacing: 20
+        cols: root.cols
+        rows: 1 if root.cols==2 else 2
+        MDBoxLayout:
+            adaptive_width: True
+            adaptive_height: False if root.cols==2 else True
+            MDAnchorLayout:
+                id: head_box
+                size_hint_x: None
+                size_hint_y: 1 if root.cols==2 else None
+                # size_hint_y: None
+                too_small: head.width if root.cols==2 else head.width+(grid.spacing[0]+head.height)*5 > root.width
+                width: min(head.width if root.cols==2 else head.width+(grid.spacing[0]+head.height)*5,root.width)
+                height: head.height*2+grid.spacing[0] if root.cols==2 or self.too_small else head.height+10
+                anchor_x: 'left'
+                anchor_y: 'top'
+                MDStackLayout:
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: grid.spacing
+                    CategoryHead:
+                        id: head
+                        md_bg_color: app.custom.colors['button_bg']
+                        text_color: app.custom.colors['button_fg']
+                        max_width: grid.width
+                        min_width:(grid.spacing[0]+head.height)*5-grid.spacing[0] if root.cols==2 else (root.width if head_box.too_small else 400)
+                        padding: 50
+                        font_style: 'Body'
+                        role: 'medium'
+                        horizontal: grid.cols==2
+                        title: root.title
+                        category: root.category
+                    MyIconButton:
+                        icon: 'chevron-up' if dropdown.is_open else 'chevron-down'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.use_dropdown()
+                    MyIconButton:
+                        icon: 'pencil'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.edit()
+                    MyIconButton:
+                        icon: 'plus'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.new()
+                    MyIconButton:
+                        icon: 'delete'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.delete()
+                    MyIconButton:
+                        icon: 'backup-restore'
+                        size_hint: None, None
+                        size: [head.height]*2
+                        ripple_effect: False 
+                        on_release: root.reload()
+        MDBoxLayout:
+            id: content
+            adaptive_height: True
+            orientation: 'vertical'
+            text: dropdown.selection
+            MDAnchorLayout:
+                size_hint_y: None
+                height: head.height*2+grid.spacing[0] if root.cols==2 and not dropdown.is_open else input.height
+                anchor_y: 'top'
+                ElementInput:
+                    id: input
+                    background_color: app.custom.colors['text_input_bg']
+                    foreground_color: app.custom.colors['text_input_fg'] if self.text in dropdown.data else app.custom.colors['textfield_error']
+                    font_size: sp(14)
+                    font_name: "CH"
+                    multiline: False
+                    size_hint_y: None
+                    height: max(self.min_h,min(self.max_h, self.minimum_height))
+                    min_h: head.height
+                    max_h: self.minimum_height+20
+                    text: dropdown.selection
+                    padding: 20,0,0,0
+                    padding_y: [self.height / 2.0 - (self.line_height / 2.0), 0]
+            Options:
+                id: dropdown
+                data: root.options
+                is_open: False
+                min_h: 0
+                max_h: 750
+                selection: root.text
+                padding: 20,0,20,0
+
+<EditName>: #EditDictSettings
+    input: input
+    text: ""
+    size_hint_y: None
+    height: (max(head.height,input.height) if grid.cols==2 else head.height+input.height+grid.spacing[0]+12)
+    title: ''
+    category: 'dict_name'
+    cols: 2
+
+    MDGridLayout:
+        id: grid
+        spacing: 20
+        cols: root.cols
+        rows: 0 if root.cols==2 else 2
+        MDBoxLayout:
+            adaptive_width: True
+            adaptive_height: False if root.cols==2 else True
+            MDAnchorLayout:
+                id: head_box
+                size_hint_x: None
+                size_hint_y: 1 if root.cols==2 else None
+                width: head.width if root.cols==2 else head.width+(grid.spacing[0]+head.height)*1
+                height: head.height*2+grid.spacing[0] if root.cols==2 else head.height+10
+                anchor_x: 'left'
+                anchor_y: 'top'
+                MDStackLayout:
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: grid.spacing
+                    CategoryHead:
+                        id: head
+                        md_bg_color: app.custom.colors['button_bg']
+                        text_color: app.custom.colors['button_fg']
+                        max_width: grid.width
+                        # min_width:(grid.spacing[0]+head.height)*0-grid.spacing[0]*0
+                        min_width: 400
+                        padding: 50
+                        font_style: 'Body'
+                        role: 'medium'
+                        horizontal: grid.cols==2
+                        title: root.title
+                        category: root.category
+        ElementInput:
+            id: input
+            background_color: app.custom.colors['text_input_bg']
+            foreground_color: app.custom.colors['text_input_fg']
+            font_size: sp(14)
+            font_name: "CH"
+            multiline: False
+            size_hint_y: None
+            height: max(self.min_h,min(self.max_h, self.minimum_height))
+            min_h: head.height
+            max_h: self.minimum_height+20
+            text: root.text
+            padding: 20,0,0,0
+            padding_y: [self.height / 2.0 - (self.line_height / 2.0), 0]
+
+
+<EditImageType>: #EditDictSettings
+    input: input
+    text: ""
+    size_hint_y: None
+    height: (max(head.height,input.height) if grid.cols==2 else head.height+input.height+grid.spacing[0]+12)
+    title: ''
+    category: 'image_type'
+    cols: 2
+
+    MDGridLayout:
+        id: grid
+        spacing: 20
+        cols: root.cols
+        rows: 0 if root.cols==2 else 2
+        MDBoxLayout:
+            adaptive_width: True
+            adaptive_height: False if root.cols==2 else True
+            MDAnchorLayout:
+                id: head_box
+                size_hint_x: None
+                size_hint_y: 1 if root.cols==2 else None
+                width: head.width if root.cols==2 else head.width+(grid.spacing[0]+head.height)*1
+                height: head.height*2+grid.spacing[0] if root.cols==2 else head.height+10
+                anchor_x: 'left'
+                anchor_y: 'top'
+                MDStackLayout:
+                    size_hint_y: None
+                    height: self.parent.height
+                    spacing: grid.spacing
+                    CategoryHead:
+                        id: head
+                        md_bg_color: app.custom.colors['button_bg']
+                        text_color: app.custom.colors['button_fg']
+                        max_width: grid.width
+                        # min_width:(grid.spacing[0]+head.height)*0-grid.spacing[0]*0
+                        min_width: 500
+                        padding: 50
+                        font_style: 'Body'
+                        role: 'medium'
+                        horizontal: grid.cols==2
+                        title: root.title
+                        category: root.category
+        ElementInput:
+            id: input
+            background_color: app.custom.colors['text_input_bg']
+            foreground_color: app.custom.colors['text_input_fg']
+            font_size: sp(14)
+            font_name: "CH"
+            multiline: False
+            size_hint_y: None
+            height: max(self.min_h,min(self.max_h, self.minimum_height))
+            min_h: head.height
+            max_h: self.minimum_height+20
+            text: root.text
+            padding: 20,0,0,0
+            padding_y: [self.height / 2.0 - (self.line_height / 2.0), 0]

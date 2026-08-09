@@ -1,0 +1,30 @@
+{
+    "name": "Test",
+    "categories": [
+        "english",
+        "german",
+        "measure_word",
+        "radical",
+        "opposite",
+        "classifier",
+        "variants",
+        "confusables",
+        "grammar",
+        "strokes",
+        "strokes_count",
+        "components",
+        "mnemonics",
+        "usage",
+        "origin",
+        "ancient",
+        "relatives",
+        "words",
+        "links",
+        "images",
+        "image_urls"
+    ],
+    "template": "",
+    "sort_key": "pronunciation",
+    "sort_order": "ascending",
+    "preview_image": ""
+}

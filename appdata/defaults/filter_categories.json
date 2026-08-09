@@ -1,0 +1,49 @@
+{
+  "filter": {
+    "translation": [
+      "english",
+      "eng",
+      "german",
+      "ger",
+      "translation",
+      "transl"
+    ],
+    "radical": [
+      "radical",
+      "rad",
+      "r"
+    ],
+    "measure word": [
+      "mw",
+      "measure_word",
+      "cl_usage"
+    ],
+    "grammar": [
+      "dict_entries",
+      "grammar",
+      "grammatical",
+      "rules"
+    ],
+    "components": [
+      "components"
+    ],
+    "origin": [
+      "origin"
+    ],
+    "ancient character": [
+      "ancient"
+    ],
+    "images": [
+      "images"
+    ],
+    "mnemonics": [
+      "mnemonics"
+    ]
+  },
+  "preview": {
+    "translation": "translate",
+    "radical": "alpha-r-box",
+    "measure word": "scale-unbalanced",
+    "grammar": "bookshelf"
+  }
+}
