@@ -152,7 +152,10 @@ class RemovableCategoryLine(MDBoxLayout):
     def edit_line(self):
         from packages.chd import Character,Sentence
         if isinstance(self.data,Character):
-            entry = {k:v for k,v in self.data.to_dict().items() if v!=None}
+            character = Character().to_dict()
+            # entry = {k:v for k,v in self.data.to_dict().items()}
+            # print(entry)
+            entry = {k:v if v!=None else '' for k,v in self.data.to_dict().items() if k in character}
             dtype = Character
             title = 'Edit Character'
         elif isinstance(self.data,Sentence):

@@ -23,7 +23,7 @@ if platform == 'android':
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER)
 
 
-from packages.chd import Dictionary
+from packages.chd import Dictionary, Character
 from packages.chd import convert_to_dtype, convert_pronunciations
 from packages.chd import load_json
 
@@ -156,13 +156,14 @@ class Options(MDBoxLayout):
     def __init__(self,data=None,**kwargs):
         super().__init__(**kwargs)
         if self.is_open: self.set_list_items(data=data)
-        
+        self.add_decision = True
+            
     def set_attrs(_self, **kwargs):
         for k,v in kwargs.items():
             if v!=None: setattr(_self, k, v)
         
     def on_data(self,instance,value):
-        self.data = value
+        # self.data = value
         if value not in [None,[],{}]: 
             self.set_list_items(data=value)
         
@@ -205,6 +206,7 @@ class Options(MDBoxLayout):
         self.scroll.ids={}
         for c in [c for c in self.scroll.children]:
             self.scroll.remove_widget(c)
+            
 class ToggleOptions(Options):
     data = ObjectProperty()
     include = ListProperty()
@@ -263,39 +265,50 @@ class ToggleOptions(Options):
         # print('clear_selection',self.scroll.include)
         self.scroll.include=[]
         self.scroll.exclude=[]
+
 class DictOptions(Options):
     data = DictProperty()
     mode = StringProperty('value')
     del_func = ObjectProperty()
                 
+    def add_option(self):
+        def add_category(text):
+            if text!="" and text not in self.data.keys(): 
+                self.data.update({text:''})
+
+        add_key = AddOption(add_option=add_category)
+        add_key.key = '___add___'
+        self.scroll.add_widget(add_key)
+
     def set_list_items(self,data={}):
         if data==None: data={}
         elif isinstance(data,dict): self.data=data
         if data!={} and len(self.scroll.children)>0: self.clear_scroll()
         for k,v in data.items():
             self.add_item(key=k,value=v)
+        if self.mode == 'del_element':
+            self.add_option()
     
     def add_item(self,key,value):
         if self.mode == "value":
-            # element=DictValue(key=key,value=value)
             element=DictValue(key=str(key),value=str(value))
         elif self.mode == "element":
-            # element=DictElement(key=key,value=value)
             element=DictElement(key=str(key),value=str(value))
         elif self.mode == "del_element":
-            # element=DictElementDel(key=key,value=value,del_func=self.delete_key)
             element=DictElementDel(key=str(key),value=str(value),del_func=self.delete_key)
         self.scroll.ids[key]=element
         self.scroll.add_widget(element)
             
     def delete_key(self,key):
+
         if callable(self.del_func):
             self.del_func(key)
+
         for c in [c for c in self.scroll.children if c.key == key]:
             self.scroll.remove_widget(c)
             self.scroll.ids.pop(key)
             self.data.pop(key)
-            
+
     def clear_scroll(self):
         self.scroll.ids={}
         # self.data = {}
@@ -410,6 +423,7 @@ class DictElementDel(DictElement):
         
         if callable(self.del_func):
             success = self.del_func(self.key)
+
 class AddOption(MDBoxLayout):
 
     def __init__(self, add_option=None, *args, **kwargs):
@@ -435,10 +449,24 @@ class AddProperty(MDBoxLayout):
 class ElementInput(TextInput):
     max_h=NumericProperty(1000)
     min_h=NumericProperty(300)
+    mode=StringProperty()
     
     def clear(self):
         self.text = ""
-            
+
+    def keyboard_on_key_down(self, window, keycode, text, modifiers):
+        if keycode[1] in ('enter', 'numpadenter') and self.mode=='bullet':
+            cursor_pos = self.cursor_index()
+            before_cursor = self.text[:cursor_pos]
+            after_cursor = self.text[cursor_pos:]
+            bullet_string = "\n- "
+            new_index = cursor_pos + len(bullet_string)
+            self.cursor = self.get_cursor_from_index(new_index)
+            self.text = before_cursor + bullet_string + after_cursor
+            return True
+
+        return super().keyboard_on_key_down(window, keycode, text, modifiers)    
+
 # = ============================================================== = #
 # =                             DIALOGS                            = #
 # = ============================================================== = #
@@ -602,6 +630,7 @@ class ConfirmDecision(CustomDialog):
         app:ChD=ChD.get_running_app()
         app.change_app_directory(app.root_folder)
         app.wm.get_screen('settings').update_settings()
+
 class ConfirmExport(ConfirmDecision):
     pass
 class ConfirmDelete(ConfirmDecision):
@@ -722,20 +751,22 @@ class EditElement(CustomDialog):
         
         self.content_options = {
             'normal' : ElementInput(),
+            # 'list' : ElementInput(),
             'custom' : ToggleOptions(max_h=1210),
-            'dict' : DictOptions()
+            'dict' : DictOptions(mode='element')
         }
-        # self.choose_content(style=style,options=options)
+        if style != '': self.choose_content(style=style,options=options)
         decision=MakeSimpleDecision(deny_func=None,accept_func=self.confirm_edit)
         self.decision.add_widget(decision)
     
-    def choose_content(self,style="",options=[],**kwargs):
+    def choose_content(self,style="",mode=None,options=[],**kwargs):
         self.set_attrs(**kwargs)
         self.style=style
         if style in ['normal','custom','dict']:
             if len(self.content.children)>0: self.content.clear_widgets()
             if style=="normal": 
                 content = self.content_options[style]
+                if mode!=None: content.mode = mode
                 self.content.ids['input']=content
                 self.content.add_widget(content)
             elif style=="custom":
@@ -747,6 +778,7 @@ class EditElement(CustomDialog):
                 self.content.add_widget(content)
             elif style=="dict":
                 content = self.content_options[style]
+                if mode!=None: content.mode = mode
                 self.content.ids['options']=content
                 self.content.add_widget(content)
     
@@ -773,6 +805,7 @@ class EditElement(CustomDialog):
         entry = {k:element.input.text.strip(" ") for k,element in self.content.ids['options'].scroll.ids.items()}
         entry = {k:v for k,v in entry.items() if v!=""}
         entry = "" if entry == {} else entry
+        entry = None if entry == {} else entry
         return entry
     
     def get_custom(self):
@@ -807,10 +840,13 @@ class EditElement(CustomDialog):
             # relevant if text contains '-'
             if new_line==True: 
                 text = text.lstrip('-').split('\n-')
-                new_entry = [e.replace('\n',' ').strip(' ') for e in text if e != '']
+                new_entry = [e.replace('\n',' ').strip(' ') for e in text]
+                new_entry = [e for e in text if e != '' and not e.isspace()]
             elif new_line==False:
                 text = text.replace('\n',' ').lstrip('-').split('-')
-                new_entry = [e.strip(' ') for e in text if e != '']
+                new_entry = [e.strip(' ') for e in text]
+                new_entry = [e for e in text if e != '' and not e.isspace()]
+
         else:
             new_entry = text.lstrip('-').strip(' ')
             if new_line==False:
@@ -837,17 +873,16 @@ class EditElement(CustomDialog):
         elif self.title == 'Character': self.__character_edit()
                     
     def __character_edit(self):
-        categories=['simple','traditional','pronunciation']
-        category='new_character'
-        new_entry = self.get_input(category,convert_pronunciation=False,new_line=False)
-        
-        if len(new_entry) == 3:
-            # entries={k:v if k!='pronunciation' else encode_pinyin(v) for k,v in zip(categories,new_entry)}
-            entries={k:v for k,v in zip(categories,new_entry)}
+        new_entry = self.get_dict()
+        if new_entry!=None:
+            category='new_character'
+            character = {k:'' for k in Character().to_dict()}
+            character.update(new_entry)
+
             if self.screen.name == 'view_dict':
-                self.screen.add_character(entries=entries)
+                self.screen.add_character(entries=character)
             elif self.screen.name.startswith('C'):
-                self.screen.update_character(entries=entries)
+                self.screen.update_character(entries=character)
                 
     def __category_edit(self):
         category=self.title.lower().replace(' ','_')

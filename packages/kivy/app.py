@@ -16,8 +16,8 @@ def get_project_root():
     return Path(root_directory)
 
 APP_DIR = get_project_root()
-
 Window.softinput_mode = "below_target"
+
 
 class Helper:
     platform=platform
@@ -241,7 +241,7 @@ class Helper:
         if self.is_url(url):
             dialog = self.pre_loaded_widgets['decision']
             dialog.set_attrs(title="Open Browser",support_text=f"\n{url}")
-            dialog.choose_action(do_choice=False,accept_func=go_to_url)
+            dialog.choose_action(do_choice=True,accept_func=go_to_url)
             dialog.open()
     
     def show_info(self,title:str="Information",text:str=''):
@@ -296,7 +296,9 @@ class Helper:
         metrics = f"\ndensity = {self.metrics.density} \ndpi = {self.metrics.dpi} \nfontscale = {self.metrics.fontscale}"
         more_metrics = f"\ndp(1) = {dp(1)} \nsp(1) = {sp(1)} \ninch(1) = {inch(1)}"
         # user_data_dir = str(self.user_data_dir)
-        return f"{self.platform}: \n{window_metrics} {metrics}"   
+        return f"{self.platform}: \n{window_metrics} {metrics}"
+
+
 class MyApp(MDApp,Helper):
     
     def __init__(self, *args, **kwargs):
@@ -328,9 +330,10 @@ class MyApp(MDApp,Helper):
         self.theme_cls.bind(theme_style=self.sync_custom_colors)
         self.theme_cls.bind(primary_palette=self.sync_custom_colors)
         self.sync_custom_colors()
-        self.pre_load_widgets()
+        # self.pre_load_widgets()
     
     def on_start(self):
+
         if not self.__access_granted():
             self.__show_validation_dialog()
         else:
@@ -577,6 +580,8 @@ class MyApp(MDApp,Helper):
         else: return False
         
     def switch_screen(self,screen_name,direction,remember=True,home='home'):
+        if screen_name not in self.wm.screen_names: return None
+
         previous_screen_name = self.wm.current
         previous_direction = self.wm.transition.direction
         previous_screen = self.wm.current_screen

@@ -126,13 +126,13 @@ class ShowGrammar(MyScreen):
             elif isinstance(content,str):
                 dialog.choose_content(style='normal',allow_multiple=False,dtype=str,title=title)
             elif isinstance(content,list) and (len(content)>0 and isinstance(content[0],str) or len(content)==0):
-                dialog.choose_content(style='normal',allow_multiple=True,dtype=list,title=title)
+                dialog.choose_content(style='normal',mode='bullet',allow_multiple=True,dtype=list,title=title)
             elif isinstance(content,dict): 
                 dialog.choose_content(style='dict',title=title)
             else: dialog = None
             
             if dialog != None:
-                # print('\n\nedit_category',content)
+                # print('\n\nedit_category',category,content)
                 dialog.set_entry(entry=content)
                 dialog.open()
             

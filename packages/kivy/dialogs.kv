@@ -253,29 +253,36 @@
         padding: 20
 
 <DictElement>: #MDBoxLayout
+    input: input
     key: ""
     value: ""
     orientation: 'horizontal'
     size_hint_y: None
     height: key.height
     spacing: 20
-    MyTextInput:
+    AnchoredLabel:
         id: key
         font_size: sp(11)
         text: root.key
-        background_color: app.custom.colors['text_input_bg']
-        foreground_color: app.custom.colors['text_input_fg']
+        md_bg_color: app.custom.colors['text_input_bg']
+        font_color: app.custom.colors['text_input_fg']
         size_hint_y: None
+        min_h: input.height
         padding: 20
+        size_hint_x: None
+        width: 400
     MyTextInput:
-        id: value
+        id: input
         font_size: sp(11)
+        hint_text: root.key
         text: root.value
         background_color: app.custom.colors['text_input_bg']
         foreground_color: app.custom.colors['text_input_fg']
         size_hint_y: None
+        height: self.minimum_height
         padding: 20
-
+        theme_font_name: "Custom"
+        font_name:"CH"
 
 <DictElementDel>: #DictElement
     BigIconButton:

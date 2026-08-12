@@ -96,7 +96,7 @@ class ShowCharacter(MyScreen):
             if category in self.ids:
                 if category == 'pronunciation': text=self.character.pinyin
                 else: text=self.character[category]
-                self.ids[category].label.text = text
+                self.ids[category].label.text = text if text!=None else ""
                 self.ids[category].size_hint_x=1 if text!="" else None
         
         # self.dict_screen.get_character_image(character=self.character)
@@ -293,9 +293,12 @@ class ShowCharacter(MyScreen):
                 entries += [self.character[category]]
 
             dialog = self.my_app.pre_loaded_widgets['edit_element']
-            dialog.choose_content(style="normal",**kwargs)
-            char_entry = '- '+'\n- '.join([e if e!=None else "" for e in entries])
-            dialog.set_entry(char_entry)
+            dialog.choose_content(style="dict",**kwargs)
+            entry = {k:'' for k in Character().to_dict()}
+            dialog.set_entry(entry)
+            # dialog.choose_content(style="normal",**kwargs)
+            # char_entry = '- '+'\n- '.join([e if e!=None else "" for e in entries])
+            # dialog.set_entry(char_entry)
             dialog.open()
     
     # = –––––––––––––––––––––––––– category –––––––––––––––––––––––––– = #
@@ -312,13 +315,20 @@ class ShowCharacter(MyScreen):
             
             entry = self.character[category]
             
-            dialog = self.my_app.pre_loaded_widgets['edit_element']
+            if category == 'image_urls' and self.character.get_dtype(category)==dict:
+                image_keys = {k:'' for k in self.character.image_files}
+                if isinstance(entry,dict): image_keys.update(entry)
+                entry = image_keys
             
-            if isinstance(entry,dict): dialog.choose_content(style="dict",**kwargs)
+            dialog = self.my_app.pre_loaded_widgets['edit_element']
+
+            if isinstance(entry,dict): dialog.choose_content(style="dict",mode='del_element',**kwargs)
+            elif isinstance(entry,list): dialog.choose_content(style="normal",mode="bullet",**kwargs)
             else: dialog.choose_content(style="normal",**kwargs)
             
             if hasattr(self,'dialog'): self.dialog.dismiss()
-            
+
+
             dialog.set_entry(entry=entry)
             dialog.open()
         
@@ -442,8 +452,8 @@ class ShowCharacter(MyScreen):
                 characters = [char for char in character.uniq[:2] if char != ""]
                 for char in characters:
                     links += [(k,v+char) for k,v in websites.items() if __check_url(v+char)]
-                self.links = links
-                
+                self.links = sorted(links)
+
                 if self.editable:
                     self.character.update(links=[l[1] for l in links])  
                     # links has to be category

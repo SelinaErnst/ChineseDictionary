@@ -99,6 +99,7 @@ class Settings(MyScreen):
         self.my_app.move_tmp_files()
         # print(self.my_app.tmp_files_rm,self.my_app.tmp_files)
         self.my_app.previous_screen()
+        self.my_app.pre_load_widgets()
         
 class Setting(EntryFieldWithIcon):
     icon = StringProperty()

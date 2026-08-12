@@ -406,8 +406,11 @@ class ViewDict(MyScreen):
                     "support_text":f"Enter the chinese characters (simplified & traditional language) amd pronunciation in pinyin.",
                 }
                 dialog = self.my_app.pre_loaded_widgets['edit_element']
-                dialog.choose_content(style="normal",**kwargs)
-                dialog.set_entry('- \n- \n- ')
+                # dialog.choose_content(style="normal",**kwargs)
+                # dialog.set_entry('- \n- \n- ')
+                dialog.choose_content(style="dict",**kwargs)
+                entry = {k:'' for k in Character().to_dict()}
+                dialog.set_entry(entry)
                 dialog.open()
                 
             elif 'import' in mode.lower(): # Load character file

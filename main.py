@@ -54,7 +54,7 @@ DTYPE_MAP = {
     "dict": dict,
 }
 
-# print_class('MDStackLayout',search='widget')
+# print_class('TextInput',search='on_')
 # print('main')
 
 # = ============================================================== = #
@@ -65,11 +65,7 @@ from packages.kivy import MyScreen
 
 KV="""
 
-
-        
 """
-
-
 
 # = ============================================================== = #
 # =                              MAIN                              = #
@@ -87,8 +83,6 @@ class ChD(MyApp):
         self.get_default_settings()
         self.update_design()
 
-        self.load_all_kv_files(self.root_folder/'screens')
-        Builder.load_string(KV)
     
     def pre_load_widgets(self):
         from packages.screens import DictSettings
@@ -103,7 +97,10 @@ class ChD(MyApp):
         })
     
     def build(self):
+        Builder.load_string(KV)
+        self.load_all_kv_files(self.root_folder/'screens')
         super().build()
+        self.pre_load_widgets()
         interface = Interface()
         self.add_window_manager(interface.wm)
         Screen = self.get_screen_widget('home')
@@ -111,6 +108,9 @@ class ChD(MyApp):
         self.add_more_screens()
         # self.switch_screen('settings','down')
         return interface
+
+    def on_start(self):
+        super().on_start()
     
     def add_more_screens(self):
         for name in [screen.name for screen in self.wm.screens]:
@@ -299,6 +299,7 @@ class ChD(MyApp):
         
         def remove_duplications(screen_name):
             all_screen_names = [screen.name for screen in self.wm.screens]
+            all_screen_names = self.wm.screen_names
             # print(all_screen_names)
             if screen_name.startswith('C') and sum([name.startswith('C') for name in all_screen_names])>1:
                 for name in [name for name in all_screen_names if name.startswith('C')]:
